@@ -118,3 +118,22 @@ a.desc:after {
 .nav > li > form > button.logout:focus {
     outline: none;
 }
+
+/* custom layout */
+
+.control-sidebar-bg,
+.control-sidebar {
+  right: -60% !important;
+  width: 60% !important;
+}
+
+.control-sidebar.control-sidebar-open, 
+.control-sidebar.control-sidebar-open+.control-sidebar-bg {
+  right: 0px !important;
+}
+
+.close-sidebar{
+    padding: 7px 10px;
+    position: absolute;
+    right: 0px;
+}

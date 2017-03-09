@@ -4,6 +4,8 @@ use yii\helpers\Html;
 /* @var $this \yii\web\View */
 /* @var $content string */
 
+// Hide debug bar
+Yii::$app->log->targets['debug'] = null;
 
 if (Yii::$app->controller->action->id === 'login') { 
 /**
@@ -39,25 +41,8 @@ if (Yii::$app->controller->action->id === 'login') {
     <body class="hold-transition skin-black-light sidebar-mini">
     <?php $this->beginBody() ?>
     <div class="wrapper">
-
-        <?= $this->render(
-            'header.php',
-            ['directoryAsset' => $directoryAsset]
-        ) ?>
-
-        <?= $this->render(
-            'left.php',
-            ['directoryAsset' => $directoryAsset]
-        )
-        ?>
-
-        <?= $this->render(
-            'content.php',
-            ['content' => $content, 'directoryAsset' => $directoryAsset]
-        ) ?>
-
+        <?= $content ?>
     </div>
-
     <?php $this->endBody() ?>
     </body>
     </html>

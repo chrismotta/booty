@@ -2,52 +2,151 @@
 
 /* @var $this yii\web\View */
 
-$this->title = 'My Yii Application';
+$this->title = 'TML Dashboard';
 ?>
 <div class="site-index">
 
-    <div class="jumbotron">
-        <h1>Congratulations!</h1>
+    <!-- Main content -->
+    <section class="content">
+      <!-- Small boxes (Stat box) -->
+      <div class="row">
+        <div class="col-lg-3 col-xs-6">
+          <!-- small box -->
+          <div class="small-box bg-gray">
+            <div class="inner">
+              <h3>10,535,266</h3>
 
-        <p class="lead">You have successfully created your Yii-powered application.</p>
-
-        <p><a class="btn btn-lg btn-success" href="http://www.yiiframework.com">Get started with Yii</a></p>
-    </div>
-
-    <div class="body-content">
-
-        <div class="row">
-            <div class="col-lg-4">
-                <h2>Heading</h2>
-
-                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et
-                    dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip
-                    ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
-                    fugiat nulla pariatur.</p>
-
-                <p><a class="btn btn-default" href="http://www.yiiframework.com/doc/">Yii Documentation &raquo;</a></p>
+              <p>Today Impressions</p>
             </div>
-            <div class="col-lg-4">
-                <h2>Heading</h2>
-
-                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et
-                    dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip
-                    ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
-                    fugiat nulla pariatur.</p>
-
-                <p><a class="btn btn-default" href="http://www.yiiframework.com/forum/">Yii Forum &raquo;</a></p>
+            <div class="icon">
+              <i class="ion ion-bag"></i>
             </div>
-            <div class="col-lg-4">
-                <h2>Heading</h2>
-
-                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et
-                    dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip
-                    ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
-                    fugiat nulla pariatur.</p>
-
-                <p><a class="btn btn-default" href="http://www.yiiframework.com/extensions/">Yii Extensions &raquo;</a></p>
-            </div>
+            <a href="#" class="small-box-footer">More info <i class="fa fa-arrow-circle-right"></i></a>
+          </div>
         </div>
+        <!-- ./col -->
+        <div class="col-lg-3 col-xs-6">
+          <!-- small box -->
+          <div class="small-box bg-gray">
+            <div class="inner">
+              <h3>6,295,332</h3>
 
-    </div>
+              <p>Today Unique Visitors</p>
+            </div>
+            <div class="icon">
+              <i class="ion ion-pie-graph"></i>
+            </div>
+            <a href="#" class="small-box-footer">More info <i class="fa fa-arrow-circle-right"></i></a>
+          </div>
+        </div>
+        <!-- ./col -->
+        <div class="col-lg-3 col-xs-6">
+          <!-- small box -->
+          <div class="small-box bg-gray">
+            <div class="inner">
+              <h3>629</h3>
+
+              <p>Today installations</p>
+            </div>
+            <div class="icon">
+              <i class="ion ion-person-add"></i>
+            </div>
+            <a href="#" class="small-box-footer">More info <i class="fa fa-arrow-circle-right"></i></a>
+          </div>
+        </div>
+        <!-- ./col -->
+        <div class="col-lg-3 col-xs-6">
+          <!-- small box -->
+          <div class="small-box bg-gray">
+            <div class="inner">
+              <h3>2.34<sup style="font-size: 20px">%</sup></h3>
+
+              <p>Today Conversion Rate</p>
+            </div>
+            <div class="icon">
+              <i class="ion ion-stats-bars"></i>
+            </div>
+            <a href="#" class="small-box-footer">More info <i class="fa fa-arrow-circle-right"></i></a>
+          </div>
+        </div>
+        <!-- ./col -->
+      </div>
+      <!-- /.row -->
+
+      <!-- Main row -->
+      <div class="row">
+        <!-- Left col -->
+        <section class="col-lg-7 connectedSortable">
+          <!-- Custom tabs (Charts with tabs)-->
+          <div class="nav-tabs-custom bg-gray">
+            <!-- Tabs within a box -->
+            <ul class="nav nav-tabs pull-right">
+              <li class="active"><a href="#revenue-chart" data-toggle="tab">Area</a></li>
+              <li><a href="#sales-chart" data-toggle="tab">Donut</a></li>
+              <li class="pull-left header"><i class="fa fa-inbox"></i> Rates</li>
+            </ul>
+            <div class="tab-content no-padding">
+              <!-- Morris chart - Sales -->
+              <div class="chart tab-pane active" id="revenue-chart" style="position: relative; height: 300px;"></div>
+              <div class="chart tab-pane" id="sales-chart" style="position: relative; height: 300px;"></div>
+            </div>
+          </div>
+          <!-- /.nav-tabs-custom -->
+          <!-- /.box -->
+
+        </section>
+        <!-- /.Left col -->
+
+        <!-- right col (We are only adding the ID to make the widgets sortable)-->
+        <section class="col-lg-5 connectedSortable">
+
+          <!-- Map box -->
+          <div class="box box-solid bg-gray">
+            <div class="box-header">
+              <!-- tools box -->
+              <div class="pull-right box-tools">
+                <button type="button" class="btn btn-primary btn-sm daterange pull-right" data-toggle="tooltip" title="Date range">
+                  <i class="fa fa-calendar"></i></button>
+                <button type="button" class="btn btn-primary btn-sm pull-right" data-widget="collapse" data-toggle="tooltip" title="Collapse" style="margin-right: 5px;">
+                  <i class="fa fa-minus"></i></button>
+              </div>
+              <!-- /. tools -->
+
+              <i class="fa fa-map-marker"></i>
+
+              <h3 class="box-title">
+                Geo Impressions
+              </h3>
+            </div>
+            <div class="box-body">
+              <div id="world-map" style="height: 250px; width: 100%;"></div>
+            </div>
+            <!-- /.box-body-->
+            <div class="box-footer no-border">
+              <div class="row">
+                <div class="col-xs-4 text-center" style="border-right: 1px solid #f4f4f4">
+                  <div id="sparkline-1"></div>
+                  <div class="knob-label">Impressions</div>
+                </div>
+                <!-- ./col -->
+                <div class="col-xs-4 text-center" style="border-right: 1px solid #f4f4f4">
+                  <div id="sparkline-2"></div>
+                  <div class="knob-label">Unique Users</div>
+                </div>
+                <!-- ./col -->
+                <div class="col-xs-4 text-center">
+                  <div id="sparkline-3"></div>
+                  <div class="knob-label">Installations</div>
+                </div>
+                <!-- ./col -->
+              </div>
+              <!-- /.row -->
+            </div>
+          </div>
+          <!-- /.box -->
+        </section>
+
+          
+    </section>
+
 </div>
