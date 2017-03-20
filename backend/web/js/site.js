@@ -24,30 +24,35 @@ $(document).ready(function(){
 
 	console.log('ready');
 	// sidebarOpen();
-	sidebarClose();
+	// sidebarClose();
 });
 
 function sidebarOpen(){
-	$('.grid-button').attr('data-toggle', 'control-sidebar');
 	$('.grid-button').click(function(event){
-		$("iframe#control-sidebar").attr('src', $(this).attr('href'));
+		// event.preventDefault();
+		//$("iframe#control-sidebar").attr('src', $(this).attr('href'));
 		console.log('open on sidebar: '+$(this).attr('href'));
 		// event.stopPropagation();
-		// event.preventDefault();
 		// return false;
 	})
+	$('.grid-button').attr('data-toggle', 'control-sidebar');
 }
 
 function sidebarClose(){
 	$('.close-sidebar-button').click(function(){
-		// $("#currentGrid").yiiGridView("applyFilter");
+		$("#currentGrid").yiiGridView("applyFilter");
 		console.log("grid updated");
-		$.pjax.reload({
+		/*$.pjax.reload({
 			container: '#pjax-id', 
 		}).done(function() { 
 			sidebarOpen();
 			console.log('load buttons again');
-		});
+		});*/
 	})
 }
 
+function openOnSidebar(e){
+	console.log('open on sidebar: '+$(e).attr('href'));
+	$("iframe#control-sidebar").attr('src', $(e).attr('href'));
+
+}

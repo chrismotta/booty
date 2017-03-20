@@ -7,7 +7,7 @@ use yii\widgets\Pjax;
 /* @var $searchModel app\models\SourcesSearch */
 /* @var $dataProvider yii\data\ActiveDataProvider */
 
-$this->title = 'Sources';
+$this->title = 'Trafic Sources';
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="sources-index">
@@ -19,9 +19,6 @@ $this->params['breadcrumbs'][] = $this->title;
         <?= Html::a('Create Sources', ['create'], ['class' => 'btn btn-success']) ?>
     </p> -->
     <div class="box">
-        <div class="box-header">
-          <h3 class="box-title">Traffic Sources</h3>
-        </div>
         <!-- /.box-header -->
         <div class="box-body">
         <?php Pjax::begin(['id' => 'pjax-id']); ?>
@@ -38,14 +35,15 @@ $this->params['breadcrumbs'][] = $this->title;
 
                 [
                     'class' => 'yii\grid\ActionColumn',
-                    'template' => '{view} {update} {delete}',
+                    'template' => '{view} {update} {duplicate} {delete}',
                     'buttons' => [
                         'view' => function ($url, $model, $key) {
                             return Html::a(
                                 '<span class="glyphicon glyphicon-eye-open"></span>', 
                                 $url,
                                 [
-                                    'class' => 'grid-button',
+                                    'data-toggle' => 'control-sidebar',
+                                    'onclick' => 'openOnSidebar(this)',
                                 ]
                                 );
                         },
@@ -55,7 +53,17 @@ $this->params['breadcrumbs'][] = $this->title;
                                 $url,
                                 [
                                     'data-toggle' => 'control-sidebar',
-                                    'class' => 'grid-button',
+                                    'onclick' => 'openOnSidebar(this)',
+                                ]
+                                );
+                        },
+                        'duplicate' => function ($url, $model, $key) {
+                            return Html::a(
+                                '<span class="glyphicon glyphicon-duplicate"></span>', 
+                                $url,
+                                [
+                                    'data-toggle' => 'control-sidebar',
+                                    'onclick' => 'openOnSidebar(this)',
                                 ]
                                 );
                         },
