@@ -1,7 +1,5 @@
 $(document).ready(function(){
 	
-	console.log('ready');
-
 	var AdminLTEOptions = {
 		//Define the set of colors to use globally around the website
 		colors: {
@@ -24,19 +22,32 @@ $(document).ready(function(){
 		},
 	}
 
-	onReady();
+	console.log('ready');
+	// sidebarOpen();
+	sidebarClose();
 });
 
-function onReady(){
-
-	$('.grid-button').click(function(){
+function sidebarOpen(){
+	$('.grid-button').attr('data-toggle', 'control-sidebar');
+	$('.grid-button').click(function(event){
 		$("iframe#control-sidebar").attr('src', $(this).attr('href'));
-		console.log($(this).attr('href'));
+		console.log('open on sidebar: '+$(this).attr('href'));
+		// event.stopPropagation();
+		// event.preventDefault();
+		// return false;
 	})
-	$('.close-sidebar-button').click(function(){
-		$("#currentGrid").yiiGridView("applyFilter");
-		console.log("grid updated");
-	})
+}
 
+function sidebarClose(){
+	$('.close-sidebar-button').click(function(){
+		// $("#currentGrid").yiiGridView("applyFilter");
+		console.log("grid updated");
+		$.pjax.reload({
+			container: '#pjax-id', 
+		}).done(function() { 
+			sidebarOpen();
+			console.log('load buttons again');
+		});
+	})
 }
 

@@ -24,7 +24,8 @@ $this->params['breadcrumbs'][] = $this->title;
         </div>
         <!-- /.box-header -->
         <div class="box-body">
-        <?php Pjax::begin(); ?>    <?= GridView::widget([
+        <?php Pjax::begin(['id' => 'pjax-id']); ?>
+        <?= GridView::widget([
             'dataProvider' => $dataProvider,
             'filterModel' => $searchModel,
             'id' => 'currentGrid',
@@ -44,7 +45,6 @@ $this->params['breadcrumbs'][] = $this->title;
                                 '<span class="glyphicon glyphicon-eye-open"></span>', 
                                 $url,
                                 [
-                                    'data-toggle' => 'control-sidebar',
                                     'class' => 'grid-button',
                                 ]
                                 );
