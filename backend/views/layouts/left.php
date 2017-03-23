@@ -81,8 +81,11 @@
                                 'icon' => 'fa fa-circle-o',
                                 'url' => '#',
                                 'items' => [
-                                    ['label' => 'New Placement', 'icon' => 'fa fa-circle-o', 'url' => '#',],
-                                    ['label' => 'Admin', 'icon' => 'fa fa-circle-o', 'url' => '#',],
+                                    [
+                                    'label' => 'New Placement', 'icon' => 'fa fa-circle-o', 'url' => ['/sources/create'],
+                                    'template' => '<a href="{url}" class="grid-button" data-toggle="control-sidebar">{icon}{label}</a>',
+                                    ],
+                                    ['label' => 'Admin', 'icon' => 'fa fa-circle-o', 'url' => ['/placements'],],
                                 ],
                             ],
                         ],

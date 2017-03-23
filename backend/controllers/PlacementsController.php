@@ -3,16 +3,16 @@
 namespace backend\controllers;
 
 use Yii;
-use app\models\Sources;
-use app\models\SourcesSearch;
+use app\models\Placements;
+use app\models\PlacementsSearch;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 
 /**
- * SourcesController implements the CRUD actions for Sources model.
+ * PlacementsController implements the CRUD actions for Placements model.
  */
-class SourcesController extends Controller
+class PlacementsController extends Controller
 {
     /**
      * @inheritdoc
@@ -30,12 +30,12 @@ class SourcesController extends Controller
     }
 
     /**
-     * Lists all Sources models.
+     * Lists all Placements models.
      * @return mixed
      */
     public function actionIndex()
     {
-        $searchModel = new SourcesSearch();
+        $searchModel = new PlacementsSearch();
         $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
 
         return $this->render('index', [
@@ -45,27 +45,25 @@ class SourcesController extends Controller
     }
 
     /**
-     * Displays a single Sources model.
+     * Displays a single Placements model.
      * @param integer $id
      * @return mixed
      */
     public function actionView($id)
     {
-        $this->layout = 'iframe';
         return $this->render('view', [
             'model' => $this->findModel($id),
         ]);
     }
 
     /**
-     * Creates a new Sources model.
+     * Creates a new Placements model.
      * If creation is successful, the browser will be redirected to the 'view' page.
      * @return mixed
      */
     public function actionCreate()
     {
-        $this->layout = 'iframe';
-        $model = new Sources();
+        $model = new Placements();
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
             return $this->redirect(['view', 'id' => $model->id]);
@@ -77,14 +75,13 @@ class SourcesController extends Controller
     }
 
     /**
-     * Updates an existing Sources model.
+     * Updates an existing Placements model.
      * If update is successful, the browser will be redirected to the 'view' page.
      * @param integer $id
      * @return mixed
      */
     public function actionUpdate($id)
     {
-        $this->layout = 'iframe';
         $model = $this->findModel($id);
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
@@ -96,27 +93,8 @@ class SourcesController extends Controller
         }
     }
 
-    public function actionDuplicate($id)
-    {
-        $this->layout = 'iframe';
-        $oldModel = $this->findModel($id);
-
-        $model = clone $oldModel;
-        unset($model->id);
-        $model->isNewRecord = true;
-
-
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->id]);
-        } else {
-            return $this->render('duplicate', [
-                'model' => $model,
-            ]);
-        }
-    }
-
     /**
-     * Deletes an existing Sources model.
+     * Deletes an existing Placements model.
      * If deletion is successful, the browser will be redirected to the 'index' page.
      * @param integer $id
      * @return mixed
@@ -129,15 +107,15 @@ class SourcesController extends Controller
     }
 
     /**
-     * Finds the Sources model based on its primary key value.
+     * Finds the Placements model based on its primary key value.
      * If the model is not found, a 404 HTTP exception will be thrown.
      * @param integer $id
-     * @return Sources the loaded model
+     * @return Placements the loaded model
      * @throws NotFoundHttpException if the model cannot be found
      */
     protected function findModel($id)
     {
-        if (($model = Sources::findOne($id)) !== null) {
+        if (($model = Placements::findOne($id)) !== null) {
             return $model;
         } else {
             throw new NotFoundHttpException('The requested page does not exist.');

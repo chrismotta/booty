@@ -26,8 +26,14 @@ $this->params['breadcrumbs'][] = $this->title;
             'dataProvider' => $dataProvider,
             'filterModel' => $searchModel,
             'id' => 'currentGrid',
+            'rowOptions' => function ($model, $key, $index, $grid){
+                return array(
+                    'class' => 'deep-link',
+                    'data-child' => Yii::$app->urlManager->createUrl(['placements/index', 'PlacementsSearch[Sources_id]' => $key]),
+                    );
+            },
             'columns' => [
-                ['class' => 'yii\grid\SerialColumn'],
+                // ['class' => 'yii\grid\SerialColumn'],
 
                 'id',
                 'name',
@@ -36,14 +42,14 @@ $this->params['breadcrumbs'][] = $this->title;
                 [
                     'class' => 'yii\grid\ActionColumn',
                     'template' => '{view} {update} {duplicate} {delete}',
+
                     'buttons' => [
                         'view' => function ($url, $model, $key) {
                             return Html::a(
                                 '<span class="glyphicon glyphicon-eye-open"></span>', 
                                 $url,
                                 [
-                                    'data-toggle' => 'control-sidebar',
-                                    'onclick' => 'openOnSidebar(this)',
+                                    'class' => 'grid-button',
                                 ]
                                 );
                         },
@@ -52,18 +58,16 @@ $this->params['breadcrumbs'][] = $this->title;
                                 '<span class="glyphicon glyphicon-pencil"></span>', 
                                 $url,
                                 [
-                                    'data-toggle' => 'control-sidebar',
-                                    'onclick' => 'openOnSidebar(this)',
+                                    'class' => 'grid-button',
                                 ]
                                 );
                         },
                         'duplicate' => function ($url, $model, $key) {
                             return Html::a(
                                 '<span class="glyphicon glyphicon-duplicate"></span>', 
-                                $url,
+                                ['duplicate', 'id'=>$key],
                                 [
-                                    'data-toggle' => 'control-sidebar',
-                                    'onclick' => 'openOnSidebar(this)',
+                                    'class' => 'grid-button',
                                 ]
                                 );
                         },

@@ -23,36 +23,61 @@ $(document).ready(function(){
 	}
 
 	console.log('ready');
-	// sidebarOpen();
-	// sidebarClose();
+	sidebarOpen();
+	sidebarClose();
+	sidebarActive=true;
+	deepLink();
+
 });
+
+function deepLink(){
+	$('.deep-link').click(function(event){
+		console.log( 'Key: '+$(this).attr('data-key') );
+		console.log( 'Child: '+$(this).attr('data-child') );
+		window.location.href = $(this).attr('data-child');
+	});
+}
 
 function sidebarOpen(){
 	$('.grid-button').click(function(event){
-		// event.preventDefault();
-		//$("iframe#control-sidebar").attr('src', $(this).attr('href'));
+
+		$("iframe#control-sidebar").attr('src', $(this).attr('href'));
 		console.log('open on sidebar: '+$(this).attr('href'));
-		// event.stopPropagation();
-		// return false;
+
+		// fix the problem with ajax and sidebar
+		if(sidebarActive){
+			sidebarActive=false;
+		}else{
+			$.AdminLTE.controlSidebar.activate();
+		}
+
+		event.stopPropagation();
 	})
 	$('.grid-button').attr('data-toggle', 'control-sidebar');
 }
 
 function sidebarClose(){
 	$('.close-sidebar-button').click(function(){
-		$("#currentGrid").yiiGridView("applyFilter");
 		console.log("grid updated");
-		/*$.pjax.reload({
+
+		$.pjax.reload({
 			container: '#pjax-id', 
 		}).done(function() { 
-			sidebarOpen();
 			console.log('load buttons again');
-		});*/
+			sidebarOpen();
+			// sidebarClose();
+			deepLink();
+			$.AdminLTE.controlSidebar.activate();
+		});
 	})
 }
 
 function openOnSidebar(e){
-	console.log('open on sidebar: '+$(e).attr('href'));
-	$("iframe#control-sidebar").attr('src', $(e).attr('href'));
+	console.log('open on sidebar: '+$(e).attr('data-href'));
+	// $.AdminLTE.controlSidebar.activate();
 
+	// $.AdminLTE.controlSidebar.open(".control-sidebar");
+	$("iframe#control-sidebar").attr('src', $(e).attr('data-href'));
+	// e.preventDefault();
+	// return false;
 }
