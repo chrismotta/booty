@@ -2,232 +2,406 @@
 
 namespace backend\controllers;
 
+use Elasticsearch\ClientBuilder;
+
 class EtlController extends \yii\web\Controller
 {
 
 	private $_redis;
 	private $_objectLimit;
+	private $_lastEtlTime;
+	private $_currentEtlTime;
+	private $_elasticSearch;
 
-    public function actionIndex( )
-    {
-    	$this->_redis = new \yii\redis\Connection();
-    	$this->_redis->database = 0;
-    	$this->_redis->hostname = 'localhost';
-    	$this->_redis->open();
 
-    	$this->_objectLimit = 900000; // how many objects to get from redis at once
+	public function __construct ( $id, $module, $config = [] )
+	{
+		parent::__construct( $id, $module, $config );
+
+		// enable elastic search client
+		//$this->_elasticSearch = ClientBuilder::create()->setHosts(["localhost:9200"])->setSelector('\Elasticsearch\ConnectionPool\Selectors\StickyRoundRobinSelector')->build();
+
+    	$this->_redis 	 	  	= new \Predis\Client();
+
+    	$this->_objectLimit 	= 50000; // how many objects to process at once
+
+    	$lastEtlTime   			= $this->_redis->get( 'last_etl_time');
+    	$this->_lastEtlTime 	= $lastEtlTime ?  $lastEtlTime : 0;
+    	$this->_currentEtlTime	= time();	
 
 		\ini_set('memory_limit','3000M');
 		\set_time_limit(0);
+	}
 
+
+    public function actionIndex( )
+    {
+		$this->placements();
+		$this->campaigns();
 		$this->imps();
 		//$this->convs();
 
-        //return $this->render('index');
+		$this->_redis->set( 'last_etl_time', $this->_currentEtlTime );
+
+        // return $this->render('index');
     }
 
 
     public function convs ( )
     {
+    	$start 		   = time();
     	$convIDCount   = $this->_redis->zcard( 'convs' );
-    	$convIDQueries = ( $convIDCount/$this->_objectLimit )+1;
-    	$startAt = 0;
+    	$queries = ceil( $convIDCount/$this->_objectLimit );
+    	$startAt 	   = 0;
+    	$rows   	   = 0;
+    	$queries 	   = 0;
 
-    	for ( $i=0; $i<=$convIDQueries; $i++ )
+		// build separate sql queries based on $_objectLimit in order to control memory usage
+    	for ( $i=0; $i<=$queries; $i++ )
     	{
-    		unset( $convIDs );
-
-			$sql = '';
-			$params = [];
-			$paramCount = 0;    		
-
-    		$convIDs = $this->_redis->zrange( 'convs', $startAt, $this->_objectLimit );
-    		
-    		foreach ( $convIDs as $clickID )
-    		{
-    			$convTime = $this->_redis->get( 'conv:'.$clickID );
-
-    			// using params because clickID comes from browser
-    			$idParam = ':i'.$paramCount;
-    			$params[$idParam] = $clickID; 
-
-				$sql .= 'UPDATE INTO F_Imp SET conv_time="'.\date( 'Y-m-d H:i:s', $convTime ).'" WHERE click_id='.$idParam.';';
-    		}
-
-    		\Yii::$app->db->createCommand( $sql )->bindValues( $params )->execute();
-
+    		// call each query from a separated method in order to force garbage collection (and free memory)
+    		$rows   += $this->_buildConvQuery ( $startAt, $startAt+$this->_objectLimit );
     		$startAt += $this->_objectLimit;
+    		$queries++;
     	}
+
+		$elapsed = time() - $start;
+		echo 'Conversions: '.$rows.' rows - sql queries: '.$queries.' - load time: '.$elapsed.' seg.<hr/>';
+    }
+
+
+    private function _buildConvQuery ( $start_at,  $end_at )
+    {
+		$sql 		= '';
+		$params 	= [];
+		$paramCount = 0;
+
+		$convIDs 	= $this->_redis->zrangebyscore( 'convs', $this->_lastEtlTime, $this->_currentEtlTime, $start_at, $end_at );
+
+		// ad each conversion to SQL query
+		foreach ( $convIDs as $clickID )
+		{
+			$convTime    	= $this->_redis->get( 'conv:'.$clickID );
+
+			// using params because clickID comes from browser
+			$param 			= ':i'.$paramCount;
+			$params[$param] = $clickID;
+			$cost 			= 0;
+
+			$sql .= '
+				UPDATE F_Imp i 
+					LEFT JOIN campaigns c ON ( i.D_Campaign_id = c.id ) 
+					LEFT JOIN D_Placement_id ON p ( i.D_Placement_id = p.id ) 
+				SET 
+					i.conv_time="'.\date( 'Y-m-d H:i:s', $convTime ).'", 
+					i.revenue = c.payout, 
+					i.cost = CASE 
+						WHEN p.model = "RS" THEN '.$cost.' END 
+				WHERE 
+					click_id = '.$param.'
+			;';
+
+			$paramCount++;
+		}
+
+		return \Yii::$app->db->createCommand( $sql )->bindValues( $params )->execute();
     }
 
 
     public function imps()
     {
-    	$this->_loadCampaignLogs();
-    	//$this->_loadClusterLogs();
+    	$this->campaignLogs();
+    	$this->clusterLogs();
     }    
 
 
-    private function _loadCampaignLogs ( )
+    public function campaignLogs ( )
     {
-    	$clickIDCount   = $this->_redis->zcard( 'clickids' );
-    	$clickIDQueries = ceil( $clickIDCount/$this->_objectLimit );
-    	$startAt = 0;
+    	$start 			= time();
+    	$clickIDCount   = $this->_redis->zcount( 'clickids', $this->_lastEtlTime, $this->_currentEtlTime );
+    	$queries 		= ceil( $clickIDCount/$this->_objectLimit );
+    	$startAt 		= 0;
+    	$rows 			= 0;
+    	$queries 		= 0;
 
-    	// build separate sql queries based on object limit
-    	for ( $i=0; $i<$clickIDQueries; $i++ )
+    	// echo ('total click IDs: '.$clickIDCount .'<hr/>');
+
+    	// build separate sql queries based on $_objectLimit in order to control memory usage
+    	for ( $i=0; $i<=$queries; $i++ )
     	{
-	    	$sql = '
-	    		INSERT INTO F_Imp (
-	    			D_Placement_id,
-	    			D_Campaign_id,
-	    			cluster_id,
-	    			session_hash,
-	    			imps,
-	    			imp_time,
-	    			cost,
-	    			click_id,
-	    			click_time,
-	    			country,
-	    			connection_type,
-	    			carrier,
-	    			device,
-	    			device_model,
-	    			device_brand,
-	    			os,
-	    			os_version,
-	    			browser,
-	    			browser_version
-	    		)
-				VALUES  
-	    	';
+    		// call each query from a separated method in order to force garbage collection (and free memory)
+    		$rows = $this->_buildCampaignLogsQuery( $startAt, $startAt+$this->_objectLimit );
+    		\gc_collect_cycles();
 
-	    	$values = '';
-
-    		$clickIDs = $this->_redis->zrange( 'clickids', $startAt, $this->_objectLimit );
-
-    		if ( $clickIDs )
-    		{
-	    		foreach ( $clickIDs as $clickID )
-	    		{
-	    			$campaignLog = $this->_redis->hgetall( 'campaignlog:'.$clickID );
-
-	    			$clusterLog  = $this->_redis->hgetall( 'clusterlog:'.$campaignLog[1] );
-
-	    			if ( $values != '' )
-	    				$values .= ',';
-
-	    			if ( $campaignLog[5] )
-	    				$clickTime = \date( 'Y-m-d H:i:s', $campaignLog[5] );
-	    			else
-	    				$clickTime = \date( 'Y-m-d H:i:s' );
-
-	    			$values .= '( 
-	    				'.$clusterLog[3].',
-	    				'.$campaignLog[3].',
-	    				'.$clusterLog[1].',
-	    				"'.$campaignLog[1].'",
-	    				'.$clusterLog[29].',
-	    				"'.\date( 'Y-m-d H:i:s', $clusterLog[5] ).'",
-	    				'.$clusterLog[33].',
-	    				"'.$clickID.'",
-	    				"'.$clickTime.'",
-	    				"'.$clusterLog[9].'",
-	    				"'.$clusterLog[11].'",
-	    				"'.$clusterLog[13].'",
-	    				"'.$clusterLog[19].'",
-	    				"'.$clusterLog[21].'",
-	    				"'.$clusterLog[23].'",
-	    				"'.$clusterLog[15].'",
-	    				"'.$clusterLog[17].'",
-	    				"'.$clusterLog[25].'",
-	    				"'.$clusterLog[27].'"
-	    			)';
-	    		}
-
-	    		$sql .= $values . ' ON DUPLICATE KEY UPDATE cost=VALUES(cost), imps=VALUES(imps);';
-
-	    		\Yii::$app->db->createCommand( $sql )->execute();
-
-	    		$startAt += $this->_objectLimit;
-    		}
-
+    		$startAt += $this->_objectLimit;
+    		$queries++;
     	}
+
+		$elapsed = time() - $start;
+		echo 'CampaignLogs: '.$rows.' rows - sql queries: '.$queries.' - load time: '.$elapsed.' seg.<hr/>';
     }
 
 
-    private function _loadClusterLogs ( )
+    private function _buildCampaignLogsQuery ( $start_at, $end_at )
     {
-    	$clusterLogCount   = $this->_redis->zcard( 'clusterlogs' );
-    	$clusterLogQueries = ceil( $clusterLogCount/$this->_objectLimit );
-    	$startAt = 0;
+    	$sql = '
+    		INSERT INTO F_Imp (
+    			D_Placement_id,
+    			D_Campaign_id,
+    			cluster_id,
+    			session_hash,
+    			imps,
+    			imp_time,
+    			cost,
+    			click_id,
+    			click_time,
+    			country,
+    			connection_type,
+    			carrier,
+    			device,
+    			device_model,
+    			device_brand,
+    			os,
+    			os_version,
+    			browser,
+    			browser_version
+    		)
+			VALUES  
+    	';
 
-    	// build separate sql queries based on object limit
-    	for ( $i=0; $i<$clusterLogQueries; $i++ )
-    	{
-	    	$sql = '
-	    		INSERT IGNORE INTO F_Imp (
-	    			D_Placement_id,
-	    			cluster_id,
-	    			session_hash,
-	    			imps,
-	    			imp_time,
-	    			cost,
-	    			country,
-	    			connection_type,
-	    			carrier,
-	    			device,
-	    			device_model,
-	    			device_brand,
-	    			os,
-	    			os_version,
-	    			browser,
-	    			browser_version
-	    		)
-				VALUES  
-	    	';
+    	$values = '';
 
-	    	$values = '';    		
+    	$start = time();
+		//echo 'memory before last query: '.number_format(memory_get_usage()).'<hr/>'; 
 
-    		$sessionHashes = $this->_redis->zrange( 'clusterlogs', $startAt, $this->_objectLimit );
+    	$clickIDs = $this->_redis->zrangebyscore( 'clickids', $this->_lastEtlTime,$this->_currentEtlTime,  'LIMIT', $start_at, $end_at );
 
-    		if ( $sessionHashes )
+		if ( $clickIDs )
+		{
+			echo 'count: '.count($clickIDs).'<br> ';
+			// create elastic search data
+			// $params = ['body' => []];
+
+			// add each campaign log to sql query
+    		foreach ( $clickIDs as $clickID )
     		{
-	    		foreach ( $sessionHashes as $sessionHash )
-	    		{    			
-	    			$clusterLog = $this->_redis->hgetall( 'clusterlog:'.$sessionHash );
+    			$campaignLog = $this->_redis->hgetall( 'campaignlog:'.$clickID );
+    			$clusterLog  = $this->_redis->hgetall( 'clusterlog:'.$campaignLog['session_hash'] );
 
-	    			if ( $values != '' )
-	    				$values .= ',';
+    			if ( $values != '' )
+    				$values .= ',';
 
-	    			$values .= '( 
-	    				'.$clusterLog[3].',
-	    				'.$clusterLog[1].',
-	    				"'.$sessionHash.'",
-	    				'.$clusterLog[29].',
-	    				"'.\date( 'Y-m-d H:i:s', $clusterLog[5] ).'",
-	    				'.$clusterLog[33].',
-	    				"'.$clusterLog[9].'",
-	    				"'.$clusterLog[11].'",
-	    				"'.$clusterLog[13].'",
-	    				"'.$clusterLog[19].'",
-	    				"'.$clusterLog[21].'",
-	    				"'.$clusterLog[23].'",
-	    				"'.$clusterLog[15].'",
-	    				"'.$clusterLog[17].'",
-	    				"'.$clusterLog[25].'",
-	    				"'.$clusterLog[27].'"
-	    			)';
-	    		}
+    			// append to elastic search data
+    			/*
+				$params['body'][] = [
+					'index' => [
+						'_index' => 'traffic',
+						'_type' => 'CampaignLog',
+						'_id' => $clickID
+					]
+				];				
 
-	    		$sql .= $values . ' ON DUPLICATE KEY UPDATE cost=VALUES(cost), imps=VALUES(imps);';
+				$params['body'][] = $campaignLog;
+				*/
+			
+    			if ( $campaignLog['click_time'] )
+    				$clickTime = \date( 'Y-m-d H:i:s', $campaignLog['click_time'] );
+    			else
+    				$clickTime = \date( 'Y-m-d H:i:s' );
 
-	    		\Yii::$app->db->createCommand( $sql )->execute();
-
-	    		$startAt += $this->_objectLimit;    			
+    			$values .= '( 
+    				'.$clusterLog['placement_id'].',
+    				'.$campaignLog['campaign_id'].',
+    				'.$clusterLog['cluster_id'].',
+    				"'.$campaignLog['session_hash'].'",
+    				'.$clusterLog['imps'].',
+    				"'.\date( 'Y-m-d H:i:s', $clusterLog['imp_time'] ).'",
+    				'.$clusterLog['cost'].',
+    				"'.$clickID.'",
+    				"'.$clickTime.'",
+    				"'.$clusterLog['country'].'",
+    				"'.$clusterLog['connection_type'].'",
+    				"'.$clusterLog['carrier'].'",
+    				"'.$clusterLog['device'].'",
+    				"'.$clusterLog['device_model'].'",
+    				"'.$clusterLog['device_brand'].'",
+    				"'.$clusterLog['os'].'",
+    				"'.$clusterLog['os_version'].'",
+    				"'.$clusterLog['browser'].'",
+    				"'.$clusterLog['browser_version'].'"
+    			)';
     		}
-    	}    	
 
+    		$sql .= $values . ' ON DUPLICATE KEY UPDATE cost=VALUES(cost), imps=VALUES(imps);';
+
+    		// save on elastic search
+    		// $this->_elasticSearch->bulk($params);
+    		return \Yii::$app->db->createCommand( $sql )->execute();
+		}
+    	$end = time()-$start;
+	   	//echo 'memory after last query: '.number_format(memory_get_usage()).' ( '.number_format($end).' seg )<hr/>';	   	
+
+		return 0;
     }
+
+
+    public function clusterLogs ( )
+    {
+    	$start 			   = time();
+    	$clusterLogCount   = $this->_redis->zcard( 'clusterlogs' );
+    	$queries 		   = ceil( $clusterLogCount/$this->_objectLimit );
+    	$startAt 		   = 0;
+    	$rows   		   = 0;
+    	$queries           = 0;
+
+    	// build separate sql queries based on $_objectLimit in order to control memory usage
+    	for ( $i=0; $i<=$queries; $i++ )
+    	{
+    		// call each query from a separated method in order to force garbage collection (and free memory)
+    		$rows += $this->_buildClusterLogsQuery( $startAt, $startAt+$this->_objectLimit );
+    		\gc_collect_cycles();
+
+			$startAt += $this->_objectLimit;
+    		$queries++;
+    	}
+
+		$elapsed = time() - $start;
+
+		echo 'clusterlog startat: '.$startAt . '<hr/>';
+		echo 'ClusterLogs: '.$rows.' rows - sql queries: '.$queries.' - load time: '.$elapsed.' seg.<hr/>';
+    }
+
+
+    private function _buildClusterLogsQuery( $start_at, $end_at )
+    {
+    	$sql = '
+    		INSERT IGNORE INTO F_Imp (
+    			D_Placement_id,
+    			cluster_id,
+    			session_hash,
+    			imps,
+    			imp_time,
+    			cost,
+    			country,
+    			connection_type,
+    			carrier,
+    			device,
+    			device_model,
+    			device_brand,
+    			os,
+    			os_version,
+    			browser,
+    			browser_version
+    		)
+			VALUES  
+    	';
+
+    	$values = '';    		
+
+		$sessionHashes = $this->_redis->zrange( 'clusterlogs', $start_at, $end_at );
+
+		if ( $sessionHashes )
+		{
+			// add each clusterLog to sql query
+    		foreach ( $sessionHashes as $sessionHash )
+    		{
+    			$clusterLog = $this->_redis->hgetall( 'clusterlog:'.$sessionHash );
+
+    			if ( $values != '' )
+    				$values .= ',';
+
+    			$values .= '( 
+    				'.$clusterLog['placement_id'].',
+    				'.$clusterLog['cluster_id'].',
+    				"'.$sessionHash.'",
+    				'.$clusterLog['imps'].',
+    				"'.\date( 'Y-m-d H:i:s', $clusterLog['imp_time'] ).'",
+    				'.$clusterLog['cost'].',
+    				"'.$clusterLog['country'].'",
+    				"'.$clusterLog['connection_type'].'",
+    				"'.$clusterLog['carrier'].'",
+    				"'.$clusterLog['device'].'",
+    				"'.$clusterLog['device_model'].'",
+    				"'.$clusterLog['device_brand'].'",
+    				"'.$clusterLog['os'].'",
+    				"'.$clusterLog['os_version'].'",
+    				"'.$clusterLog['browser'].'",
+    				"'.$clusterLog['browser_version'].'"
+    			)';
+    		}
+
+    		$sql .= $values . ' ON DUPLICATE KEY UPDATE cost=VALUES(cost), imps=VALUES(imps);';
+
+    		return \Yii::$app->db->createCommand( $sql )->execute();  			
+		}
+
+		return 0;   	
+    }
+
+
+    public function placements()
+    {
+    	$start = time();
+
+    	$sql = '
+    		INSERT IGNORE INTO D_Placement (
+    			Publishers_id,
+    			name,
+    			Publishers_name,
+    			model,
+    			status
+    		)
+    		SELECT 
+    			pub.id,
+    			p.name,
+    			pub.name,
+    			p.model,
+    			p.status
+    		FROM Placements AS p 
+    		LEFT JOIN Publishers AS pub ON ( p.Publishers_id = pub.id ) 
+    		ON DUPLICATE KEY UPDATE
+    			Publishers_id = pub.id, 
+    			name = p.name, 
+    			Publishers_name = pub.name, 
+    			model = p.model, 
+    			status = p.status 
+    	;';
+
+    	$rows = \Yii::$app->db->createCommand( $sql )->execute();
+
+		$elapsed = time() - $start;
+
+		echo 'Placements: '.$rows.' rows inserted - Elapsed time: '.$elapsed.' seg.<hr/>';
+    }
+
+
+    public function campaigns()
+    {
+    	$start = time();
+
+    	$sql = '
+    		INSERT IGNORE INTO D_Campaign (
+    			Affiliates_id,
+    			name,
+    			Affiliates_name
+    		)
+    		SELECT 
+    			a.id,
+    			c.name,
+    			a.name
+    		FROM Campaigns AS c 
+    		LEFT JOIN Affiliates AS a ON ( c.Affiliates_id = a.id )
+    		ON DUPLICATE KEY UPDATE 
+    			Affiliates_id = a.id,
+    			name = c.name,
+    			Affiliates_name = a.name
+    	;';
+
+    	$rows = \Yii::$app->db->createCommand( $sql )->execute();
+
+		$elapsed = time() - $start;
+
+		echo 'Campaigns: '.$rows.' rows inserted - Elapsed time: '.$elapsed.' seg.<hr/>';
+    }        
 
 }
