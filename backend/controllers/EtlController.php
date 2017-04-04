@@ -247,7 +247,7 @@ class EtlController extends \yii\web\Controller
     public function clusterLogs ( )
     {
     	$start 			   = time();
-    	$clusterLogCount   = $this->_redis->zcard( 'clusterlogs' );
+    	$clusterLogCount   = $this->_redis->zcard( 'session_hashes' );
     	$queries 		   = ceil( $clusterLogCount/$this->_objectLimit );
     	$startAt 		   = 0;
     	$rows   		   = 0;
