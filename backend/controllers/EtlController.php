@@ -21,7 +21,7 @@ class EtlController extends \yii\web\Controller
 		// enable elastic search client
 		//$this->_elasticSearch = ClientBuilder::create()->setHosts(["localhost:9200"])->setSelector('\Elasticsearch\ConnectionPool\Selectors\StickyRoundRobinSelector')->build();
 
-    	$this->_redis 	 	  	= new \Predis\Client();
+    	$this->_redis 	 	  	= new \Predis\Client( \Yii::$app->params['predisConString'] );
 
     	$this->_objectLimit 	= 50000; // how many objects to process at once
 
@@ -41,6 +41,7 @@ class EtlController extends \yii\web\Controller
 		$this->imps();
 		//$this->convs();
 
+		\gc_collect_cycles();
 		$this->_redis->set( 'last_etl_time', $this->_currentEtlTime );
 
         // return $this->render('index');
@@ -51,7 +52,7 @@ class EtlController extends \yii\web\Controller
     {
     	$start 		   = time();
     	$convIDCount   = $this->_redis->zcard( 'convs' );
-    	$queries = ceil( $convIDCount/$this->_objectLimit );
+    	$queries 	   = ceil( $convIDCount/$this->_objectLimit );
     	$startAt 	   = 0;
     	$rows   	   = 0;
     	$queries 	   = 0;
@@ -60,7 +61,7 @@ class EtlController extends \yii\web\Controller
     	for ( $i=0; $i<=$queries; $i++ )
     	{
     		// call each query from a separated method in order to force garbage collection (and free memory)
-    		$rows   += $this->_buildConvQuery ( $startAt, $startAt+$this->_objectLimit );
+    		$rows    += $this->_buildConvQuery ( $startAt, $startAt+$this->_objectLimit );
     		$startAt += $this->_objectLimit;
     		$queries++;
     	}
@@ -89,7 +90,7 @@ class EtlController extends \yii\web\Controller
 			$cost 			= 0;
 
 			$sql .= '
-				UPDATE F_Imp i 
+				UPDATE IGNORE F_Imp i 
 					LEFT JOIN campaigns c ON ( i.D_Campaign_id = c.id ) 
 					LEFT JOIN D_Placement_id ON p ( i.D_Placement_id = p.id ) 
 				SET 
@@ -104,7 +105,8 @@ class EtlController extends \yii\web\Controller
 			$paramCount++;
 		}
 
-		return \Yii::$app->db->createCommand( $sql )->bindValues( $params )->execute();
+		if ( $sql != '' )
+			return \Yii::$app->db->createCommand( $sql )->bindValues( $params )->execute();
     }
 
 
@@ -112,7 +114,7 @@ class EtlController extends \yii\web\Controller
     {
     	$this->campaignLogs();
     	$this->clusterLogs();
-    }    
+    }
 
 
     public function campaignLogs ( )
@@ -122,12 +124,11 @@ class EtlController extends \yii\web\Controller
     	$queries 		= ceil( $clickIDCount/$this->_objectLimit );
     	$startAt 		= 0;
     	$rows 			= 0;
-    	$queries 		= 0;
 
     	// echo ('total click IDs: '.$clickIDCount .'<hr/>');
 
     	// build separate sql queries based on $_objectLimit in order to control memory usage
-    	for ( $i=0; $i<=$queries; $i++ )
+    	for ( $i=0; $i<$queries; $i++ )
     	{
     		// call each query from a separated method in order to force garbage collection (and free memory)
     		$rows = $this->_buildCampaignLogsQuery( $startAt, $startAt+$this->_objectLimit );
@@ -171,14 +172,10 @@ class EtlController extends \yii\web\Controller
 
     	$values = '';
 
-    	$start = time();
-		//echo 'memory before last query: '.number_format(memory_get_usage()).'<hr/>'; 
-
     	$clickIDs = $this->_redis->zrangebyscore( 'clickids', $this->_lastEtlTime,$this->_currentEtlTime,  'LIMIT', $start_at, $end_at );
 
 		if ( $clickIDs )
 		{
-			echo 'count: '.count($clickIDs).'<br> ';
 			// create elastic search data
 			// $params = ['body' => []];
 
@@ -203,7 +200,7 @@ class EtlController extends \yii\web\Controller
 
 				$params['body'][] = $campaignLog;
 				*/
-			
+
     			if ( $campaignLog['click_time'] )
     				$clickTime = \date( 'Y-m-d H:i:s', $campaignLog['click_time'] );
     			else
@@ -230,16 +227,18 @@ class EtlController extends \yii\web\Controller
     				"'.$clusterLog['browser'].'",
     				"'.$clusterLog['browser_version'].'"
     			)';
+
     		}
 
-    		$sql .= $values . ' ON DUPLICATE KEY UPDATE cost=VALUES(cost), imps=VALUES(imps);';
+    		if ( $values != '' )
+    		{
+	    		$sql .= $values . ' ON DUPLICATE KEY UPDATE cost=VALUES(cost), imps=VALUES(imps);';
 
-    		// save on elastic search
-    		// $this->_elasticSearch->bulk($params);
-    		return \Yii::$app->db->createCommand( $sql )->execute();
+	    		// save on elastic search
+	    		// $this->_elasticSearch->bulk($params);
+	    		return \Yii::$app->db->createCommand( $sql )->execute();    			
+    		}
 		}
-    	$end = time()-$start;
-	   	//echo 'memory after last query: '.number_format(memory_get_usage()).' ( '.number_format($end).' seg )<hr/>';	   	
 
 		return 0;
     }
@@ -252,10 +251,9 @@ class EtlController extends \yii\web\Controller
     	$queries 		   = ceil( $clusterLogCount/$this->_objectLimit );
     	$startAt 		   = 0;
     	$rows   		   = 0;
-    	$queries           = 0;
 
     	// build separate sql queries based on $_objectLimit in order to control memory usage
-    	for ( $i=0; $i<=$queries; $i++ )
+    	for ( $i=0; $i<$queries; $i++ )
     	{
     		// call each query from a separated method in order to force garbage collection (and free memory)
     		$rows += $this->_buildClusterLogsQuery( $startAt, $startAt+$this->_objectLimit );
@@ -330,9 +328,12 @@ class EtlController extends \yii\web\Controller
     			)';
     		}
 
-    		$sql .= $values . ' ON DUPLICATE KEY UPDATE cost=VALUES(cost), imps=VALUES(imps);';
+    		if ( $values != '' )
+    		{
+	    		$sql .= $values . ' ON DUPLICATE KEY UPDATE cost=VALUES(cost), imps=VALUES(imps);';
 
-    		return \Yii::$app->db->createCommand( $sql )->execute();  			
+	    		return \Yii::$app->db->createCommand( $sql )->execute();  			    			
+    		}
 		}
 
 		return 0;   	
