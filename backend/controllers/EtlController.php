@@ -183,7 +183,6 @@ class EtlController extends \yii\web\Controller
     		foreach ( $clickIDs as $clickID )
     		{
     			$campaignLog = $this->_redis->hgetall( 'campaignlog:'.$clickID );
-    			$clusterLog  = $this->_redis->hgetall( 'clusterlog:'.$campaignLog['session_hash'] );
 
     			if ( $values != '' )
     				$values .= ',';
@@ -257,7 +256,6 @@ class EtlController extends \yii\web\Controller
     	{
     		// call each query from a separated method in order to force garbage collection (and free memory)
     		$rows += $this->_buildClusterLogsQuery( $startAt, $startAt+$this->_objectLimit );
-    		\gc_collect_cycles();
 
 			$startAt += $this->_objectLimit;
     		$queries++;
@@ -326,6 +324,8 @@ class EtlController extends \yii\web\Controller
     				"'.$clusterLog['browser'].'",
     				"'.$clusterLog['browser_version'].'"
     			)';
+
+                unset ( $clusterLog );
     		}
 
     		if ( $values != '' )
@@ -336,7 +336,9 @@ class EtlController extends \yii\web\Controller
     		}
 		}
 
-		return 0;   	
+        unset( $sessionHashes );
+
+		return 0;
     }
 
 
