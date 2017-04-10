@@ -148,6 +148,7 @@ class EtlController extends \yii\web\Controller
     	$sql = '
     		INSERT INTO F_Imp (
     			D_Campaign_id,
+                session_hash,
     			click_id,
     			click_time
     		)
@@ -184,31 +185,11 @@ class EtlController extends \yii\web\Controller
 				$params['body'][] = $campaignLog;
 				*/
 
-    			if ( $campaignLog['click_time'] )
-    				$clickTime = \date( 'Y-m-d H:i:s', $campaignLog['click_time'] );
-    			else
-    				$clickTime = \date( 'Y-m-d H:i:s' );
-
     			$values .= '( 
-    				'.$clusterLog['placement_id'].',
     				'.$campaignLog['campaign_id'].',
-    				'.$clusterLog['cluster_id'].',
     				"'.$campaignLog['session_hash'].'",
-    				'.$clusterLog['imps'].',
-    				"'.\date( 'Y-m-d H:i:s', $clusterLog['imp_time'] ).'",
-    				'.$clusterLog['cost'].',
     				"'.$clickID.'",
-    				"'.$clickTime.'",
-    				"'.$clusterLog['country'].'",
-    				"'.$clusterLog['connection_type'].'",
-    				"'.$clusterLog['carrier'].'",
-    				"'.$clusterLog['device'].'",
-    				"'.$clusterLog['device_model'].'",
-    				"'.$clusterLog['device_brand'].'",
-    				"'.$clusterLog['os'].'",
-    				"'.$clusterLog['os_version'].'",
-    				"'.$clusterLog['browser'].'",
-    				"'.$clusterLog['browser_version'].'"
+    				"'.\date( 'Y-m-d H:i:s', $campaignLog['click_time'] ).'"
     			)';
 
                 unset( $campaignLog );
@@ -285,6 +266,9 @@ class EtlController extends \yii\web\Controller
 
 		if ( $sessionHashes )
 		{
+            $placements = [];
+            $placementSql = '';
+
 			// add each clusterLog to sql query
     		foreach ( $sessionHashes as $sessionHash )
     		{
@@ -312,12 +296,21 @@ class EtlController extends \yii\web\Controller
     				"'.$clusterLog['browser_version'].'"
     			)';
 
+                if ( !array_search( $clusterLog['placement_id'], $placements ) )
+                {
+                    $placements[]      = $clusterLog['placement_id'];
+                    $health_check_imps = $this->_redis->hget( 'placement:'.$clusterLog['placement_id'], 'health_check_imps' );
+                    $placementSql     .= 'UPDATE placements SET health_check_imps='.$health_check_imps;
+                }
+
                 unset ( $clusterLog );
     		}
 
     		if ( $values != '' )
     		{
 	    		$sql .= $values . ' ON DUPLICATE KEY UPDATE cost=VALUES(cost), imps=VALUES(imps);';
+
+                \Yii::$app->db->createCommand( $placementSql )->execute();
 
 	    		return \Yii::$app->db->createCommand( $sql )->execute();			
     		}
