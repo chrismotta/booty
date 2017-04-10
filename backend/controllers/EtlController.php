@@ -147,25 +147,9 @@ class EtlController extends \yii\web\Controller
     {
     	$sql = '
     		INSERT INTO F_Imp (
-    			D_Placement_id,
     			D_Campaign_id,
-    			cluster_id,
-    			session_hash,
-    			imps,
-    			imp_time,
-    			cost,
     			click_id,
-    			click_time,
-    			country,
-    			connection_type,
-    			carrier,
-    			device,
-    			device_model,
-    			device_brand,
-    			os,
-    			os_version,
-    			browser,
-    			browser_version
+    			click_time
     		)
 			VALUES  
     	';
@@ -227,6 +211,7 @@ class EtlController extends \yii\web\Controller
     				"'.$clusterLog['browser_version'].'"
     			)';
 
+                unset( $campaignLog );
     		}
 
     		if ( $values != '' )
@@ -238,6 +223,8 @@ class EtlController extends \yii\web\Controller
 	    		return \Yii::$app->db->createCommand( $sql )->execute();    			
     		}
 		}
+
+        unset( $clickIDs );
 
 		return 0;
     }
