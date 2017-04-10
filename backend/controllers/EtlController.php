@@ -270,7 +270,7 @@ class EtlController extends \yii\web\Controller
     }
 
 
-    private function _buildClusterLogsQuery( $start_at, $end_at )
+    private function _buildClusterLogsQuery ( $start_at, $end_at )
     {
     	$sql = '
     		INSERT IGNORE INTO F_Imp (
@@ -332,7 +332,7 @@ class EtlController extends \yii\web\Controller
     		{
 	    		$sql .= $values . ' ON DUPLICATE KEY UPDATE cost=VALUES(cost), imps=VALUES(imps);';
 
-	    		return \Yii::$app->db->createCommand( $sql )->execute();  			    			
+	    		return \Yii::$app->db->createCommand( $sql )->execute();			
     		}
 		}
 
@@ -340,7 +340,7 @@ class EtlController extends \yii\web\Controller
     }
 
 
-    public function placements()
+    public function placements ( )
     {
     	$start = time();
 
@@ -376,7 +376,7 @@ class EtlController extends \yii\web\Controller
     }
 
 
-    public function campaigns()
+    public function campaigns ( )
     {
     	$start = time();
 
