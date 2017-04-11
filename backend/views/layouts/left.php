@@ -107,7 +107,8 @@
                             ],
                         ],
                     ],
-                    ['label' => 'Reporting', 'icon' => 'fa fa-database', 'url' => ['/debug']],
+                    ['label' => 'Reporting', 'icon' => 'fa fa-database', 'url' => ['/reporting']],                   
+
                     ['label' => 'Developer Menu', 'options' => ['class' => 'header']],
                     ['label' => 'Gii', 'icon' => 'fa fa-file-code-o', 'url' => ['/gii']],
                     ['label' => 'Debug', 'icon' => 'fa fa-bug', 'url' => ['/debug']],

@@ -12,6 +12,7 @@ class EtlController extends \yii\web\Controller
 	private $_lastEtlTime;
 	private $_currentEtlTime;
 	private $_elasticSearch;
+    private $_placementSql;
 
 
 	public function __construct ( $id, $module, $config = [] )
@@ -23,7 +24,7 @@ class EtlController extends \yii\web\Controller
 
     	$this->_redis 	 	  	= new \Predis\Client( \Yii::$app->params['predisConString'] );
 
-    	$this->_objectLimit 	= 50000; // how many objects to process at once
+    	$this->_objectLimit 	= 100000; // how many objects to process at once
 
     	$lastEtlTime   			= $this->_redis->get( 'last_etl_time');
     	$this->_lastEtlTime 	= $lastEtlTime ?  $lastEtlTime : 0;
@@ -40,11 +41,22 @@ class EtlController extends \yii\web\Controller
 		$this->campaigns();
 		$this->imps();
 		//$this->convs();
-
-		\gc_collect_cycles();
+        //$this->updatePlacements();
+		
 		$this->_redis->set( 'last_etl_time', $this->_currentEtlTime );
-
+        
+        \gc_collect_cycles();
         // return $this->render('index');
+    }
+
+
+    public function updatePlacements ( )
+    {
+        $start   = time();        
+        $rows    = \Yii::$app->db->createCommand( $this->_placementSql )->execute();
+        $elapsed = time() - $start;
+
+        echo 'Updated Placements: '.$rows.' rows - load time: '.$elapsed.' seg.<hr/>';
     }
 
 
@@ -63,7 +75,6 @@ class EtlController extends \yii\web\Controller
     		// call each query from a separated method in order to force garbage collection (and free memory)
     		$rows    += $this->_buildConvQuery ( $startAt, $startAt+$this->_objectLimit );
     		$startAt += $this->_objectLimit;
-    		$queries++;
     	}
 
 		$elapsed = time() - $start;
@@ -90,13 +101,14 @@ class EtlController extends \yii\web\Controller
 			$cost 			= 0;
 
 			$sql .= '
-				UPDATE IGNORE F_Imp i 
+				UPDATE IGNORE F_CampaignLogs cpl 
+                    LEFT JOIN F_ClusterLogs cl ON ( cpl.session_hash = cl.session_hash ) 
 					LEFT JOIN campaigns c ON ( i.D_Campaign_id = c.id ) 
 					LEFT JOIN D_Placement_id ON p ( i.D_Placement_id = p.id ) 
 				SET 
-					i.conv_time="'.\date( 'Y-m-d H:i:s', $convTime ).'", 
-					i.revenue = c.payout, 
-					i.cost = CASE 
+					cpl.conv_time="'.\date( 'Y-m-d H:i:s', $convTime ).'", 
+					cpl.revenue = c.payout, 
+					cl.cost = CASE 
 						WHEN p.model = "RS" THEN '.$cost.' END 
 				WHERE 
 					click_id = '.$param.'
@@ -110,7 +122,7 @@ class EtlController extends \yii\web\Controller
     }
 
 
-    public function imps()
+    public function imps ( )
     {
     	$this->campaignLogs();
     	$this->clusterLogs();
@@ -131,11 +143,8 @@ class EtlController extends \yii\web\Controller
     	for ( $i=0; $i<$queries; $i++ )
     	{
     		// call each query from a separated method in order to force garbage collection (and free memory)
-    		$rows = $this->_buildCampaignLogsQuery( $startAt, $startAt+$this->_objectLimit );
-    		\gc_collect_cycles();
-
+    		$rows += $this->_buildCampaignLogsQuery( $startAt, $startAt+$this->_objectLimit );
     		$startAt += $this->_objectLimit;
-    		$queries++;
     	}
 
 		$elapsed = time() - $start;
@@ -146,10 +155,10 @@ class EtlController extends \yii\web\Controller
     private function _buildCampaignLogsQuery ( $start_at, $end_at )
     {
     	$sql = '
-    		INSERT INTO F_Imp (
+    		INSERT INTO F_CampaignLogs (
+                click_id,
     			D_Campaign_id,
                 session_hash,
-    			click_id,
     			click_time
     		)
 			VALUES  
@@ -157,6 +166,8 @@ class EtlController extends \yii\web\Controller
 
     	$values = '';
 
+        echo 'query => '. $start_at.': '.$end_at.'<br>';
+        
     	$clickIDs = $this->_redis->zrangebyscore( 'clickids', $this->_lastEtlTime,$this->_currentEtlTime,  'LIMIT', $start_at, $end_at );
 
 		if ( $clickIDs )
@@ -185,19 +196,25 @@ class EtlController extends \yii\web\Controller
 				$params['body'][] = $campaignLog;
 				*/
 
+                if ( $campaignLog['click_time'] )
+                    $clickTime = '"'.\date( 'Y-m-d H:i:s', $campaignLog['click_time'] ).'"';
+                else
+                    $clickTime = 'NULL';
+
     			$values .= '( 
+                    "'.$clickID.'",
     				'.$campaignLog['campaign_id'].',
     				"'.$campaignLog['session_hash'].'",
-    				"'.$clickID.'",
-    				"'.\date( 'Y-m-d H:i:s', $campaignLog['click_time'] ).'"
+    				'.$clickTime.'
     			)';
 
+                // free memory because there is no garbage collection until block ends
                 unset( $campaignLog );
     		}
 
     		if ( $values != '' )
     		{
-	    		$sql .= $values . ' ON DUPLICATE KEY UPDATE cost=VALUES(cost), imps=VALUES(imps);';
+	    		$sql .= $values . ' ON DUPLICATE KEY UPDATE click_time=VALUES(click_time);';
 
 	    		// save on elastic search
 	    		// $this->_elasticSearch->bulk($params);
@@ -214,7 +231,7 @@ class EtlController extends \yii\web\Controller
     public function clusterLogs ( )
     {
     	$start 			   = time();
-    	$clusterLogCount   = $this->_redis->zcard( 'session_hashes' );
+    	$clusterLogCount   = $this->_redis->zcard( 'sessionhashes' );
     	$queries 		   = ceil( $clusterLogCount/$this->_objectLimit );
     	$startAt 		   = 0;
     	$rows   		   = 0;
@@ -224,14 +241,11 @@ class EtlController extends \yii\web\Controller
     	{
     		// call each query from a separated method in order to force garbage collection (and free memory)
     		$rows += $this->_buildClusterLogsQuery( $startAt, $startAt+$this->_objectLimit );
-
 			$startAt += $this->_objectLimit;
-    		$queries++;
     	}
 
 		$elapsed = time() - $start;
 
-		echo 'clusterlog startat: '.$startAt . '<hr/>';
 		echo 'ClusterLogs: '.$rows.' rows - sql queries: '.$queries.' - load time: '.$elapsed.' seg.<hr/>';
     }
 
@@ -239,10 +253,10 @@ class EtlController extends \yii\web\Controller
     private function _buildClusterLogsQuery ( $start_at, $end_at )
     {
     	$sql = '
-    		INSERT IGNORE INTO F_Imp (
+    		INSERT INTO F_ClusterLogs (
+                session_hash,
     			D_Placement_id,
     			cluster_id,
-    			session_hash,
     			imps,
     			imp_time,
     			cost,
@@ -262,7 +276,9 @@ class EtlController extends \yii\web\Controller
 
     	$values = '';    		
 
-		$sessionHashes = $this->_redis->zrange( 'clusterlogs', $start_at, $end_at );
+        echo 'query => '. $start_at.': '.$end_at.'<br>';
+
+		$sessionHashes = $this->_redis->zrange( 'sessionhashes', $start_at, $end_at );
 
 		if ( $sessionHashes )
 		{
@@ -278,9 +294,9 @@ class EtlController extends \yii\web\Controller
     				$values .= ',';
 
     			$values .= '( 
+                    "'.$sessionHash.'",
     				'.$clusterLog['placement_id'].',
     				'.$clusterLog['cluster_id'].',
-    				"'.$sessionHash.'",
     				'.$clusterLog['imps'].',
     				"'.\date( 'Y-m-d H:i:s', $clusterLog['imp_time'] ).'",
     				'.$clusterLog['cost'].',
@@ -300,17 +316,16 @@ class EtlController extends \yii\web\Controller
                 {
                     $placements[]      = $clusterLog['placement_id'];
                     $health_check_imps = $this->_redis->hget( 'placement:'.$clusterLog['placement_id'], 'health_check_imps' );
-                    $placementSql     .= 'UPDATE placements SET health_check_imps='.$health_check_imps;
+                    $this->_placementSql     .= 'UPDATE placements SET health_check_imps='.$health_check_imps;
                 }
 
+                // free memory because there is no garbage collection until block ends
                 unset ( $clusterLog );
     		}
 
     		if ( $values != '' )
     		{
 	    		$sql .= $values . ' ON DUPLICATE KEY UPDATE cost=VALUES(cost), imps=VALUES(imps);';
-
-                \Yii::$app->db->createCommand( $placementSql )->execute();
 
 	    		return \Yii::$app->db->createCommand( $sql )->execute();			
     		}

@@ -1,18 +1,18 @@
 <?php
 
-namespace app\controllers;
+namespace backend\controllers;
 
 use Yii;
-use app\models\Report;
-use app\models\ReportSearch;
+use backend\models\CampaignLogs;
+use backend\models\CampaignLogsSearch;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 
 /**
- * ReportController implements the CRUD actions for Report model.
+ * ReportingController implements the CRUD actions for CampaignLogs model.
  */
-class ReportController extends Controller
+class ReportingController extends Controller
 {
     /**
      * @inheritdoc
@@ -30,12 +30,12 @@ class ReportController extends Controller
     }
 
     /**
-     * Lists all Report models.
+     * Lists all CampaignLogs models.
      * @return mixed
      */
     public function actionIndex()
     {
-        $searchModel = new ReportSearch();
+        $searchModel = new CampaignLogsSearch();
         $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
 
         return $this->render('index', [
@@ -45,8 +45,8 @@ class ReportController extends Controller
     }
 
     /**
-     * Displays a single Report model.
-     * @param integer $id
+     * Displays a single CampaignLogs model.
+     * @param string $id
      * @return mixed
      */
     public function actionView($id)
@@ -57,16 +57,16 @@ class ReportController extends Controller
     }
 
     /**
-     * Creates a new Report model.
+     * Creates a new CampaignLogs model.
      * If creation is successful, the browser will be redirected to the 'view' page.
      * @return mixed
      */
     public function actionCreate()
     {
-        $model = new Report();
+        $model = new CampaignLogs();
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->id]);
+            return $this->redirect(['view', 'id' => $model->click_id]);
         } else {
             return $this->render('create', [
                 'model' => $model,
@@ -75,9 +75,9 @@ class ReportController extends Controller
     }
 
     /**
-     * Updates an existing Report model.
+     * Updates an existing CampaignLogs model.
      * If update is successful, the browser will be redirected to the 'view' page.
-     * @param integer $id
+     * @param string $id
      * @return mixed
      */
     public function actionUpdate($id)
@@ -85,7 +85,7 @@ class ReportController extends Controller
         $model = $this->findModel($id);
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->id]);
+            return $this->redirect(['view', 'id' => $model->click_id]);
         } else {
             return $this->render('update', [
                 'model' => $model,
@@ -94,9 +94,9 @@ class ReportController extends Controller
     }
 
     /**
-     * Deletes an existing Report model.
+     * Deletes an existing CampaignLogs model.
      * If deletion is successful, the browser will be redirected to the 'index' page.
-     * @param integer $id
+     * @param string $id
      * @return mixed
      */
     public function actionDelete($id)
@@ -107,15 +107,15 @@ class ReportController extends Controller
     }
 
     /**
-     * Finds the Report model based on its primary key value.
+     * Finds the CampaignLogs model based on its primary key value.
      * If the model is not found, a 404 HTTP exception will be thrown.
-     * @param integer $id
-     * @return Report the loaded model
+     * @param string $id
+     * @return CampaignLogs the loaded model
      * @throws NotFoundHttpException if the model cannot be found
      */
     protected function findModel($id)
     {
-        if (($model = Report::findOne($id)) !== null) {
+        if (($model = CampaignLogs::findOne($id)) !== null) {
             return $model;
         } else {
             throw new NotFoundHttpException('The requested page does not exist.');
