@@ -41,7 +41,7 @@ class EtlController extends \yii\web\Controller
 		$this->campaigns();
 		$this->imps();
 		//$this->convs();
-        //$this->updatePlacements();
+        $this->updatePlacements();
 		
 		$this->_redis->set( 'last_etl_time', $this->_currentEtlTime );
         
@@ -315,8 +315,9 @@ class EtlController extends \yii\web\Controller
                 if ( !array_search( $clusterLog['placement_id'], $placements ) )
                 {
                     $placements[]      = $clusterLog['placement_id'];
-                    $health_check_imps = $this->_redis->hget( 'placement:'.$clusterLog['placement_id'], 'health_check_imps' );
-                    $this->_placementSql     .= 'UPDATE placements SET health_check_imps='.$health_check_imps;
+                    $health_check_imps = $this->_redis->hget( 'placement:'.$clusterLog['placement_id'], 'imps' );
+                    
+                    $this->_placementSql     .= 'UPDATE Placements SET health_check_imps='.$health_check_imps.' WHERE id='.$clusterLog['placement_id'].';';
                 }
 
                 // free memory because there is no garbage collection until block ends

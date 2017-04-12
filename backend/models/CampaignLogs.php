@@ -16,6 +16,7 @@ use Yii;
  */
 class CampaignLogs extends \yii\db\ActiveRecord
 {
+
     /**
      * @inheritdoc
      */
@@ -56,13 +57,15 @@ class CampaignLogs extends \yii\db\ActiveRecord
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getClusterLogs()
+    public function getClusterLog()
     {
         return $this->hasOne(ClusterLogs::className(), ['session_hash' => 'session_hash']);
     }
 
-    public function getDCampaigns()
+    public function getCampaign()
     {
-        return $this->hasOne(DCampaign::className(), ['D_Campaign_id' => 'id']);
+        return $this->hasOne(DCampaign::className(), ['id' => 'D_Campaign_id']);
     }    
+
+    
 }
