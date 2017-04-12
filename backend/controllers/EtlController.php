@@ -13,6 +13,7 @@ class EtlController extends \yii\web\Controller
 	private $_currentEtlTime;
 	private $_elasticSearch;
     private $_placementSql;
+    private $_count;
 
 
 	public function __construct ( $id, $module, $config = [] )
@@ -28,10 +29,12 @@ class EtlController extends \yii\web\Controller
 
     	$lastEtlTime   			= $this->_redis->get( 'last_etl_time');
     	$this->_lastEtlTime 	= $lastEtlTime ?  $lastEtlTime : 0;
-    	$this->_currentEtlTime	= time();	
+    	$this->_currentEtlTime	= time();        	
 
 		\ini_set('memory_limit','3000M');
 		\set_time_limit(0);
+
+        $this->_count = 0;
 	}
 
 
@@ -41,7 +44,7 @@ class EtlController extends \yii\web\Controller
 		$this->campaigns();
 		$this->imps();
 		//$this->convs();
-        $this->updatePlacements();
+        $this->_updatePlacements();
 		
 		$this->_redis->set( 'last_etl_time', $this->_currentEtlTime );
         
@@ -50,13 +53,13 @@ class EtlController extends \yii\web\Controller
     }
 
 
-    public function updatePlacements ( )
+    private function _updatePlacements ( )
     {
         $start   = time();        
         $rows    = \Yii::$app->db->createCommand( $this->_placementSql )->execute();
         $elapsed = time() - $start;
 
-        echo 'Updated Placements: '.$rows.' rows - load time: '.$elapsed.' seg.<hr/>';
+        //echo 'Updated Placements: '.$rows.' rows - load time: '.$elapsed.' seg.<hr/>';
     }
 
 
@@ -148,7 +151,7 @@ class EtlController extends \yii\web\Controller
     	}
 
 		$elapsed = time() - $start;
-		echo 'CampaignLogs: '.$rows.' rows - sql queries: '.$queries.' - load time: '.$elapsed.' seg.<hr/>';
+		echo 'CampaignLogs: '.$rows.' rows - queries: '.$queries.' - load time: '.$elapsed.' seg.<hr/>';
     }
 
 
@@ -168,7 +171,7 @@ class EtlController extends \yii\web\Controller
 
         echo 'query => '. $start_at.': '.$end_at.'<br>';
         
-    	$clickIDs = $this->_redis->zrangebyscore( 'clickids', $this->_lastEtlTime,$this->_currentEtlTime,  'LIMIT', $start_at, $end_at );
+    	$clickIDs = $this->_redis->zrangebyscore( 'clickids', $this->_lastEtlTime, $this->_currentEtlTime,  'LIMIT', $start_at, $end_at );
 
 		if ( $clickIDs )
 		{
@@ -229,12 +232,12 @@ class EtlController extends \yii\web\Controller
 
 
     public function clusterLogs ( )
-    {
-    	$start 			   = time();
-    	$clusterLogCount   = $this->_redis->zcard( 'sessionhashes' );
-    	$queries 		   = ceil( $clusterLogCount/$this->_objectLimit );
-    	$startAt 		   = 0;
-    	$rows   		   = 0;
+    {      
+    	$start 			     = time();
+    	$clusterLogCount     = $this->_redis->zcount( 'sessionhashes', $this->_lastEtlTime, $this->_currentEtlTime );
+    	$queries 		     = ceil( $clusterLogCount/$this->_objectLimit );
+    	$startAt 		     = 0;
+    	$rows   		     = 0;
 
     	// build separate sql queries based on $_objectLimit in order to control memory usage
     	for ( $i=0; $i<$queries; $i++ )
@@ -246,12 +249,12 @@ class EtlController extends \yii\web\Controller
 
 		$elapsed = time() - $start;
 
-		echo 'ClusterLogs: '.$rows.' rows - sql queries: '.$queries.' - load time: '.$elapsed.' seg.<hr/>';
+		echo 'ClusterLogs: '.$rows.' rows - queries: '.$queries.' - load time: '.$elapsed.' seg.<hr/>';
     }
 
 
     private function _buildClusterLogsQuery ( $start_at, $end_at )
-    {
+    {        
     	$sql = '
     		INSERT INTO F_ClusterLogs (
                 session_hash,
@@ -278,12 +281,12 @@ class EtlController extends \yii\web\Controller
 
         echo 'query => '. $start_at.': '.$end_at.'<br>';
 
-		$sessionHashes = $this->_redis->zrange( 'sessionhashes', $start_at, $end_at );
+		$sessionHashes = $this->_redis->zrangebyscore( 'sessionhashes', $this->_lastEtlTime, $this->_currentEtlTime,  'LIMIT', $start_at, $end_at );
 
 		if ( $sessionHashes )
 		{
-            $placements = [];
-            $placementSql = '';
+            $placements          = [];
+            $this->_placementSql = '';
 
 			// add each clusterLog to sql query
     		foreach ( $sessionHashes as $sessionHash )
@@ -312,12 +315,16 @@ class EtlController extends \yii\web\Controller
     				"'.$clusterLog['browser_version'].'"
     			)';
 
-                if ( !array_search( $clusterLog['placement_id'], $placements ) )
+                // add placements to placements update query
+                if ( !\in_array( $clusterLog['placement_id'], $placements ) )
                 {
+
                     $placements[]      = $clusterLog['placement_id'];
                     $health_check_imps = $this->_redis->hget( 'placement:'.$clusterLog['placement_id'], 'imps' );
-                    
-                    $this->_placementSql     .= 'UPDATE Placements SET health_check_imps='.$health_check_imps.' WHERE id='.$clusterLog['placement_id'].';';
+
+                    if ( $health_check_imps && $health_check_imps>0 )
+                        $this->_placementSql     .= 'UPDATE Placements SET health_check_imps='.$health_check_imps.' WHERE id='.$clusterLog['placement_id'].';';
+                    $this->_count++;
                 }
 
                 // free memory because there is no garbage collection until block ends
@@ -343,7 +350,7 @@ class EtlController extends \yii\web\Controller
     	$start = time();
 
     	$sql = '
-    		INSERT IGNORE INTO D_Placement (
+    		INSERT INTO D_Placement (
     			Publishers_id,
     			name,
     			Publishers_name,
@@ -370,7 +377,7 @@ class EtlController extends \yii\web\Controller
 
 		$elapsed = time() - $start;
 
-		echo 'Placements: '.$rows.' rows inserted - Elapsed time: '.$elapsed.' seg.<hr/>';
+		echo 'Placements: '.$rows.' - Elapsed time: '.$elapsed.' seg.<hr/>';
     }
 
 
@@ -379,7 +386,7 @@ class EtlController extends \yii\web\Controller
     	$start = time();
 
     	$sql = '
-    		INSERT IGNORE INTO D_Campaign (
+    		INSERT INTO D_Campaign (
     			Affiliates_id,
     			name,
     			Affiliates_name
@@ -400,7 +407,7 @@ class EtlController extends \yii\web\Controller
 
 		$elapsed = time() - $start;
 
-		echo 'Campaigns: '.$rows.' rows inserted - Elapsed time: '.$elapsed.' seg.<hr/>';
+		echo 'Campaigns: '.$rows.' rows - Elapsed time: '.$elapsed.' seg.<hr/>';
     }        
 
 }

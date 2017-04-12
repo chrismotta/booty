@@ -2,39 +2,60 @@
 
 use yii\helpers\Html;
 use yii\grid\GridView;
+use yii\jui\DatePicker;
 use yii\widgets\Pjax;
 use yii\widgets\ActiveForm;
 /* @var $this yii\web\View */
 /* @var $searchModel backend\models\CampaignLogsSearch */
 /* @var $dataProvider yii\data\ActiveDataProvider */
 
+
+$this->registerJs(
+   '$("document").ready(function(){ 
+        $("#filters_form").on("pjax:end", function() {
+            $.pjax.reload({container:"#results"});  //Reload GridView
+        });
+    });'
+);
 $this->title = 'Reporting';
 $this->params['breadcrumbs'][] = $this->title;
+
 ?>
+
+
 <div class="campaign-logs-index">
 
-    <h1><?= Html::encode($this->title) ?></h1>
-    <?php // echo $this->render('_search', ['model' => $searchModel]); ?>
+ 
+<?php yii\widgets\Pjax::begin(['id' => 'filters_form']) ?>
+<?php $form = ActiveForm::begin(['options' => ['data-pjax' => true ]]); ?>
 
-<div class="post-search">
-    <?php $form = ActiveForm::begin([
-        'action' => ['index'],
-        'method' => 'get',
-    ]); ?>
-
-    <?= $form->field($searchModel, 'click_time') ?>
-
-    <?= $form->field($searchModel, 'conv_time') ?>
-
+ 
+    <?=
+        $form->field($searchModel, 'date_start')->widget(\yii\jui\DatePicker::classname(), [
+        //'language' => 'ru',
+        //'dateFormat' => 'yyyy-MM-dd',
+        ]);            
+    ?>
+ 
+     <?=
+        $form->field($searchModel, 'date_end')->widget(\yii\jui\DatePicker::classname(), [
+        //'language' => 'ru',
+        //'dateFormat' => 'yyyy-MM-dd',
+        ]);            
+    ?>
+ 
     <div class="form-group">
         <?= Html::submitButton('Search', ['class' => 'btn btn-primary']) ?>
         <?= Html::submitButton('Reset', ['class' => 'btn btn-default']) ?>
     </div>
+ 
+<?php ActiveForm::end(); ?>
+<?php yii\widgets\Pjax::end() ?>
 
-    <?php ActiveForm::end(); ?>
 </div>
 
-<?php Pjax::begin(); ?>    <?= GridView::widget([
+
+<?php Pjax::begin( ['id' => 'results'] ); ?>    <?= GridView::widget([
         'dataProvider' => $dataProvider,
         //'filterModel' => $searchModel,
         'columns' => [
@@ -54,15 +75,15 @@ $this->params['breadcrumbs'][] = $this->title;
              ],               
              [
              'attribute' => 'publisher',
-             'value' => 'clusterLog.placement.publisher'
+             'value' => 'publisher'
              ],
              [
              'attribute' => 'model',
-             'value' => 'clusterLog.placement.model'
+             'value' => 'model'
              ],
              [
              'attribute' => 'status',
-             'value' => 'clusterLog.placement.status'
+             'value' => 'status'
              ],
              [
              'attribute' => 'country',
@@ -75,7 +96,8 @@ $this->params['breadcrumbs'][] = $this->title;
              [
              'attribute' => 'carrier',
              'value' => 'clusterLog.carrier'
-             ],             
+             ],
+             /*             
              [
              'attribute' => 'device',
              'value' => 'clusterLog.device'
@@ -104,6 +126,7 @@ $this->params['breadcrumbs'][] = $this->title;
              'attribute' => 'browser_version',
              'value' => 'clusterLog.browser_version'
              ],
+             */
              [
              'attribute' => 'cost',
              'value' => 'clusterLog.cost'

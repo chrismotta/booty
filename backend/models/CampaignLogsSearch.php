@@ -20,7 +20,9 @@ class CampaignLogsSearch extends CampaignLogs
     public $publisher;
     public $model;
     public $status;
-    public $placement_id; 
+    public $placement_id;
+    public $date_start;
+    public $date_end;
     /**
      * @inheritdoc
      */

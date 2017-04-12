@@ -16,7 +16,9 @@ use Yii;
  */
 class CampaignLogs extends \yii\db\ActiveRecord
 {
-
+    public $publisher;
+    public $model;
+    public $status;    
     /**
      * @inheritdoc
      */
