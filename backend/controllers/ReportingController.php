@@ -35,12 +35,14 @@ class ReportingController extends Controller
      */
     public function actionIndex()
     {
-        $searchModel = new CampaignLogsSearch();
+        $model        = new CampaignLogs();
+        $searchModel  = new CampaignLogsSearch();
         $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
 
         return $this->render('index', [
-            'searchModel' => $searchModel,
+            'searchModel'  => $searchModel,
             'dataProvider' => $dataProvider,
+            'model'        => $model
         ]);
     }
 

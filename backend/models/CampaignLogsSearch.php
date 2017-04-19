@@ -23,6 +23,17 @@ class CampaignLogsSearch extends CampaignLogs
     public $placement_id;
     public $date_start;
     public $date_end;
+    public $affiliate;
+    public $carrier;
+    public $cluster;
+    public $device;
+    public $device_brand;
+    public $device_model;
+    public $os;
+    public $os_version;
+    public $browser;
+    public $browser_version;
+    public $show_columns;
     /**
      * @inheritdoc
      */
@@ -55,20 +66,19 @@ class CampaignLogsSearch extends CampaignLogs
     {
         $query = CampaignLogs::find();
 
-        // add conditions that should always apply here
-
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
         ]);
 
         $this->load($params);
 
+        // validation
+        /*
         if (!$this->validate()) {
-            // uncomment the following line if you do not want to return any records when validation fails
-            // $query->where('0=1');
+            $query->where('0=1');
             return $dataProvider;
         }
-
+        */
 
         // fields
         $query->select([
@@ -85,7 +95,6 @@ class CampaignLogsSearch extends CampaignLogs
             'clusterLog',
             'clusterLog.placement',
         ]);
-
 
 
         // sorting
@@ -125,7 +134,6 @@ class CampaignLogsSearch extends CampaignLogs
             'asc' => ['F_ClusterLogs.device' => SORT_ASC],
             'desc' => ['F_ClusterLogs.device' => SORT_DESC],
         ];
-      
         $dataProvider->sort->attributes['device_brand'] = [
             'asc' => ['F_ClusterLogs.device_brand' => SORT_ASC],
             'desc' => ['F_ClusterLogs.device_brand' => SORT_DESC],
@@ -157,21 +165,206 @@ class CampaignLogsSearch extends CampaignLogs
         $dataProvider->sort->attributes['imps'] = [
             'asc' => ['F_ClusterLogs.imps' => SORT_ASC],
             'desc' => ['F_ClusterLogs.imps' => SORT_DESC],
-        ];        
+        ];
+
+        // filters
+        if ( isset($params['CampaignLogsSearch']['date_start']) )
+            $dateStart = date( 'Y-m-d', strtotime($params['CampaignLogsSearch']['date_start']) );
+        else
+            $dateStart = date( 'Y-m-d' );
+
+        if ( isset($params['CampaignLogsSearch']['date_end']) )
+            $dateEnd= date( 'Y-m-d', strtotime($params['CampaignLogsSearch']['date_end']) );
+        else
+            $dateEnd = date( 'Y-m-d' );
+      
+        $query->andFilterWhere( ['>=', 'date(imp_time)', $dateStart] );
+        $query->andFilterWhere( ['<=', 'date(imp_time)', $dateEnd] );
 
 
+        if ( isset($params['CampaignLogsSearch']['publisher']) && $params['CampaignLogsSearch']['publisher'] ){
+            $first = true;
+            foreach ( $params['CampaignLogsSearch']['publisher'] as $id )
+            {
+                if ( $first ){
+                    $query->andFilterWhere( ['=', 'D_Placement.Publishers_id', $id] );
+                    $first = false;
+                }
+                else{
+                    $query->orFilterWhere( ['=', 'D_Placement.Publishers_id', $id] );
+                }
+            }
+        }
 
+        if ( isset($params['CampaignLogsSearch']['affiliate']) && $params['CampaignLogsSearch']['affiliate'] ){
+            $first = true;
+            foreach ( $params['CampaignLogsSearch']['affiliate'] as $id )
+            {
+                if ( $first ){
+                    $query->andFilterWhere( ['=', 'D_Campaign.Affiliates_id', $id] );
+                    $first = false;
+                }
+                else{
+                    $query->orFilterWhere( ['=', 'D_Campaign.Affiliates_id', $id] );
+                }
+            }
+        }
 
-        // grid filtering conditions
-        $query->andFilterWhere([
-            //'D_Campaign_id' => $this->D_Campaign_id,
-            //'click_time' => $this->click_time,
-            //'conv_time' => $this->conv_time,
-            //'revenue' => $this->revenue,
-        ]);
+        if ( isset($params['CampaignLogsSearch']['campaign']) && $params['CampaignLogsSearch']['campaign'] ){
+            $first = true;
+            foreach ( $params['CampaignLogsSearch']['campaign'] as $id )
+            {
+                if ( $first ){
+                    $query->andFilterWhere( ['=', 'D_Campaign.id', $id] );
+                    $first = false;
+                }
+                else{
+                    $query->orFilterWhere( ['=', 'D_Campaign.id', $id] );
+                }
+            }
+        }
 
-        $query->andFilterWhere(['like', 'click_id', $this->click_id])
-            ->andFilterWhere(['like', 'session_hash', $this->session_hash]);
+        if ( isset($params['CampaignLogsSearch']['carrier']) && $params['CampaignLogsSearch']['carrier'] ){
+            $first = true;
+            foreach ( $params['CampaignLogsSearch']['carrier'] as $id )
+            {
+                if ( $first ){
+                    $query->andFilterWhere( ['=', 'F_ClusterLogs.carrier', $id] );
+                    $first = false;
+                }
+                else{
+                    $query->orFilterWhere( ['=', 'F_ClusterLogs.carrier', $id] );
+                }
+            }
+        }
+
+        if ( isset($params['CampaignLogsSearch']['country']) && $params['CampaignLogsSearch']['country'] ){
+            $first = true;
+            foreach ( $params['CampaignLogsSearch']['country'] as $id )
+            {
+                if ( $first ){
+                    $query->andFilterWhere( ['=', 'F_ClusterLogs.country', $id] );
+                    $first = false;
+                }
+                else{
+                    $query->orFilterWhere( ['=', 'F_ClusterLogs.country', $id] );
+                }
+            }
+        }    
+
+        if ( isset($params['CampaignLogsSearch']['device']) && $params['CampaignLogsSearch']['device'] ){
+            $first = true;
+            foreach ( $params['CampaignLogsSearch']['device'] as $id )
+            {
+                var_export($id);die();
+                if ( $first ){
+                    $query->andFilterWhere( ['=', 'F_ClusterLogs.device', $id] );
+                    $first = false;
+                }
+                else{
+                    $query->orFilterWhere( ['=', 'F_ClusterLogs.device', $id] );
+                }
+            }
+        }              
+
+        if ( isset($params['CampaignLogsSearch']['device_brand']) && $params['CampaignLogsSearch']['device_brand'] ){
+            $first = true;
+            foreach ( $params['CampaignLogsSearch']['device_brand'] as $id )
+            {
+                if ( $first ){
+                    $query->andFilterWhere( ['=', 'F_ClusterLogs.device_brand', $id] );
+                    $first = false;
+                }
+                else{
+                    $query->orFilterWhere( ['=', 'F_ClusterLogs.device_brand', $id] );
+                }
+            }
+        }          
+
+        if ( isset($params['CampaignLogsSearch']['device_model']) && $params['CampaignLogsSearch']['device_model'] ){
+            $first = true;
+            foreach ( $params['CampaignLogsSearch']['device_model'] as $id )
+            {
+                if ( $first ){
+                    $query->andFilterWhere( ['=', 'F_ClusterLogs.device_model', $id] );
+                    $first = false;
+                }
+                else{
+                    $query->orFilterWhere( ['=', 'F_ClusterLogs.device_model', $id] );
+                }
+            }
+        }            
+
+        if ( isset($params['CampaignLogsSearch']['os']) && $params['CampaignLogsSearch']['os'] ){
+            $first = true;
+            foreach ( $params['CampaignLogsSearch']['os'] as $id )
+            {
+                if ( $first ){
+                    $query->andFilterWhere( ['=', 'F_ClusterLogs.os', $id] );
+                    $first = false;
+                }
+                else{
+                    $query->orFilterWhere( ['=', 'F_ClusterLogs.os', $id] );
+                }
+            }
+        }      
+
+        if ( isset($params['CampaignLogsSearch']['os_version']) && $params['CampaignLogsSearch']['os_version'] ){
+            $first = true;
+            foreach ( $params['CampaignLogsSearch']['os_version'] as $id )
+            {
+                if ( $first ){
+                    $query->andFilterWhere( ['=', 'F_ClusterLogs.os_version', $id] );
+                    $first = false;
+                }
+                else{
+                    $query->orFilterWhere( ['=', 'F_ClusterLogs.os_version', $id] );
+                }
+            }
+        }
+
+        if ( isset($params['CampaignLogsSearch']['browser']) && $params['CampaignLogsSearch']['browser'] ){
+            $first = true;
+            foreach ( $params['CampaignLogsSearch']['browser'] as $id )
+            {
+                if ( $first ){
+                    $query->andFilterWhere( ['=', 'F_ClusterLogs.browser', $id] );
+                    $first = false;
+                }
+                else{
+                    $query->orFilterWhere( ['=', 'F_ClusterLogs.browser', $id] );
+                }
+            }
+        }            
+
+        if ( isset($params['CampaignLogsSearch']['browser_version']) && $params['CampaignLogsSearch']['browser_version'] ){
+            $first = true;
+            foreach ( $params['CampaignLogsSearch']['browser_version'] as $id )
+            {
+                if ( $first ){
+                    $query->andFilterWhere( ['=', 'F_ClusterLogs.browser_version', $id] );
+                    $first = false;
+                }
+                else{
+                    $query->orFilterWhere( ['=', 'F_ClusterLogs.browser_version', $id] );
+                }
+            }
+        }    
+
+        if ( isset($params['CampaignLogsSearch']['placement']) && $params['CampaignLogsSearch']['placement'] ){
+            $first = true;
+            foreach ( $params['CampaignLogsSearch']['placement'] as $id )
+            {
+                if ( $first ){
+                    $query->andFilterWhere( ['=', 'D_Placement.id', $id] );
+                    $first = false;
+                }
+                else{
+                    $query->orFilterWhere( ['=', 'D_Placement.id', $id] );
+                }
+            }
+        }                                  
+
 
         return $dataProvider;
     }

@@ -45,8 +45,9 @@ class EtlController extends \yii\web\Controller
 		$this->imps();
 		//$this->convs();
         $this->_updatePlacements();
+        $this->userAgents();
 		
-		$this->_redis->set( 'last_etl_time', $this->_currentEtlTime );
+		//$this->_redis->set( 'last_etl_time', $this->_currentEtlTime );
         
         \gc_collect_cycles();
         // return $this->render('index');
@@ -59,7 +60,7 @@ class EtlController extends \yii\web\Controller
         $rows    = \Yii::$app->db->createCommand( $this->_placementSql )->execute();
         $elapsed = time() - $start;
 
-        //echo 'Updated Placements: '.$rows.' rows - load time: '.$elapsed.' seg.<hr/>';
+        echo 'Updated Placements: '.$rows.' rows - load time: '.$elapsed.' seg.<hr/>';
     }
 
 
@@ -154,6 +155,32 @@ class EtlController extends \yii\web\Controller
 		echo 'CampaignLogs: '.$rows.' rows - queries: '.$queries.' - load time: '.$elapsed.' seg.<hr/>';
     }
 
+    public function userAgents ( )
+    {
+        $start = time();
+        // load user agents into local cache
+        $userAgentIds = $this->_redis->smembers( 'uas' );
+
+        foreach ( $userAgentIds as $id )
+        {
+            $ua = $this->_redis->hgetall( 'ua:'.$id );
+
+            \Yii::$app->redis->sadd( 'devices', $ua['device']  );
+            \Yii::$app->redis->sadd( 'device_brands', $ua['device_brand']  );
+            \Yii::$app->redis->sadd( 'device_models', $ua['device_model']  );
+            \Yii::$app->redis->sadd( 'os', $ua['os']  );
+            \Yii::$app->redis->sadd( 'os_versions', $ua['os_version']  );
+            \Yii::$app->redis->sadd( 'browsers', $ua['browser']  );
+            \Yii::$app->redis->sadd( 'browser_versions', $ua['browser_version']  );
+
+            // free memory cause there is no garbage collection until block ends
+            unset($ua);
+        }
+
+        $elapsed = time() - $start;
+        echo 'User agents: '.count($userAgentIds).' objects - load time: '.$elapsed.' seg.<hr/>';        
+    }
+
 
     private function _buildCampaignLogsQuery ( $start_at, $end_at )
     {
@@ -211,7 +238,7 @@ class EtlController extends \yii\web\Controller
     				'.$clickTime.'
     			)';
 
-                // free memory because there is no garbage collection until block ends
+                // free memory cause there is no garbage collection until block ends
                 unset( $campaignLog );
     		}
 
@@ -315,6 +342,9 @@ class EtlController extends \yii\web\Controller
     				"'.$clusterLog['browser_version'].'"
     			)';
 
+                \Yii::$app->redis->sadd( 'carriers', $clusterLog['carrier']  );
+                \Yii::$app->redis->sadd( 'countries', $clusterLog['country']  );
+
                 // add placements to placements update query
                 if ( !\in_array( $clusterLog['placement_id'], $placements ) )
                 {
@@ -351,13 +381,15 @@ class EtlController extends \yii\web\Controller
 
     	$sql = '
     		INSERT INTO D_Placement (
+                id,
     			Publishers_id,
     			name,
     			Publishers_name,
     			model,
     			status
     		)
-    		SELECT 
+    		SELECT
+                p.id, 
     			pub.id,
     			p.name,
     			pub.name,
@@ -387,11 +419,13 @@ class EtlController extends \yii\web\Controller
 
     	$sql = '
     		INSERT INTO D_Campaign (
+                id,
     			Affiliates_id,
     			name,
     			Affiliates_name
     		)
     		SELECT 
+                c.id,
     			a.id,
     			c.name,
     			a.name
