@@ -32,6 +32,7 @@ $this->params['breadcrumbs'][] = $this->title;
 $DPlacement       = models\DPlacement::find()->asArray()->all();
 $DCampaign        = models\DCampaign::find()->asArray()->all();
 
+$clusterNames     = components\MapHelper::redisToMap(\Yii::$app->redis->hgetall( 'clusternames' ));
 $devices          = \Yii::$app->redis->smembers( 'devices' );
 $deviceBrands     = \Yii::$app->redis->smembers( 'device_brands' );
 $deviceModels     = \Yii::$app->redis->smembers( 'device_models' );
@@ -155,7 +156,7 @@ else
             $searchModel, 
             'cluster'
         )->widget(Select2::classname(), [
-            'data' => [],
+            'data' => $clusterNames,
             'language' => 'us',
             'options' => ['placeholder' => 'Select a cluster ...', 'multiple' => true],
             'pluginOptions' => [
