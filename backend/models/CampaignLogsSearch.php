@@ -67,14 +67,13 @@ class CampaignLogsSearch extends CampaignLogs
         */
 
         // fields
+        $fields = [];
+        $group  = [];
+
         if ( isset($params['CampaignLogsSearch']['fields_group1']) && !empty( $params['CampaignLogsSearch']['fields_group1'] ) )
         {
-            $fields = [];
-            $group  = [];
-
             foreach ( $params['CampaignLogsSearch']['fields_group1'] as $field )
             {
-
                 switch ( $field )
                 {
                     case 'campaign':
@@ -104,24 +103,28 @@ class CampaignLogsSearch extends CampaignLogs
                     case 'revenue':
                         $fields[] = 'sum(F_CampaignLogs.'.$field.') AS '.$field;
                     break;
+                    case 'cluster':
+                        $fields[] = 'F_ClusterLogs.cluster_id AS '.$field;
+                    break;                    
                     default:
                         $fields[] = 'F_ClusterLogs.'.$field.' AS '.$field;
                     break;
                 }
-            }         
+            }
+
             $query->groupBy( $group );           
         }
         
         if  ( !isset($fields) || empty($fields) )
         {
             $fields = [
-                '*',
-                'D_Campaign.Affiliates_name AS affiliate',
-                'D_Placement.model AS model',
-                'D_Placement.Publishers_name as publisher',
-                'D_Placement.status AS status',
                 'D_Campaign.name AS campaign',
-            ];            
+                'sum(F_ClusterLogs.imps) AS imps'
+            ];
+
+            $group[]  = 'D_Campaign.name';           
+
+            $query->groupBy( 'D_Campaign.name' );
         }
 
         $query->select( $fields );

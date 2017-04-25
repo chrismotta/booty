@@ -43,7 +43,7 @@ class EtlController extends \yii\web\Controller
 		$this->placements();
 		$this->campaigns();
 		$this->imps();
-		//$this->convs();
+		$this->convs();
         $this->_updatePlacements();
         $this->userAgents();
 		
@@ -92,7 +92,7 @@ class EtlController extends \yii\web\Controller
 		$params 	= [];
 		$paramCount = 0;
 
-		$convIDs 	= $this->_redis->zrangebyscore( 'convs', $this->_lastEtlTime, $this->_currentEtlTime, $start_at, $end_at );
+		$convIDs 	= $this->_redis->zrangebyscore( 'convs', $this->_lastEtlTime, $this->_currentEtlTime, 'LIMIT', $start_at, $end_at );
 
 		// ad each conversion to SQL query
 		foreach ( $convIDs as $clickID )
@@ -107,15 +107,15 @@ class EtlController extends \yii\web\Controller
 			$sql .= '
 				UPDATE IGNORE F_CampaignLogs cpl 
                     LEFT JOIN F_ClusterLogs cl ON ( cpl.session_hash = cl.session_hash ) 
-					LEFT JOIN campaigns c ON ( i.D_Campaign_id = c.id ) 
-					LEFT JOIN D_Placement_id ON p ( i.D_Placement_id = p.id ) 
+					LEFT JOIN Campaigns c ON ( cpl.D_Campaign_id = c.id ) 
+					LEFT JOIN Placements p ON ( cl.D_Placement_id = p.id ) 
 				SET 
 					cpl.conv_time="'.\date( 'Y-m-d H:i:s', $convTime ).'", 
 					cpl.revenue = c.payout, 
 					cl.cost = CASE 
-						WHEN p.model = "RS" THEN '.$cost.' END 
+						WHEN p.model = "RS" THEN (c.payout*p.payout)/100 END 
 				WHERE 
-					click_id = '.$param.'
+					click_id = '.$param.' 
 			;';
 
 			$paramCount++;
@@ -314,6 +314,7 @@ class EtlController extends \yii\web\Controller
 		if ( $sessionHashes )
 		{
             $placements          = [];
+            $clusters            = [];
             $this->_placementSql = '';
 
 			// add each clusterLog to sql query
@@ -324,11 +325,14 @@ class EtlController extends \yii\web\Controller
     			if ( $values != '' )
     				$values .= ',';
 
+                if ( $clusterLog['device']=='Phablet' || $clusterLog['device']=='Smartphone' )
+                    $clusterLog['device'] = 'Mobile';
+
     			$values .= '( 
                     "'.$sessionHash.'",
     				'.$clusterLog['placement_id'].',
     				'.$clusterLog['cluster_id'].',
-                    '.$clusterLog['cluster_name'].',
+                    "'.$clusterLog['cluster_name'].'",
     				'.$clusterLog['imps'].',
     				"'.\date( 'Y-m-d H:i:s', $clusterLog['imp_time'] ).'",
     				'.$clusterLog['cost'].',
@@ -356,6 +360,12 @@ class EtlController extends \yii\web\Controller
                     if ( $health_check_imps && $health_check_imps>0 )
                         $this->_placementSql     .= 'UPDATE Placements SET health_check_imps='.$health_check_imps.' WHERE id='.$clusterLog['placement_id'].';';
                     $this->_count++;
+                }
+
+                // save cluster name to be used in reporting multiselect
+                if ( !\in_array( $clusterLog['cluster_id'], $clusters ) )
+                {
+                    \Yii::$app->redis->hset( 'clusternames', $clusterLog['cluster_id'], $clusterLog['cluster_name']  );
                 }
 
                 // free memory because there is no garbage collection until block ends

@@ -22,6 +22,30 @@
 			return $r;
 		}
 
+
+		static function redisToMap ( array $data )
+		{
+			$k = 0;
+			$r = [];
+			$kn = false;
+
+			foreach ( $data as $value )
+			{
+				if ( $k%2 == 0 || $k==0 )
+				{
+					$kn = $value;
+				}
+				else
+				{
+					$r[$kn] = $value; 	
+				}
+
+				$k++;
+			} 
+
+			return $r;
+		}
+
 	}
 
 ?>
