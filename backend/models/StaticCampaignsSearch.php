@@ -5,12 +5,12 @@ namespace app\models;
 use Yii;
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
-use app\models\Placements;
+use app\models\StaticCampaigns;
 
 /**
- * PlacementsSearch represents the model behind the search form about `app\models\Placements`.
+ * StaticCampaignsSearch represents the model behind the search form about `app\models\StaticCampaigns`.
  */
-class PlacementsSearch extends Placements
+class StaticCampaignsSearch extends StaticCampaigns
 {
     /**
      * @inheritdoc
@@ -18,9 +18,8 @@ class PlacementsSearch extends Placements
     public function rules()
     {
         return [
-            [['id', 'Publishers_id', 'frequency_cap', 'health_check_imps'], 'integer'],
-            [['name', 'model', 'status', 'size'], 'safe'],
-            [['payout'], 'number'],
+            [['id'], 'integer'],
+            [['name', 'landing_url', 'creative_300x250', 'creative_320x50'], 'safe'],
         ];
     }
 
@@ -42,7 +41,7 @@ class PlacementsSearch extends Placements
      */
     public function search($params)
     {
-        $query = Placements::find();
+        $query = StaticCampaigns::find();
 
         // add conditions that should always apply here
 
@@ -61,16 +60,12 @@ class PlacementsSearch extends Placements
         // grid filtering conditions
         $query->andFilterWhere([
             'id' => $this->id,
-            'Publishers_id' => $this->Publishers_id,
-            'frequency_cap' => $this->frequency_cap,
-            'payout' => $this->payout,
-            'health_check_imps' => $this->health_check_imps,
         ]);
 
         $query->andFilterWhere(['like', 'name', $this->name])
-            ->andFilterWhere(['like', 'model', $this->model])
-            ->andFilterWhere(['like', 'status', $this->status])
-            ->andFilterWhere(['like', 'size', $this->size]);
+            ->andFilterWhere(['like', 'landing_url', $this->landing_url])
+            ->andFilterWhere(['like', 'creative_300x250', $this->creative_300x250])
+            ->andFilterWhere(['like', 'creative_320x50', $this->creative_320x50]);
 
         return $dataProvider;
     }

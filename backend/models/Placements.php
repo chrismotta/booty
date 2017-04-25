@@ -8,7 +8,7 @@ use Yii;
  * This is the model class for table "Placements".
  *
  * @property integer $id
- * @property integer $Sources_id
+ * @property integer $Publishers_id
  * @property string $name
  * @property integer $frequency_cap
  * @property string $payout
@@ -18,7 +18,7 @@ use Yii;
  * @property integer $health_check_imps
  *
  * @property Clusters[] $clusters
- * @property Sources $sources
+ * @property Publishers $publishers
  */
 class Placements extends \yii\db\ActiveRecord
 {
@@ -36,12 +36,12 @@ class Placements extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['Sources_id', 'frequency_cap', 'payout', 'model', 'size'], 'required'],
-            [['Sources_id', 'frequency_cap', 'health_check_imps'], 'integer'],
+            [['Publishers_id', 'frequency_cap', 'payout', 'model', 'size'], 'required'],
+            [['Publishers_id', 'frequency_cap', 'health_check_imps'], 'integer'],
             [['payout'], 'number'],
             [['model', 'status'], 'string'],
             [['name', 'size'], 'string', 'max' => 255],
-            [['Sources_id'], 'exist', 'skipOnError' => true, 'targetClass' => Sources::className(), 'targetAttribute' => ['Sources_id' => 'id']],
+            [['Publishers_id'], 'exist', 'skipOnError' => true, 'targetClass' => Publishers::className(), 'targetAttribute' => ['Publishers_id' => 'id']],
         ];
     }
 
@@ -52,7 +52,7 @@ class Placements extends \yii\db\ActiveRecord
     {
         return [
             'id' => 'ID',
-            'Sources_id' => 'Sources ID',
+            'Publishers_id' => 'Publishers ID',
             'name' => 'Name',
             'frequency_cap' => 'Frequency Cap',
             'payout' => 'Payout',
@@ -74,8 +74,8 @@ class Placements extends \yii\db\ActiveRecord
     /**
      * @return \yii\db\ActiveQuery
      */
-    public function getSources()
+    public function getPublishers()
     {
-        return $this->hasOne(Sources::className(), ['id' => 'Sources_id']);
+        return $this->hasOne(Publishers::className(), ['id' => 'Publishers_id']);
     }
 }

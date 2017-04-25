@@ -4,11 +4,11 @@ use yii\helpers\Html;
 use yii\widgets\ActiveForm;
 
 /* @var $this yii\web\View */
-/* @var $model app\models\PlacementsSearch */
+/* @var $model app\models\CampaignsSearch */
 /* @var $form yii\widgets\ActiveForm */
 ?>
 
-<div class="placements-search">
+<div class="campaigns-search">
 
     <?php $form = ActiveForm::begin([
         'action' => ['index'],
@@ -17,21 +17,17 @@ use yii\widgets\ActiveForm;
 
     <?= $form->field($model, 'id') ?>
 
-    <?= $form->field($model, 'Publishers_id') ?>
+    <?= $form->field($model, 'Affiliates_id') ?>
 
     <?= $form->field($model, 'name') ?>
 
-    <?= $form->field($model, 'frequency_cap') ?>
-
     <?= $form->field($model, 'payout') ?>
 
-    <?php // echo $form->field($model, 'model') ?>
+    <?= $form->field($model, 'landing_url') ?>
 
-    <?php // echo $form->field($model, 'status') ?>
+    <?php // echo $form->field($model, 'creative_320x50') ?>
 
-    <?php // echo $form->field($model, 'size') ?>
-
-    <?php // echo $form->field($model, 'health_check_imps') ?>
+    <?php // echo $form->field($model, 'creative_300x250') ?>
 
     <div class="form-group">
         <?= Html::submitButton('Search', ['class' => 'btn btn-primary']) ?>

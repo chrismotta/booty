@@ -5,12 +5,12 @@ namespace app\models;
 use Yii;
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
-use app\models\Placements;
+use app\models\Publishers;
 
 /**
- * PlacementsSearch represents the model behind the search form about `app\models\Placements`.
+ * PublishersSearch represents the model behind the search form about `app\models\Publishers`.
  */
-class PlacementsSearch extends Placements
+class PublishersSearch extends Publishers
 {
     /**
      * @inheritdoc
@@ -18,9 +18,8 @@ class PlacementsSearch extends Placements
     public function rules()
     {
         return [
-            [['id', 'Publishers_id', 'frequency_cap', 'health_check_imps'], 'integer'],
-            [['name', 'model', 'status', 'size'], 'safe'],
-            [['payout'], 'number'],
+            [['id', 'admin_user'], 'integer'],
+            [['name', 'short_name'], 'safe'],
         ];
     }
 
@@ -42,7 +41,7 @@ class PlacementsSearch extends Placements
      */
     public function search($params)
     {
-        $query = Placements::find();
+        $query = Publishers::find();
 
         // add conditions that should always apply here
 
@@ -61,16 +60,11 @@ class PlacementsSearch extends Placements
         // grid filtering conditions
         $query->andFilterWhere([
             'id' => $this->id,
-            'Publishers_id' => $this->Publishers_id,
-            'frequency_cap' => $this->frequency_cap,
-            'payout' => $this->payout,
-            'health_check_imps' => $this->health_check_imps,
+            'admin_user' => $this->admin_user,
         ]);
 
         $query->andFilterWhere(['like', 'name', $this->name])
-            ->andFilterWhere(['like', 'model', $this->model])
-            ->andFilterWhere(['like', 'status', $this->status])
-            ->andFilterWhere(['like', 'size', $this->size]);
+            ->andFilterWhere(['like', 'short_name', $this->short_name]);
 
         return $dataProvider;
     }

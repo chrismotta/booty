@@ -5,12 +5,12 @@ namespace app\models;
 use Yii;
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
-use app\models\Placements;
+use app\models\Clusters;
 
 /**
- * PlacementsSearch represents the model behind the search form about `app\models\Placements`.
+ * ClustersSearch represents the model behind the search form about `app\models\Clusters`.
  */
-class PlacementsSearch extends Placements
+class ClustersSearch extends Clusters
 {
     /**
      * @inheritdoc
@@ -18,9 +18,8 @@ class PlacementsSearch extends Placements
     public function rules()
     {
         return [
-            [['id', 'Publishers_id', 'frequency_cap', 'health_check_imps'], 'integer'],
-            [['name', 'model', 'status', 'size'], 'safe'],
-            [['payout'], 'number'],
+            [['id', 'Placements_id', 'StaticCampaigns_id'], 'integer'],
+            [['name', 'country', 'connection_type', 'carrier'], 'safe'],
         ];
     }
 
@@ -42,7 +41,7 @@ class PlacementsSearch extends Placements
      */
     public function search($params)
     {
-        $query = Placements::find();
+        $query = Clusters::find();
 
         // add conditions that should always apply here
 
@@ -61,16 +60,14 @@ class PlacementsSearch extends Placements
         // grid filtering conditions
         $query->andFilterWhere([
             'id' => $this->id,
-            'Publishers_id' => $this->Publishers_id,
-            'frequency_cap' => $this->frequency_cap,
-            'payout' => $this->payout,
-            'health_check_imps' => $this->health_check_imps,
+            'Placements_id' => $this->Placements_id,
+            'StaticCampaigns_id' => $this->StaticCampaigns_id,
         ]);
 
         $query->andFilterWhere(['like', 'name', $this->name])
-            ->andFilterWhere(['like', 'model', $this->model])
-            ->andFilterWhere(['like', 'status', $this->status])
-            ->andFilterWhere(['like', 'size', $this->size]);
+            ->andFilterWhere(['like', 'country', $this->country])
+            ->andFilterWhere(['like', 'connection_type', $this->connection_type])
+            ->andFilterWhere(['like', 'carrier', $this->carrier]);
 
         return $dataProvider;
     }
