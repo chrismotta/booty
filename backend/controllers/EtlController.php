@@ -281,12 +281,13 @@ class EtlController extends \yii\web\Controller
 
 
     private function _buildClusterLogsQuery ( $start_at, $end_at )
-    {        
+    {
     	$sql = '
     		INSERT INTO F_ClusterLogs (
                 session_hash,
     			D_Placement_id,
     			cluster_id,
+                cluster_name,
     			imps,
     			imp_time,
     			cost,
@@ -327,6 +328,7 @@ class EtlController extends \yii\web\Controller
                     "'.$sessionHash.'",
     				'.$clusterLog['placement_id'].',
     				'.$clusterLog['cluster_id'].',
+                    '.$clusterLog['cluster_name'].',
     				'.$clusterLog['imps'].',
     				"'.\date( 'Y-m-d H:i:s', $clusterLog['imp_time'] ).'",
     				'.$clusterLog['cost'].',
@@ -348,7 +350,6 @@ class EtlController extends \yii\web\Controller
                 // add placements to placements update query
                 if ( !\in_array( $clusterLog['placement_id'], $placements ) )
                 {
-
                     $placements[]      = $clusterLog['placement_id'];
                     $health_check_imps = $this->_redis->hget( 'placement:'.$clusterLog['placement_id'], 'imps' );
 

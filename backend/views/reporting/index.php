@@ -8,7 +8,9 @@ use yii\widgets\Pjax;
 use yii\widgets\ActiveForm;
 use kartik\select2\Select2;
 use backend\models;
+use backend\components;
 use yii\bootstrap;
+use kartik\daterange\DateRangePicker;
 /* @var $this yii\web\View */
 /* @var $searchModel backend\models\CampaignLogsSearch */
 /* @var $dataProvider yii\data\ActiveDataProvider */
@@ -24,9 +26,8 @@ $this->registerJs(
 $this->title = 'Reporting';
 $this->params['breadcrumbs'][] = $this->title;
 
-$searchModel->date_start = isset($_GET['CampaignLogsSearch']['date_start']) ? $_GET['CampaignLogsSearch']['date_start'] : date( 'd-m-Y' );
-$searchModel->date_end = isset($_GET['CampaignLogsSearch']['date_end']) ? $_GET['CampaignLogsSearch']['date_end'] : date( 'd-m-Y' );
-
+        $searchModel->date_start = isset($_GET['CampaignLogsSearch']['date_start']) ? $_GET['CampaignLogsSearch']['date_start'] : date( 'd-m-Y' );
+        $searchModel->date_end = isset($_GET['CampaignLogsSearch']['date_end']) ? $_GET['CampaignLogsSearch']['date_end'] : date( 'd-m-Y' );
 
 $DPlacement       = models\DPlacement::find()->asArray()->all();
 $DCampaign        = models\DCampaign::find()->asArray()->all();
@@ -41,8 +42,13 @@ $browserVersions  = \Yii::$app->redis->smembers( 'browser_versions' );
 $countries        = \Yii::$app->redis->smembers( 'countries' );
 $carriers         = \Yii::$app->redis->smembers( 'carriers' );
 
-?>
+$params = Yii::$app->request->get();
 
+if ( isset($params['CampaignLogsSearch']['fields_group1']) && !empty($params['CampaignLogsSearch']['fields_group1']) )
+    $columns = $params['CampaignLogsSearch']['fields_group1'];
+else
+    $columns = ['campaign', 'imps'];
+?>
 
 <div class="campaign-logs-index">
 
@@ -54,25 +60,25 @@ $carriers         = \Yii::$app->redis->smembers( 'carriers' );
 ]); ?>
 
     <?=
-        $form->field(
-            $searchModel, 
-            'date_start'
-        )->widget(\yii\jui\DatePicker::classname(), [
-        //'language' => 'ru',
-        'dateFormat' => 'dd-MM-yyyy',
-        ]);            
+        '<label class="control-label">Date Range</label>';
+        '<div class="input-group drp-container">';
+        echo DateRangePicker::widget([
+            'model'=>$searchModel,
+            
+            'attribute' => 'date_range',
+            //'useWithAddon'=>true,
+            'convertFormat'=>true,
+            'startAttribute' => 'date_start',
+            'endAttribute' => 'date_end',
+            'pluginOptions'=>[
+                'locale'=>[
+                    'format' => 'd-m-Y',
+                    'separator' => ' - '
+                ],
+            ]
+        ]);
+        echo '</div>';
     ?>
-
-    <?=
-        $form->field(
-            $searchModel, 
-            'date_end'
-        )->widget(\yii\jui\DatePicker::classname(), [
-        //'language' => 'ru',
-        'dateFormat' => 'dd-MM-yyyy',
-        ]);            
-    ?>
-
 
     <?=
         $form->field(
@@ -187,7 +193,7 @@ $carriers         = \Yii::$app->redis->smembers( 'carriers' );
             $searchModel, 
             'country'
         )->widget(Select2::classname(), [
-            'data' => $countries,
+            'data' => components\MapHelper::arrayToMap( $countries ),
             'language' => 'us',
             'options' => ['placeholder' => 'Select a country ...', 'multiple' => true],
             'pluginOptions' => [
@@ -203,7 +209,7 @@ $carriers         = \Yii::$app->redis->smembers( 'carriers' );
             $searchModel, 
             'carrier'
         )->widget(Select2::classname(), [
-            'data' => $carriers,
+            'data' => components\MapHelper::arrayToMap( $carriers ),
             'language' => 'us',
             'options' => ['placeholder' => 'Select a carrier ...', 'multiple' => true],
             'pluginOptions' => [
@@ -219,7 +225,7 @@ $carriers         = \Yii::$app->redis->smembers( 'carriers' );
             $searchModel, 
             'device'
         )->widget(Select2::classname(), [
-            'data' => $devices,      
+            'data' => components\MapHelper::arrayToMap( $devices ),      
             'language' => 'us',
             'options' => ['placeholder' => 'Select a device ...', 'multiple' => true],
             'pluginOptions' => [
@@ -235,7 +241,7 @@ $carriers         = \Yii::$app->redis->smembers( 'carriers' );
             $searchModel, 
             'device_brand'
         )->widget(Select2::classname(), [
-            'data' => $deviceBrands,      
+            'data' => components\MapHelper::arrayToMap( $deviceBrands ),      
             'language' => 'us',
             'options' => ['placeholder' => 'Select a device brand ...', 'multiple' => true],
             'pluginOptions' => [
@@ -251,7 +257,7 @@ $carriers         = \Yii::$app->redis->smembers( 'carriers' );
             $searchModel, 
             'device_model'
         )->widget(Select2::classname(), [
-            'data' => $deviceModels,      
+            'data' => components\MapHelper::arrayToMap( $deviceModels ),      
             'language' => 'us',
             'options' => ['placeholder' => 'Select a device model ...', 'multiple' => true],
             'pluginOptions' => [
@@ -267,7 +273,7 @@ $carriers         = \Yii::$app->redis->smembers( 'carriers' );
             $searchModel, 
             'os'
         )->widget(Select2::classname(), [
-            'data' => $os,      
+            'data' => components\MapHelper::arrayToMap( $os ),      
             'language' => 'us',
             'options' => ['placeholder' => 'Select an os ...', 'multiple' => true],
             'pluginOptions' => [
@@ -283,7 +289,7 @@ $carriers         = \Yii::$app->redis->smembers( 'carriers' );
             $searchModel, 
             'os_version'
         )->widget(Select2::classname(), [
-            'data' => $osVersions,      
+            'data' => components\MapHelper::arrayToMap( $osVersions ),      
             'language' => 'us',
             'options' => ['placeholder' => 'Select an os version ...', 'multiple' => true],
             'pluginOptions' => [
@@ -299,7 +305,7 @@ $carriers         = \Yii::$app->redis->smembers( 'carriers' );
             $searchModel, 
             'browser'
         )->widget(Select2::classname(), [
-            'data' => $browsers,      
+            'data' => components\MapHelper::arrayToMap( $browsers ),      
             'language' => 'us',
             'options' => ['placeholder' => 'Select a browser ...', 'multiple' => true],
             'pluginOptions' => [
@@ -315,7 +321,7 @@ $carriers         = \Yii::$app->redis->smembers( 'carriers' );
             $searchModel, 
             'browser_version'
         )->widget(Select2::classname(), [
-            'data' => $browserVersions,      
+            'data' => components\MapHelper::arrayToMap( $browserVersions ),      
             'language' => 'us',
             'options' => ['placeholder' => 'Select a browser version ...', 'multiple' => true],
             'pluginOptions' => [
@@ -326,18 +332,62 @@ $carriers         = \Yii::$app->redis->smembers( 'carriers' );
         ]);           
     ?>
  
-    <?=
-        bootstrap\ButtonGroup::widget([
-                'buttons' => [
-                    ['label' => 'A'],
-                    ['label' => 'B'],
-                    ['label' => 'C', 'visible' => false],
-                ],
-                'options' => [
-                ]
-            ]);    
+    <?= 
+        $form->field($searchModel, 'fields_group1')->checkboxList(
+            [
+                'campaign'  => 'Campaign',
+                'affiliate' => 'Affiliate',
+                'publisher' => 'Publisher',
+                'cluster'   => 'Cluster',
+                'model'     => 'Model',
+                'status'    => 'Status',
+                'imps'      => 'Imps',
+                'cost'      => 'Cost',
+                'revenue'   => 'Revenue'           
+            ],
+            [
+                'item' => function ($index, $label, $name, $checked, $value) {
+                    $class_btn = 'btn-default'; // Style for disable
+                                   
+                    if ( $checked )
+                        $class_btn = 'btn-success'; // Style for checked button
+    
+                    return
+                        '<label class="btn '. $class_btn.'">' . Html::checkbox($name, $checked, ['value' => $value]) . $label . '</label>';
+                },
+                'class' => 'btn-group', "data-toggle"=>"buttons", // Bootstrap class for Button Group
+            ]
+        )->label('');
     ?>
 
+    <?= 
+        $form->field($searchModel, 'fields_group2')->checkboxList(
+            [
+                'country'         => 'Country',
+                'connection_type' => 'Connection Type',
+                'carrier'         => 'Carrier',
+                'device'          => 'Device',
+                'device_brand'    => 'Device Brand',
+                'device_model'    => 'Device Model',
+                'os'              => 'OS',
+                'os_version'      => 'OS Version',
+                'browser'         => 'Browser',
+                'browser_version' => 'Browser Version'
+            ],
+            [
+                'item' => function ($index, $label, $name, $checked, $value) {
+                    $class_btn = 'btn-default'; // Style for disable
+                                   
+                    if ( $checked )
+                        $class_btn = 'btn-success'; // Style for checked button
+    
+                    return
+                        '<label class="btn '. $class_btn.'">' . Html::checkbox($name, $checked, ['value' => $value]) . $label . '</label>';
+                },
+                'class' => 'btn-group', "data-toggle"=>"buttons", // Bootstrap class for Button Group
+            ]
+        )->label('');
+    ?>
     <div class="form-group">
         <?= Html::submitButton('Search', ['class' => 'btn btn-primary']) ?>
         <?= Html::submitButton('Reset', ['class' => 'btn btn-default']) ?>
@@ -346,96 +396,12 @@ $carriers         = \Yii::$app->redis->smembers( 'carriers' );
 <?php ActiveForm::end(); ?>
 <?php yii\widgets\Pjax::end() ?>
 
-</div>
-
-
+<div style="overflow-x:scroll;">
 <?php Pjax::begin( ['id' => 'results'] ); ?>    <?= GridView::widget([
         'dataProvider' => $dataProvider,
-        //'filterModel' => $searchModel,
-        'columns' => [
-            //['class' => 'yii\grid\SerialColumn'],
-            //'click_id',
-            //'D_Campaign_id',
-            //'session_hash',
-            //'click_time',
-            //'conv_time',
-             /*
-             [
-             'attribute' => 'imp_time',
-             'value' => 'clusterLog.imp_time'
-             ],
-             */
-             [
-             'attribute' => 'campaign',
-             'value' => 'campaign.name'
-             ],
-             [
-             'attribute' => 'affiliate',
-             'value' => 'campaign.Affiliates_name'
-             ],               
-             [
-             'attribute' => 'publisher',
-             'value' => 'publisher'
-             ],
-             [
-             'attribute' => 'model',
-             'value' => 'model'
-             ],
-             [
-             'attribute' => 'status',
-             'value' => 'status'
-             ],
-             [
-             'attribute' => 'country',
-             'value' => 'clusterLog.country'
-             ],
-             [
-             'attribute' => 'connection_type',
-             'value' => 'clusterLog.connection_type'
-             ],
-             [
-             'attribute' => 'carrier',
-             'value' => 'clusterLog.carrier'
-             ],
-           
-             [
-             'attribute' => 'device',
-             'value' => 'clusterLog.device'
-             ],
-             [
-             'attribute' => 'device_brand',
-             'value' => 'clusterLog.device_brand'
-             ],             
-             [
-             'attribute' => 'device_model',
-             'value' => 'clusterLog.device_model'
-             ],
-             [
-             'attribute' => 'os',
-             'value' => 'clusterLog.os'
-             ],
-             [
-             'attribute' => 'os_version',
-             'value' => 'clusterLog.os_version'
-             ],
-             [
-             'attribute' => 'browser',
-             'value' => 'clusterLog.browser'
-             ],
-             [
-             'attribute' => 'browser_version',
-             'value' => 'clusterLog.browser_version'
-             ],
-             [
-             'attribute' => 'cost',
-             'value' => 'clusterLog.cost'
-             ],
-             [
-             'attribute' => 'imps',
-             'value' => 'clusterLog.imps'
-             ],
-            'revenue',
-            //['class' => 'yii\grid\ActionColumn'],
-        ],
+        'columns' => $columns
     ]); ?>
-<?php Pjax::end(); ?></div>
+<?php Pjax::end(); ?>
+    
+</div>
+</div>

@@ -16,9 +16,25 @@ use Yii;
  */
 class CampaignLogs extends \yii\db\ActiveRecord
 {
-    public $publisher;
+    public $placement;
+    public $publisher; 
+    public $carrier;
+    public $cluster;
+    public $device;
+    public $device_brand;
+    public $device_model;
+    public $os;
+    public $os_version;
+    public $browser;
+    public $browser_version;    
+    public $campaign;
+    public $clusterlog;
+    public $affiliate;
     public $model;
-    public $status;    
+    public $status;
+    public $country;
+    public $cost;
+    public $imps;
     /**
      * @inheritdoc
      */
@@ -69,5 +85,4 @@ class CampaignLogs extends \yii\db\ActiveRecord
         return $this->hasOne(DCampaign::className(), ['id' => 'D_Campaign_id']);
     }    
 
-    
 }

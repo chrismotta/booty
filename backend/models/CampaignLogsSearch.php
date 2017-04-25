@@ -12,35 +12,21 @@ use backend\models\CampaignLogs;
  */
 class CampaignLogsSearch extends CampaignLogs
 {
-
-    public $campaign;
-    public $clusterLog;
-    public $country;
-    public $placement;
-    public $publisher;
-    public $model;
-    public $status;
     public $placement_id;
     public $date_start;
     public $date_end;
-    public $affiliate;
-    public $carrier;
-    public $cluster;
-    public $device;
-    public $device_brand;
-    public $device_model;
-    public $os;
-    public $os_version;
-    public $browser;
-    public $browser_version;
     public $show_columns;
+    public $date_range;
+    public $fields_group1;
+    public $fields_group2;
+
     /**
      * @inheritdoc
      */
     public function rules()
     {
         return [
-            [['click_id', 'session_hash', 'click_time', 'conv_time', 'campaign', 'clusterLog', 'country', 'placement', 'publisher', 'status', 'model'], 'safe'],
+            [['click_id', 'session_hash', 'click_time', 'conv_time', 'campaign', 'clusterLog', 'country', 'placement', 'publisher', 'status', 'model' ], 'safe'],
             [['D_Campaign_id'], 'integer'],
             [['revenue'], 'number'],
         ];
@@ -70,7 +56,7 @@ class CampaignLogsSearch extends CampaignLogs
             'query' => $query,
         ]);
 
-        $this->load($params);
+        //$this->load($params);
 
         // validation
         /*
@@ -81,22 +67,75 @@ class CampaignLogsSearch extends CampaignLogs
         */
 
         // fields
-        $query->select([
-            '*',
-            'D_Placement.model AS model',
-            'D_Placement.Publishers_name as publisher',
-            'D_Placement.status AS status',
-        ]);
+        if ( isset($params['CampaignLogsSearch']['fields_group1']) && !empty( $params['CampaignLogsSearch']['fields_group1'] ) )
+        {
+            $fields = [];
+            $group  = [];
+
+            foreach ( $params['CampaignLogsSearch']['fields_group1'] as $field )
+            {
+
+                switch ( $field )
+                {
+                    case 'campaign':
+                        $fields[] = 'D_Campaign.name AS campaign';
+                        $group[]  = 'D_Campaign.name';
+                    break;
+                    case 'affiliate':
+                        $fields[] = 'D_Campaign.Affiliates_name AS affiliate';
+                        $group[]  = 'D_Campaign.Affiliates_name';
+                    break;
+                    case 'publisher':
+                        $fields[] = 'D_Placement.Publishers_name AS publisher';
+                        $group[]  = 'D_Placement.Publishers_name'; 
+                    break;
+                    case 'model':
+                        $fields[] = 'D_Placement.model AS model';
+                        $group[]  = 'D_Placement.model';
+                    break;
+                    case 'status':
+                        $fields[] = 'D_Placement.status AS status';
+                        $group[]  = 'D_Placement.status';
+                    break;
+                    case 'imps':
+                    case 'cost':
+                        $fields[] = 'sum(F_ClusterLogs.'.$field.') AS '.$field;
+                    break;
+                    case 'revenue':
+                        $fields[] = 'sum(F_CampaignLogs.'.$field.') AS '.$field;
+                    break;
+                    default:
+                        $fields[] = 'F_ClusterLogs.'.$field.' AS '.$field;
+                    break;
+                }
+            }         
+            $query->groupBy( $group );           
+        }
+        
+        if  ( !isset($fields) || empty($fields) )
+        {
+            $fields = [
+                '*',
+                'D_Campaign.Affiliates_name AS affiliate',
+                'D_Placement.model AS model',
+                'D_Placement.Publishers_name as publisher',
+                'D_Placement.status AS status',
+                'D_Campaign.name AS campaign',
+            ];            
+        }
+
+        $query->select( $fields );
 
 
         // relations
+
         $query->joinWith([
             'campaign',
             'clusterLog',
             'clusterLog.placement',
         ]);
-
-
+        
+ 
         // sorting
         $dataProvider->sort->attributes['campaign'] = [
             'asc' => ['D_Campaign.name' => SORT_ASC],
@@ -166,6 +205,7 @@ class CampaignLogsSearch extends CampaignLogs
             'asc' => ['F_ClusterLogs.imps' => SORT_ASC],
             'desc' => ['F_ClusterLogs.imps' => SORT_DESC],
         ];
+
 
         // filters
         if ( isset($params['CampaignLogsSearch']['date_start']) )
@@ -363,8 +403,9 @@ class CampaignLogsSearch extends CampaignLogs
                     $query->orFilterWhere( ['=', 'D_Placement.id', $id] );
                 }
             }
-        }                                  
-
+        }    
+                          
+        //var_export( $query->createCommand()->getRawSql() );die();
 
         return $dataProvider;
     }
