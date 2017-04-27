@@ -25,7 +25,9 @@
         "yiisoft/yii2-jui": "~2.0.0",
         "elasticsearch/elasticsearch": "^5.1",
         "kartik-v/yii2-widget-select2": "@dev",
-        "kartik-v/yii2-date-range": "*"
+        "kartik-v/yii2-date-range": "*",
+        "kartik-v/yii2-export": "*",
+        "mpdf/mpdf": "^6.1"
     },
     "require-dev": {
         "yiisoft/yii2-debug": "~2.0.0",

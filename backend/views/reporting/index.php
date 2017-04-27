@@ -11,6 +11,7 @@ use backend\models;
 use backend\components;
 use yii\bootstrap;
 use kartik\daterange\DateRangePicker;
+use kartik\export\ExportMenu;
 /* @var $this yii\web\View */
 /* @var $searchModel backend\models\CampaignLogsSearch */
 /* @var $dataProvider yii\data\ActiveDataProvider */
@@ -57,7 +58,8 @@ else
 <?php yii\widgets\Pjax::begin(['id' => 'filters-form']) ?>
 <?php $form = ActiveForm::begin([
     'options' => ['data-pjax' => true ],
-    'method'  => 'GET'
+    'method'  => 'GET',
+    'type' => ActiveForm::TYPE_HORIZONTAL,
 ]); ?>
 
     <?=
@@ -377,10 +379,10 @@ else
             ],
             [
                 'item' => function ($index, $label, $name, $checked, $value) {
-                    $class_btn = 'btn-default'; // Style for disable
-                                   
                     if ( $checked )
                         $class_btn = 'btn-success'; // Style for checked button
+                    else
+                        $class_btn = 'btn-default'; // Style for disable
     
                     return
                         '<label class="btn '. $class_btn.'">' . Html::checkbox($name, $checked, ['value' => $value]) . $label . '</label>';
@@ -397,8 +399,26 @@ else
 <?php ActiveForm::end(); ?>
 <?php yii\widgets\Pjax::end() ?>
 
+
+<div>
+
+<?=
+    ExportMenu::widget([
+        'dataProvider' => $dataProvider,
+        'columns' => $columns,
+        'fontAwesome' => true,
+        'exportConfig'  => [
+            ExportMenu::FORMAT_EXCEL     => false,
+        ]
+    ]);
+?>
+</div>
+
+
 <div style="overflow-x:scroll;">
-<?php Pjax::begin( ['id' => 'results'] ); ?>    <?= GridView::widget([
+<?php Pjax::begin( ['id' => 'results'] ); ?>    
+
+    <?= GridView::widget([
         'dataProvider' => $dataProvider,
         'columns' => $columns
     ]); ?>
