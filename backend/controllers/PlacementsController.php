@@ -66,7 +66,7 @@ class PlacementsController extends Controller
         $model = new Placements();
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
-
+            /*
             $cache->setMap( 'placement:'.$model->id,  [
                 'frequency_cap'   => $model->frequency_cap,
                 'payout'          => $model->payout,
@@ -77,7 +77,7 @@ class PlacementsController extends Controller
                 'imps'            => 0,
                 'size'            => '320x50'
             ]);            
-
+            */
             return $this->redirect(['view', 'id' => $model->id]);
         } else {
             return $this->render('create', [

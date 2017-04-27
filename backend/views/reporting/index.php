@@ -57,9 +57,11 @@ else
 
 <?php yii\widgets\Pjax::begin(['id' => 'filters-form']) ?>
 <?php $form = ActiveForm::begin([
-    'options' => ['data-pjax' => true ],
+    'options' => [
+        'data-pjax' => true,
+        //'class' => 'form-horizontal'
+    ],
     'method'  => 'GET',
-    'type' => ActiveForm::TYPE_HORIZONTAL,
 ]); ?>
 
     <?=
