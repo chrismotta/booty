@@ -35,6 +35,7 @@ class CampaignLogs extends \yii\db\ActiveRecord
     public $country;
     public $cost;
     public $imps;
+    public $connection_type;
     /**
      * @inheritdoc
      */
