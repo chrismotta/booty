@@ -53,6 +53,20 @@ return [
             'rules' => [
             ],
         ],
+        'redis' => [
+            'class' => 'yii\redis\Connection',
+            'hostname' => 'aff-redis.nktz2l.0001.use1.cache.amazonaws.com',
+            'port' => 6379,
+            'database' => 1,
+        ],
+        'cache' => [
+            'class' => 'yii\redis\Cache',
+            'redis' => [
+                'hostname' => 'aff-redis.nktz2l.0001.use1.cache.amazonaws.com',
+                'port' => 6379,
+                'database' => 1,
+            ]
+        ],        
     ],
     'params' => $params,
 ];
