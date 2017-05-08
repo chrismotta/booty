@@ -47,7 +47,7 @@ class EtlController extends \yii\web\Controller
         $this->_updatePlacements();
         $this->userAgents();
 		
-		//$this->_redis->set( 'last_etl_time', $this->_currentEtlTime );
+		$this->_redis->set( 'last_etl_time', $this->_currentEtlTime );
         
         \gc_collect_cycles();
         // return $this->render('index');

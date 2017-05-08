@@ -16,19 +16,17 @@ use kartik\export\ExportMenu;
 /* @var $searchModel backend\models\CampaignLogsSearch */
 /* @var $dataProvider yii\data\ActiveDataProvider */
 
+$onloadJs = '
+    $("#filters-form").on("pjax:end", function() {
+        $.pjax.reload({container:"#results"});  //Reload GridView
+    });
+';
 
-$this->registerJs(
-   '$("document").ready(function(){ 
-        $("#filters-form").on("pjax:end", function() {
-            $.pjax.reload({container:"#results"});  //Reload GridView
-        });
-    });'
-);
 $this->title = 'Reporting';
 $this->params['breadcrumbs'][] = $this->title;
 
-        $searchModel->date_start = isset($_GET['CampaignLogsSearch']['date_start']) ? $_GET['CampaignLogsSearch']['date_start'] : date( 'd-m-Y' );
-        $searchModel->date_end = isset($_GET['CampaignLogsSearch']['date_end']) ? $_GET['CampaignLogsSearch']['date_end'] : date( 'd-m-Y' );
+$searchModel->date_start = isset($_GET['CampaignLogsSearch']['date_start']) ? $_GET['CampaignLogsSearch']['date_start'] : date( 'd-m-Y' );
+$searchModel->date_end = isset($_GET['CampaignLogsSearch']['date_end']) ? $_GET['CampaignLogsSearch']['date_end'] : date( 'd-m-Y' );
 
 $DPlacement       = models\DPlacement::find()->asArray()->all();
 $DCampaign        = models\DCampaign::find()->asArray()->all();
@@ -50,7 +48,24 @@ if ( isset($params['CampaignLogsSearch']['fields_group1']) && !empty($params['Ca
     $columns = $params['CampaignLogsSearch']['fields_group1'];
 else
     $columns = ['campaign', 'imps'];
+
+
+if ( isset($params['CampaignLogsSearch']['fields_group2']) && !empty($params['CampaignLogsSearch']['fields_group2']) )
+    $columns = array_merge( $columns, $params['CampaignLogsSearch']['fields_group2'] );
+
+foreach ( $columns as $column )
+{
+    $onloadJs .= '
+        $("#chkbut_'.$column.'").addClass("active");
+        $("#chkinp_'.$column.'").prop("checked", true);
+    ';
+}
+
+$this->registerJs(
+   '$("document").ready(function(){ '.$onloadJs.'});'
+);
 ?>
+
 
 <div class="campaign-logs-index">
 
@@ -191,7 +206,6 @@ else
             ],
         ]);           
     ?>
-
 
     <?=
         $form->field(
@@ -358,7 +372,7 @@ else
                         $class_btn = 'btn-success'; // Style for checked button
     
                     return
-                        '<label class="btn '. $class_btn.'">' . Html::checkbox($name, $checked, ['value' => $value]) . $label . '</label>';
+                        '<label class="btn '. $class_btn.'" id="chkbut_'.$value.'">' . Html::checkbox($name, $checked, ['value' => $value, 'id'=>'chkinp_'.$value]) . $label . '</label>';
                 },
                 'class' => 'btn-group', "data-toggle"=>"buttons", // Bootstrap class for Button Group
             ]
@@ -387,7 +401,7 @@ else
                         $class_btn = 'btn-default'; // Style for disable
     
                     return
-                        '<label class="btn '. $class_btn.'">' . Html::checkbox($name, $checked, ['value' => $value]) . $label . '</label>';
+                        '<label class="btn '. $class_btn.'" id="chkbut_'.$value.'">' . Html::checkbox($name, $checked, ['value' => $value, 'id'=>'chkinp_'.$value]) . $label . '</label>';
                 },
                 'class' => 'btn-group', "data-toggle"=>"buttons", // Bootstrap class for Button Group
             ]

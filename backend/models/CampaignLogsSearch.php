@@ -72,7 +72,12 @@ class CampaignLogsSearch extends CampaignLogs
 
         if ( isset($params['CampaignLogsSearch']['fields_group1']) && !empty( $params['CampaignLogsSearch']['fields_group1'] ) )
         {
-            foreach ( $params['CampaignLogsSearch']['fields_group1'] as $field )
+            $filterFields = $params['CampaignLogsSearch']['fields_group1'];
+
+            if ( isset($params['CampaignLogsSearch']['fields_group2']) && !empty( $params['CampaignLogsSearch']['fields_group2'] ) )            
+                $filterFields = array_merge( $filterFields, $params['CampaignLogsSearch']['fields_group2'] );
+
+            foreach ( $filterFields as $field )
             {
                 switch ( $field )
                 {
