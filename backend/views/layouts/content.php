@@ -39,7 +39,7 @@ use dmstr\widgets\Alert;
     <div class="pull-right hidden-xs">
         <b>Version</b> 2.0
     </div>
-    <strong>Copyright &copy; 2017 <a href="http://themedialab.co">SPLAD</a>.</strong> All rights
+    <strong>Copyright &copy; 2017 <a href="http://splad.co">Splad.co</a>.</strong> All rights
     reserved.
 </footer>
 
