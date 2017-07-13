@@ -2,7 +2,7 @@
 
 /* @var $this yii\web\View */
 
-$this->title = 'TML Dashboard';
+//$this->title = 'SPD Dashboard';
 ?>
 <div class="site-index">
 
