@@ -67,7 +67,7 @@ use yii\helpers\Html;
                 <li class="dropdown user user-menu">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown">
                         <img src="<?php echo Yii::$app->homeUrl?>img/generic_user.png" class="user-image" alt="User Image"/>
-                        <span class="hidden-xs">Christian Motta</span>
+                        <span class="hidden-xs">Eduardo Diaz</span>
                     </a>
                     <ul class="dropdown-menu">
                         <!-- User image -->
@@ -76,7 +76,7 @@ use yii\helpers\Html;
                                  alt="User Image"/>
 
                             <p>
-                                Christian Motta - IT Manager
+                                Eduardo Diaz - IT Manager
                                 <small>Member since Feb. 2015</small>
                             </p>
                         </li>
