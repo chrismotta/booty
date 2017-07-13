@@ -14,7 +14,7 @@
           <!-- small box -->
           <div class="small-box bg-gray">
             <div class="inner">
-              <h3>10,535,266</h3>
+              <h3>0</h3>
 
               <p>Today Impressions</p>
             </div>
@@ -29,7 +29,7 @@
           <!-- small box -->
           <div class="small-box bg-gray">
             <div class="inner">
-              <h3>6,295,332</h3>
+              <h3>0</h3>
 
               <p>Today Unique Visitors</p>
             </div>
@@ -44,7 +44,7 @@
           <!-- small box -->
           <div class="small-box bg-gray">
             <div class="inner">
-              <h3>629</h3>
+              <h3>0</h3>
 
               <p>Today installations</p>
             </div>
@@ -59,7 +59,7 @@
           <!-- small box -->
           <div class="small-box bg-gray">
             <div class="inner">
-              <h3>2.34<sup style="font-size: 20px">%</sup></h3>
+              <h3>0<sup style="font-size: 20px">%</sup></h3>
 
               <p>Today Conversion Rate</p>
             </div>
