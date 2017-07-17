@@ -2,17 +2,32 @@
 
 namespace backend\controllers;
 
-use Elasticsearch\ClientBuilder;
+//require_once '../../vendor/ip2location/ip2location-php/IP2Location.php';
+//use Elasticsearch\ClientBuilder;
+use DeviceDetector\DeviceDetector;
+use DeviceDetector\Parser\Device\DeviceParserAbstract;
+use DeviceDetector\Parser\Client\ClientParserAbstract;
+//use IP2Location;
+use Predis;
 
 class EtlController extends \yii\web\Controller
 {
+    CONST ALERT_FROM = 'Nigma<no-reply@tmlbox.co>';
+    CONST ALERT_TO   = 'daniel@themedialab.co,chris@themedialab.co';
 
 	private $_redis;
 	private $_objectLimit;
-	private $_lastEtlTime;
-	private $_currentEtlTime;
-	private $_elasticSearch;
+	private $_timestamp;
+	private $_limit;
     private $_placementSql;
+    private $_showsql;
+    private $_sqltest;
+    private $_alertSubject;
+    private $_error;
+    private $_noalerts;
+    private $_db;
+    private $_test;
+
     private $_count;
 
 
@@ -25,11 +40,30 @@ class EtlController extends \yii\web\Controller
 
     	$this->_redis 	 	  	= new \Predis\Client( \Yii::$app->params['predisConString'] );
 
-    	$this->_objectLimit 	= 100000; // how many objects to process at once
+        $this->_objectLimit = isset( $_GET['objectlimit'] ) ? $_GET['objectlimit'] : 50000;
 
-    	$lastEtlTime   			= $this->_redis->get( 'last_etl_time');
-    	$this->_lastEtlTime 	= $lastEtlTime ?  $lastEtlTime : 0;
-    	$this->_currentEtlTime	= time();        	
+        if ( !preg_match( '/^[0-9]+$/',$this->_objectLimit) || (int)$this->_objectLimit<1 )
+        {
+            die('invalid object limit');
+        }
+
+        $this->_limit = isset( $_GET['limit'] ) ? $_GET['limit'] : false;
+
+        if ( $this->_limit && !preg_match( '/^[0-9]+$/',$this->_limit ) )
+        {
+            die('invalid limit');
+        }
+      
+        $this->_showsql         = isset( $_GET['showsql'] ) && $_GET['showsql'] ? true : false;
+        $this->_noalerts        = isset( $_GET['noalerts'] ) && $_GET['noalerts'] ? true : false;
+        $this->_sqltest         = isset( $_GET['sqltest'] ) && $_GET['sqltest'] ? true : false;
+
+        $this->_timestamp       = time();
+
+        $this->_db              = false;
+
+        $this->_alertSubject    = 'AD NIGMA - ETL2 ERROR ' . date( "Y-m-d H:i:s", $this->_timestamp );
+
 
 		\ini_set('memory_limit','3000M');
 		\set_time_limit(0);
@@ -40,17 +74,93 @@ class EtlController extends \yii\web\Controller
 
     public function actionIndex( )
     {
-		$this->placements();
-		$this->campaigns();
-		$this->imps();
-		$this->convs();
-        $this->_updatePlacements();
-        $this->userAgents();
-		
-		$this->_redis->set( 'last_etl_time', $this->_currentEtlTime );
+        try
+        {
+            $this->campaigns();            
+        }
+        catch ( Exception $e )
+        {
+            $msg .= "ETL CAMPAINGS ERROR: ".$e->getCode().'<hr>';
+            $msg .= $e->getMessage();
+
+            if ( !$this->_noalerts )
+                $this->_sendMail ( self::ALERT_FROM, self::ALERT_TO, $this->_alertSubject, $msg );
+
+            die($msg);
+        }
+
+        try
+        {
+            $this->placements();
+        }
+        catch ( Exception $e )
+        {
+            $msg .= "ETL PLACEMENTS ERROR: ".$e->getCode().'<hr>';
+            $msg .= $e->getMessage();
+
+            if ( !$this->_noalerts )
+                $this->_sendMail ( self::ALERT_FROM, self::ALERT_TO, $this->_alertSubject, $msg );
+
+            die($msg);           
+        }
         
-        \gc_collect_cycles();
-        // return $this->render('index');
+        try
+        {
+            $this->imps();
+        } 
+        catch (Exception $e) {
+            $msg .= "ETL IMPRESSIONS ERROR: ".$e->getCode().'<hr>';
+            $msg .= $e->getMessage();
+
+            if ( !$this->_noalerts )
+                $this->_sendMail ( self::ALERT_FROM, self::ALERT_TO, $this->_alertSubject, $msg );
+
+            die($msg);
+        }
+
+        try
+        {
+            $this->convs();
+        } 
+        catch (Exception $e) {
+            $msg .= "ETL CONVERSIONS ERROR: ".$e->getCode().'<hr>';
+            $msg .= $e->getMessage();
+
+            if ( !$this->_noalerts )
+                $this->_sendMail ( self::ALERT_FROM, self::ALERT_TO, $this->_alertSubject, $msg );
+
+            die($msg);
+        }
+
+        try
+        {
+            $this->_updatePlacements();
+        } 
+        catch (Exception $e) {
+            $msg .= "ETL PLACEMENT UPDATE ERROR: ".$e->getCode().'<hr>';
+            $msg .= $e->getMessage();
+
+            if ( !$this->_noalerts )
+                $this->_sendMail ( self::ALERT_FROM, self::ALERT_TO, $this->_alertSubject, $msg );
+
+            die($msg);
+        }
+
+        try
+        {
+            $this->userAgents();
+        } 
+        catch (Exception $e) {
+            $msg .= "ETL USER AGENT ERROR: ".$e->getCode().'<hr>';
+            $msg .= $e->getMessage();
+
+            if ( !$this->_noalerts )
+                $this->_sendMail ( self::ALERT_FROM, self::ALERT_TO, $this->_alertSubject, $msg );
+
+            die($msg);
+        }
+
+        return true;        
     }
 
 
@@ -66,40 +176,50 @@ class EtlController extends \yii\web\Controller
 
     public function convs ( )
     {
+        if ( $this->_db )
+            $db = $this->_db;
+        else
+            $db = isset( $_GET['db'] ) ? $_GET['db'] : 'current';
+
+        switch ( $db )
+        {
+            case 'yesterday':
+                $this->_redis->select( $this->_getYesterdayConvDatabase() );
+            break;
+            case 'current':
+                $this->_redis->select( $this->_getCurrentConvDatabase() );
+            break;
+        } 
+
     	$start 		   = time();
     	$convIDCount   = $this->_redis->zcard( 'convs' );
     	$queries 	   = ceil( $convIDCount/$this->_objectLimit );
-    	$startAt 	   = 0;
     	$rows   	   = 0;
-    	$queries 	   = 0;
 
 		// build separate sql queries based on $_objectLimit in order to control memory usage
     	for ( $i=0; $i<=$queries; $i++ )
     	{
-    		// call each query from a separated method in order to force garbage collection (and free memory)
-    		$rows    += $this->_buildConvQuery ( $startAt, $startAt+$this->_objectLimit );
-    		$startAt += $this->_objectLimit;
+    		$rows    += $this->_buildConvQuery ();
     	}
 
 		$elapsed = time() - $start;
-		echo 'Conversions: '.$rows.' rows - sql queries: '.$queries.' - load time: '.$elapsed.' seg.<hr/>';
+		echo 'Conversions: '.$rows.' rows - queries: '.$queries.' - load time: '.$elapsed.' seg.<hr/>';
     }
 
 
-    private function _buildConvQuery ( $start_at,  $end_at )
+    private function _buildConvQuery ( )
     {
 		$sql 		= '';
 		$params 	= [];
 		$paramCount = 0;
 
-		$convIDs 	= $this->_redis->zrangebyscore( 'convs', $this->_lastEtlTime, $this->_currentEtlTime, 'LIMIT', $start_at, $end_at );
+		$convIDs 	= $this->_redis->zrange( 'convs', 0, $this->_objectLimit );
 
 		// ad each conversion to SQL query
 		foreach ( $convIDs as $clickID )
 		{
 			$convTime    	= $this->_redis->get( 'conv:'.$clickID );
 
-			// using params because clickID comes from browser
 			$param 			= ':i'.$paramCount;
 			$params[$param] = $clickID;
 			$cost 			= 0;
@@ -122,67 +242,64 @@ class EtlController extends \yii\web\Controller
 		}
 
 		if ( $sql != '' )
-			return \Yii::$app->db->createCommand( $sql )->bindValues( $params )->execute();
+        {
+			$return = \Yii::$app->db->createCommand( $sql )->bindValues( $params )->execute();
+
+            foreach ( $convIDs AS $clickID )
+            {
+                $this->_redis->zadd( 'loadedconvs', $this->_timestamp, $clickID );
+                $this->_redis->zrem( 'convs', $clickID );
+            }
+
+            return $return;
+        }
+
+        return 0;
     }
 
 
     public function imps ( )
     {
-    	$this->campaignLogs();
-    	$this->clusterLogs();
+    	$this->_campaignLogs();
+    	$this->_clusterLogs();
     }
 
 
-    public function campaignLogs ( )
+    private function _campaignLogs ( )
     {
+        if ( $this->_db )
+            $db = $this->_db;
+        else
+            $db = isset( $_GET['db'] ) ? $_GET['db'] : 'current';
+
+        switch ( $db )
+        {
+            case 'yesterday':
+                $this->_redis->select( $this->_getYesterdayDatabase() );
+            break;
+            case 'current':
+                $this->_redis->select( $this->_getCurrentDatabase() );
+            break;
+        }   
+
     	$start 			= time();
-    	$clickIDCount   = $this->_redis->zcount( 'clickids', $this->_lastEtlTime, $this->_currentEtlTime );
+    	$clickIDCount   = $this->_redis->zcard( 'clickids' );
     	$queries 		= ceil( $clickIDCount/$this->_objectLimit );
-    	$startAt 		= 0;
     	$rows 			= 0;
 
-    	// echo ('total click IDs: '.$clickIDCount .'<hr/>');
 
     	// build separate sql queries based on $_objectLimit in order to control memory usage
     	for ( $i=0; $i<$queries; $i++ )
     	{
-    		// call each query from a separated method in order to force garbage collection (and free memory)
-    		$rows += $this->_buildCampaignLogsQuery( $startAt, $startAt+$this->_objectLimit );
-    		$startAt += $this->_objectLimit;
+    		$rows += $this->_buildCampaignLogsQuery( );
     	}
 
 		$elapsed = time() - $start;
-		echo 'CampaignLogs: '.$rows.' rows - queries: '.$queries.' - load time: '.$elapsed.' seg.<hr/>';
-    }
-
-    public function userAgents ( )
-    {
-        $start = time();
-        // load user agents into local cache
-        $userAgentIds = $this->_redis->smembers( 'uas' );
-
-        foreach ( $userAgentIds as $id )
-        {
-            $ua = $this->_redis->hgetall( 'ua:'.$id );
-
-            \Yii::$app->redis->sadd( 'devices', $ua['device']  );
-            \Yii::$app->redis->sadd( 'device_brands', $ua['device_brand']  );
-            \Yii::$app->redis->sadd( 'device_models', $ua['device_model']  );
-            \Yii::$app->redis->sadd( 'os', $ua['os']  );
-            \Yii::$app->redis->sadd( 'os_versions', $ua['os_version']  );
-            \Yii::$app->redis->sadd( 'browsers', $ua['browser']  );
-            \Yii::$app->redis->sadd( 'browser_versions', $ua['browser_version']  );
-
-            // free memory cause there is no garbage collection until block ends
-            unset($ua);
-        }
-
-        $elapsed = time() - $start;
-        echo 'User agents: '.count($userAgentIds).' objects - load time: '.$elapsed.' seg.<hr/>';        
+		echo 'Campaign Logs: '.$rows.' rows - queries: '.$queries.' - load time: '.$elapsed.' seg.<hr/>';
     }
 
 
-    private function _buildCampaignLogsQuery ( $start_at, $end_at )
+    private function _buildCampaignLogsQuery ( )
     {
     	$sql = '
     		INSERT INTO F_CampaignLogs (
@@ -195,51 +312,36 @@ class EtlController extends \yii\web\Controller
     	';
 
     	$values = '';
-
-        echo 'query => '. $start_at.': '.$end_at.'<br>';
         
-    	$clickIDs = $this->_redis->zrangebyscore( 'clickids', $this->_lastEtlTime, $this->_currentEtlTime,  'LIMIT', $start_at, $end_at );
+    	$clickIDs = $this->_redis->zrange( 'clickids', 0, $this->_objectLimit );
 
 		if ( $clickIDs )
 		{
-			// create elastic search data
-			// $params = ['body' => []];
-
 			// add each campaign log to sql query
     		foreach ( $clickIDs as $clickID )
     		{
     			$campaignLog = $this->_redis->hgetall( 'campaignlog:'.$clickID );
 
-    			if ( $values != '' )
-    				$values .= ',';
+                if ( $campaignLog )
+                {
+                    if ( $values != '' )
+                        $values .= ',';
 
-    			// append to elastic search data
-    			/*
-				$params['body'][] = [
-					'index' => [
-						'_index' => 'traffic',
-						'_type' => 'CampaignLog',
-						'_id' => $clickID
-					]
-				];				
+                    if ( $campaignLog['click_time'] )
+                        $campaignLog['click_time'] = '"'.\date( 'Y-m-d H:i:s', $campaignLog['click_time'] ).'"';
+                    else
+                        $campaignLog['click_time'] = 'NULL';
 
-				$params['body'][] = $campaignLog;
-				*/
+                    $values .= '( 
+                        "'.$clickID.'",
+                        '.$campaignLog['campaign_id'].',
+                        "'.$campaignLog['session_hash'].'",
+                        '.$campaignLog['click_time'].'
+                    )';
 
-                if ( $campaignLog['click_time'] )
-                    $clickTime = '"'.\date( 'Y-m-d H:i:s', $campaignLog['click_time'] ).'"';
-                else
-                    $clickTime = 'NULL';
-
-    			$values .= '( 
-                    "'.$clickID.'",
-    				'.$campaignLog['campaign_id'].',
-    				"'.$campaignLog['session_hash'].'",
-    				'.$clickTime.'
-    			)';
-
-                // free memory cause there is no garbage collection until block ends
-                unset( $campaignLog );
+                    // free memory cause there is no garbage collection until block ends
+                    unset( $campaignLog );                    
+                }
     		}
 
     		if ( $values != '' )
@@ -248,7 +350,24 @@ class EtlController extends \yii\web\Controller
 
 	    		// save on elastic search
 	    		// $this->_elasticSearch->bulk($params);
-	    		return \Yii::$app->db->createCommand( $sql )->execute();    			
+                if ( $this->_showsql || $this->_sqltest )
+                    echo '<br><br>SQL: '.$sql. '<br><br>';
+
+                if ( $this->_sqltest )
+                    return 0;
+
+                $return = \Yii::$app->db->createCommand( $sql )->execute();         
+
+                if ( $return )
+                {
+                    foreach ( $clickIDs AS $clickID )
+                    {
+                        $this->_redis->zadd( 'loadedclicks', $this->_timestamp, $clickID );
+                        $this->_redis->zrem( 'clickids', $clickID );
+                    }                                        
+                }
+
+                return $return;   			
     		}
 		}
 
@@ -258,29 +377,41 @@ class EtlController extends \yii\web\Controller
     }
 
 
-    public function clusterLogs ( )
-    {      
+    private function _clusterLogs ( )
+    {
+        if ( $this->_db )
+            $db = $this->_db;
+        else
+            $db = isset( $_GET['db'] ) ? $_GET['db'] : 'current';
+
+        switch ( $db )
+        {
+            case 'yesterday':
+                $this->_redis->select( $this->_getYesterdayDatabase() );
+            break;
+            case 'current':
+                $this->_redis->select( $this->_getCurrentDatabase() );
+            break;
+        }    
+
     	$start 			     = time();
-    	$clusterLogCount     = $this->_redis->zcount( 'sessionhashes', $this->_lastEtlTime, $this->_currentEtlTime );
+    	$clusterLogCount     = $this->_redis->zcard( 'sessionhashes' );
     	$queries 		     = ceil( $clusterLogCount/$this->_objectLimit );
-    	$startAt 		     = 0;
-    	$rows   		     = 0;
+    	$rows   		     = 0;    
 
     	// build separate sql queries based on $_objectLimit in order to control memory usage
     	for ( $i=0; $i<$queries; $i++ )
     	{
-    		// call each query from a separated method in order to force garbage collection (and free memory)
-    		$rows += $this->_buildClusterLogsQuery( $startAt, $startAt+$this->_objectLimit );
-			$startAt += $this->_objectLimit;
+    		$rows += $this->_buildClusterLogsQuery();
     	}
 
 		$elapsed = time() - $start;
 
-		echo 'ClusterLogs: '.$rows.' rows - queries: '.$queries.' - load time: '.$elapsed.' seg.<hr/>';
+		echo 'Cluster Logs: '.$rows.' rows - queries: '.$queries.' - load time: '.$elapsed.' seg.<hr/>';
     }
 
 
-    private function _buildClusterLogsQuery ( $start_at, $end_at )
+    private function _buildClusterLogsQuery ( )
     {
     	$sql = '
     		INSERT INTO F_ClusterLogs (
@@ -307,9 +438,7 @@ class EtlController extends \yii\web\Controller
 
     	$values = '';    		
 
-        echo 'query => '. $start_at.': '.$end_at.'<br>';
-
-		$sessionHashes = $this->_redis->zrangebyscore( 'sessionhashes', $this->_lastEtlTime, $this->_currentEtlTime,  'LIMIT', $start_at, $end_at );
+		$sessionHashes = $this->_redis->zrange( 'sessionhashes', 0, $this->_objectLimit );
 
 		if ( $sessionHashes )
 		{
@@ -320,69 +449,206 @@ class EtlController extends \yii\web\Controller
 			// add each clusterLog to sql query
     		foreach ( $sessionHashes as $sessionHash )
     		{
-    			$clusterLog = $this->_redis->hgetall( 'clusterlog:'.$sessionHash );
+                $clusterLog = $this->_redis->hgetall( 'clusterlog:'.$sessionHash );
 
-    			if ( $values != '' )
-    				$values .= ',';
-
-                if ( $clusterLog['device']=='Phablet' || $clusterLog['device']=='Smartphone' )
-                    $clusterLog['device'] = 'Mobile';
-
-    			$values .= '( 
-                    "'.$sessionHash.'",
-    				'.$clusterLog['placement_id'].',
-    				'.$clusterLog['cluster_id'].',
-                    "'.$clusterLog['cluster_name'].'",
-    				'.$clusterLog['imps'].',
-    				"'.\date( 'Y-m-d H:i:s', $clusterLog['imp_time'] ).'",
-    				'.$clusterLog['cost'].',
-    				"'.$clusterLog['country'].'",
-    				"'.$clusterLog['connection_type'].'",
-    				"'.$clusterLog['carrier'].'",
-    				"'.$clusterLog['device'].'",
-    				"'.$clusterLog['device_model'].'",
-    				"'.$clusterLog['device_brand'].'",
-    				"'.$clusterLog['os'].'",
-    				"'.$clusterLog['os_version'].'",
-    				"'.$clusterLog['browser'].'",
-    				"'.$clusterLog['browser_version'].'"
-    			)';
-
-                \Yii::$app->redis->sadd( 'carriers', $clusterLog['carrier']  );
-                \Yii::$app->redis->sadd( 'countries', $clusterLog['country']  );
-
-                // add placements to placements update query
-                if ( !\in_array( $clusterLog['placement_id'], $placements ) )
+                if ( $clusterLog )
                 {
-                    $placements[]      = $clusterLog['placement_id'];
-                    $health_check_imps = $this->_redis->hget( 'placement:'.$clusterLog['placement_id'], 'imps' );
+                    if ( $values != '' )
+                        $values .= ',';
 
-                    if ( $health_check_imps && $health_check_imps>0 )
-                        $this->_placementSql     .= 'UPDATE Placements SET health_check_imps='.$health_check_imps.' WHERE id='.$clusterLog['placement_id'].';';
-                    $this->_count++;
+                    /*
+                    if ( !\filter_var($clusterLog['ip'], \FILTER_VALIDATE_IP) || !preg_match('/^[a-zA-Z]{2}$/', $clusterLog['country']) )
+                    {
+                        $ips = \explode( ',', $clusterLog['ip'] );
+                        $clusterLog['ip'] = $ips[0];
+
+                        $location = new \IP2Location(Yii::app()->params['ipDbFile'], \IP2Location::FILE_IO);
+                        $ipData      = $location->lookup($clusterLog['ip'], \IP2Location::ALL);
+
+                        $clusterLog['carrier'] = $ipData->mobileCarrierName;
+                        $clusterLog['country'] = $ipData->countryCode;
+
+                        if ( $ipData->mobileCarrierName == '-' )
+                            $clusterLog['connection_type'] = 'WIFI';
+                        else
+                            $clusterLog['connection_type'] = 'MOBILE';
+                    }
+                    */
+
+                    if ( !$clusterLog['placement_id'] || $clusterLog['placement_id']=='' || !preg_match( '/^[0-9]+$/',$clusterLog['placement_id'] ) )
+                        $clusterLog['placement_id'] = 'NULL';
+
+
+                    if ( $clusterLog['country'] && $clusterLog['country']!='' )
+                        $clusterLog['country'] = '"'.strtoupper($clusterLog['country']).'"';
+                    else
+                        $clusterLog['country'] = 'NULL';
+
+
+                    if ( $clusterLog['carrier'] && $clusterLog['carrier']!='' )
+                        $clusterLog['carrier'] = '"'.$this->_escapeSql( $clusterLog['carrier'] ).'"';
+                    else
+                        $clusterLog['carrier'] = 'NULL';
+
+
+                    if ( $clusterLog['connection_type'] && $clusterLog['connection_type']!='' )
+                    {
+                        if ( $clusterLog['connection_type']== '3g' || $clusterLog['connection_type']== '3G' )
+                            $clusterLog['connection_type']= 'MOBILE';
+
+                        $clusterLog['connection_type'] = '"'.strtoupper($clusterLog['connection_type']).'"';
+                    }
+                    else
+                        $clusterLog['connection_type'] = 'NULL';
+
+
+                    if ( !isset($clusterLog['device']) || !$clusterLog['device'] || $clusterLog['device']=='' )
+                        $clusterLog['device'] = 'NULL';
+                    else
+                        $clusterLog['device'] = '"'.$clusterLog['device'].'"';
+
+
+                    if ( isset($clusterLog['device_brand']) && $clusterLog['device_brand'] && $clusterLog['device_brand']!='' )
+                        $clusterLog['device_brand'] = '"'.$this->_escapeSql( $clusterLog['device_brand'] ).'"';
+                    else
+                        $clusterLog['device_brand'] = 'NULL';
+
+
+                    if ( isset($clusterLog['device_model']) && $clusterLog['device_model'] && $clusterLog['device_model']!='' )
+                        $clusterLog['device_model'] = '"'.$this->_escapeSql( $clusterLog['device_model'] ).'",';
+                    else
+                        $clusterLog['device_model'] = 'NULL';
+
+
+                    if ( isset($clusterLog['os']) && $clusterLog['os'] && $clusterLog['os']!='' )
+                        $clusterLog['os'] = '"'.$this->_escapeSql( $clusterLog['os'] ).'"';
+                    else
+                        $clusterLog['os'] = 'NULL';
+
+
+                    if ( isset($clusterLog['os_version']) && $clusterLog['os_version'] && $clusterLog['os_version']!='' )
+                        $clusterLog['os_version'] = '"'.$this->_escapeSql( $clusterLog['os_version'] ).'"';
+                    else
+                        $clusterLog['os_version'] = 'NULL';   
+
+
+                    if ( isset($clusterLog['browser']) && $clusterLog['browser'] && $clusterLog['browser']!='' )
+                        $clusterLog['browser'] = '"'.$this->_escapeSql( $clusterLog['browser'] ).'"';
+                    else
+                        $clusterLog['browser'] = 'NULL';  
+
+                    if ( isset($clusterLog['browser_version']) && $clusterLog['browser_version'] && $clusterLog['browser_version']!='' )
+                        $clusterLog['browser_version'] = '"'.$this->_escapeSql( $clusterLog['browser_version'] ).'"';
+                    else
+                        $clusterLog['browser_version'] = 'NULL';
+
+
+                    if ( $clusterLog['device']=='Phablet' || $clusterLog['device']=='Smartphone' )
+                        $clusterLog['device'] = '"mobile"';
+
+                    $values .= '( 
+                        "'.$sessionHash.'",
+                        '.$clusterLog['placement_id'].',
+                        '.$clusterLog['cluster_id'].',
+                        "'.$clusterLog['cluster_name'].'",
+                        '.$clusterLog['imps'].',
+                        "'.\date( 'Y-m-d H:i:s', $clusterLog['imp_time'] ).'",
+                        '.$clusterLog['cost'].',
+                        '.$clusterLog['country'].',
+                        '.$clusterLog['connection_type'].',
+                        '.$clusterLog['carrier'].',
+                        '.$clusterLog['device'].',
+                        '.$clusterLog['device_model'].',
+                        '.$clusterLog['device_brand'].',
+                        '.$clusterLog['os'].',
+                        '.$clusterLog['os_version'].',
+                        '.$clusterLog['browser'].',
+                        '.$clusterLog['browser_version'].'
+                    )';
+
+                    // add placements to placements update query
+                    if ( !\in_array( $clusterLog['placement_id'], $placements ) )
+                    {
+                        $placements[]      = $clusterLog['placement_id'];
+                        $health_check_imps = $this->_redis->hget( 'placement:'.$clusterLog['placement_id'], 'imps' );
+
+                        if ( $health_check_imps && $health_check_imps>0 )
+                            $this->_placementSql     .= 'UPDATE Placements SET health_check_imps='.$health_check_imps.' WHERE id='.$clusterLog['placement_id'].';';
+                        $this->_count++;
+                    }
+
+                    // save reporting multiselect data
+                    \Yii::$app->redis->sadd( 'carriers', $clusterLog['carrier']  );
+                    \Yii::$app->redis->sadd( 'countries', $clusterLog['country']  );
+
+                    // save cluster name to be used in reporting multiselect
+                    if ( !\in_array( $clusterLog['cluster_id'], $clusters ) )
+                    {
+                        \Yii::$app->redis->hset( 'clusternames', $clusterLog['cluster_id'], $clusterLog['cluster_name']  );
+                    }
+
+                    // free memory because there is no garbage collection until block ends
+                    unset ( $clusterLog );                                        
                 }
-
-                // save cluster name to be used in reporting multiselect
-                if ( !\in_array( $clusterLog['cluster_id'], $clusters ) )
-                {
-                    \Yii::$app->redis->hset( 'clusternames', $clusterLog['cluster_id'], $clusterLog['cluster_name']  );
-                }
-
-                // free memory because there is no garbage collection until block ends
-                unset ( $clusterLog );
     		}
 
     		if ( $values != '' )
     		{
 	    		$sql .= $values . ' ON DUPLICATE KEY UPDATE cost=VALUES(cost), imps=VALUES(imps);';
 
-	    		return \Yii::$app->db->createCommand( $sql )->execute();			
+                if ( $this->_showsql || $this->_sqltest )
+                    echo '<br><br>SQL: '.$sql.'<br><br>';
+
+                if ( $this->_sqltest )
+                    return 0;
+
+	    		$return = \Yii::$app->db->createCommand( $sql )->execute();			
+
+                if ( $return )
+                {
+                    foreach ( $sessionHashes AS $sessionHash )
+                    {
+                        $this->_redis->zadd( 'loadedlogs', $this->_timestamp, $sessionHash );
+
+                        $this->_redis->zrem( 'sessionhashes', $sessionHash );
+                    }                                        
+                }
+
+                return $return;
     		}
 		}
 
-        unset( $sessionHashes );
-
 		return 0;
+    }
+
+
+    public function userAgents ( )
+    {
+        $start = time();
+
+        $this->_redis->select(0);
+
+        // load user agents into local cache
+        $userAgentIds = $this->_redis->smembers( 'uas' );
+
+        foreach ( $userAgentIds as $id )
+        {
+            $ua = $this->_redis->hgetall( 'ua:'.$id );
+
+            \Yii::$app->redis->sadd( 'devices', $ua['device']  );
+            \Yii::$app->redis->sadd( 'device_brands', $ua['device_brand']  );
+            \Yii::$app->redis->sadd( 'device_models', $ua['device_model']  );
+            \Yii::$app->redis->sadd( 'os', $ua['os']  );
+            \Yii::$app->redis->sadd( 'os_versions', $ua['os_version']  );
+            \Yii::$app->redis->sadd( 'browsers', $ua['browser']  );
+            \Yii::$app->redis->sadd( 'browser_versions', $ua['browser_version']  );
+
+            // free memory cause there is no garbage collection until block ends
+            unset($ua);
+        }
+
+        $elapsed = time() - $start;
+        echo 'User agents: '.count($userAgentIds).' objects - load time: '.$elapsed.' seg.<hr/>';        
     }
 
 
@@ -453,6 +719,79 @@ class EtlController extends \yii\web\Controller
 		$elapsed = time() - $start;
 
 		echo 'Campaigns: '.$rows.' rows - Elapsed time: '.$elapsed.' seg.<hr/>';
-    }        
+    }
+
+
+    private function _getYesterdayDatabase (  )
+    {
+        switch ( floor(($this->_timestamp/60/60/24))%2+1 )
+        {
+            case 1:
+                return 2;
+            break;
+            case 2:
+                return 1;
+            break;
+        }
+    }
+
+    private function _getYesterdayConvDatabase (  )
+    {
+        switch ( floor(($this->_timestamp/60/60/24))%2+3 )
+        {
+            case 1:
+                return 2;
+            break;
+            case 2:
+                return 1;
+            break;
+        }
+    }
+
+
+    private function _getCurrentDatabase (  )
+    {
+        return floor(($this->_timestamp/60/60/24))%2+1;
+    }
+
+
+    private function _getCurrentConvDatabase (  )
+    {
+        return floor(($this->_timestamp/60/60/24))%2+3;
+    }
+
+
+    private function _escapeSql( $sql )
+    {
+        return preg_replace(
+            [
+                '/(\\\\)/',
+                '/(NUL)/',
+                '/(BS)/',
+                '/(TAB)/',
+                '/(LF)/',
+                '/(CR)/',
+                '/(SUB)/',
+                '/(%)/',                
+                "/(')/",
+                '/(")/',
+                '/(_)/'
+            ],
+            [
+                '\\\\\\',
+                '\0',
+                '\b',
+                '\t',
+                '\n',
+                '\r',
+                '\Z',
+                '\%',                
+                "\\'",
+                '\"',
+                '\\_'
+            ],
+            $sql
+        );
+    }           
 
 }
