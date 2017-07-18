@@ -62,7 +62,7 @@
                         'icon' => 'tasks',
                         'url' => '#',
                         'items' => [
-                            [
+                            /*[
                                 'label' => 'Traffic Sources',
                                 'icon' => 'circle-o',
                                 'url' => '#',
@@ -75,7 +75,7 @@
                                     ],
                                     ['label' => 'Admin', 'icon' => 'circle-thin', 'url' => ['/sources'],],
                                 ],
-                            ],
+                            ],*/
                             [
                                 'label' => 'Publishers',
                                 'icon' => 'circle-o',
