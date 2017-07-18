@@ -66,6 +66,14 @@ class CampaignsController extends Controller
         $model = new Campaigns();
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
+
+            $cache = new \Predis\Client( \Yii::$app->params['predisConString'] );
+            $cache->hmset( 'campaign:'.$model->id,  [
+                'callback'   => $model->landing_url,
+                'payout'     => $model->payout
+            ]);
+ 
+
             return $this->redirect(['view', 'id' => $model->id]);
         } else {
             return $this->render('create', [
@@ -85,13 +93,13 @@ class CampaignsController extends Controller
         $model = $this->findModel($id);
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            /*
+
             $cache = new \Predis\Client( \Yii::$app->params['predisConString'] );
             $cache->hmset( 'campaign:'.$model->id,  [
                 'callback'   => $model->landing_url,
                 'payout'     => $model->payout
             ]);
-            */     
+   
 
             return $this->redirect(['view', 'id' => $model->id]);
         } else {
