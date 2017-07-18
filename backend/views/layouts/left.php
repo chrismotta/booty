@@ -10,7 +10,7 @@
             <div class="pull-left info">
                 <p>Alexander Pierce</p>
 
-                <a href="#"><i class="fa fa-circle text-success"></i> Online</a>
+                <a href="#"><i class="circle text-success"></i> Online</a>
             </div>
         </div>
         -->
@@ -20,7 +20,7 @@
             <div class="input-group">
                 <input type="text" name="q" class="form-control" placeholder="Search by id..."/>
               <span class="input-group-btn">
-                <button type='submit' name='search' id='search-btn' class="btn btn-flat"><i class="fa fa-search"></i>
+                <button type='submit' name='search' id='search-btn' class="btn btn-flat"><i class="search"></i>
                 </button>
               </span>
             </div>
@@ -31,87 +31,113 @@
             [
                 'options' => ['class' => 'sidebar-menu'],
                 'items' => [
-                    ['label' => 'Dashboard', 'icon' => 'fa fa fa-dashboard', 'url' => ['/']],
+                    ['label' => 'Dashboard', 'icon' => 'dashboard', 'url' => ['/']],
                     [
                         'label' => 'Demand',
-                        'icon' => 'fa fa-plug',
+                        'icon' => 'plug',
                         'url' => '#',
                         'items' => [
                             [
                                 'label' => 'Affiliates',
-                                'icon' => 'fa fa-circle-o',
+                                'icon' => 'circle-o',
                                 'url' => '#',
                                 'items' => [
-                                    ['label' => 'New Affiliate', 'icon' => 'fa fa-circle-o', 'url' => '#',],
-                                    ['label' => 'Admin', 'icon' => 'fa fa-circle-o', 'url' => '#',],
+                                    ['label' => 'New', 'icon' => 'circle-thin', 'url' => ['/affiliates/create'],],
+                                    ['label' => 'Admin', 'icon' => 'circle-thin', 'url' => ['/affiliates'],],
                                 ],
                             ],
                             [
                                 'label' => 'Campaigns',
-                                'icon' => 'fa fa-circle-o',
+                                'icon' => 'circle-o',
                                 'url' => '#',
                                 'items' => [
-                                    ['label' => 'New Campaign', 'icon' => 'fa fa-circle-o', 'url' => '#',],
-                                    ['label' => 'Admin', 'icon' => 'fa fa-circle-o', 'url' => '#',],
+                                    // ['label' => 'New', 'icon' => 'circle-thin', 'url' => '#',],
+                                    ['label' => 'Admin', 'icon' => 'circle-thin', 'url' => ['/campaigns'],],
                                 ],
                             ],
                         ],
                     ],
                     [
                         'label' => 'Supply',
-                        'icon' => 'fa fa-code',
+                        'icon' => 'tasks',
                         'url' => '#',
                         'items' => [
                             [
                                 'label' => 'Traffic Sources',
-                                'icon' => 'fa fa-circle-o',
+                                'icon' => 'circle-o',
                                 'url' => '#',
                                 'items' => [
                                     [
                                     'label' => 'New Traffic Source', 
-                                    'icon' => 'fa fa-circle-o', 
+                                    'icon' => 'circle-thin', 
                                     'url' => ['/sources/create'], 
-                                    'template' => '<a href="{url}" class="grid-button" data-toggle="control-sidebar">{icon}{label}</a>',
+                                    // 'template' => '<a href="{url}" class="grid-button" data-toggle="control-sidebar">{icon}{label}</a>',
                                     ],
-                                    ['label' => 'Admin', 'icon' => 'fa fa-circle-o', 'url' => ['/sources'],],
+                                    ['label' => 'Admin', 'icon' => 'circle-thin', 'url' => ['/sources'],],
+                                ],
+                            ],
+                            [
+                                'label' => 'Publishers',
+                                'icon' => 'circle-o',
+                                'url' => '#',
+                                'items' => [
+                                    [
+                                    'label' => 'New', 'icon' => 'circle-thin', 'url' => ['/publishers/create'],
+                                    // 'template' => '<a href="{url}" class="grid-button" data-toggle="control-sidebar">{icon}{label}</a>',
+                                    ],
+                                    ['label' => 'Admin', 'icon' => 'circle-thin', 'url' => ['/publishers'],],
                                 ],
                             ],
                             [
                                 'label' => 'Placements',
-                                'icon' => 'fa fa-circle-o',
+                                'icon' => 'circle-o',
                                 'url' => '#',
                                 'items' => [
                                     [
-                                    'label' => 'New Placement', 'icon' => 'fa fa-circle-o', 'url' => ['/sources/create'],
-                                    'template' => '<a href="{url}" class="grid-button" data-toggle="control-sidebar">{icon}{label}</a>',
+                                    'label' => 'New', 'icon' => 'circle-thin', 'url' => ['/placements/create'],
+                                    // 'template' => '<a href="{url}" class="grid-button" data-toggle="control-sidebar">{icon}{label}</a>',
                                     ],
-                                    ['label' => 'Admin', 'icon' => 'fa fa-circle-o', 'url' => ['/placements'],],
+                                    ['label' => 'Admin', 'icon' => 'circle-thin', 'url' => ['/placements'],],
                                 ],
                             ],
                         ],
                     ],
                     [
-                        'label' => 'Clusters',
-                        'icon' => 'fa fa-tasks',
+                        'label' => 'Operation',
+                        'icon' => 'code',
                         'url' => '#',
                         'items' => [
                             [
-                                'label' => 'New Cluster',
-                                'icon' => 'fa fa-circle-o',
+                                'label' => 'Clusters',
+                                'icon' => 'circle-o',
                                 'url' => '#',
+                                'items' => [
+                                    [
+                                    'label' => 'New', 'icon' => 'circle-thin', 'url' => ['/clusters/create'],
+                                    // 'template' => '<a href="{url}" class="grid-button" data-toggle="control-sidebar">{icon}{label}</a>',
+                                    ],
+                                    ['label' => 'Admin', 'icon' => 'circle-thin', 'url' => ['/clusters'],],
+                                ],
                             ],
                             [
-                                'label' => 'Admin',
-                                'icon' => 'fa fa-circle-o',
+                                'label' => 'Static Campaigns',
+                                'icon' => 'circle-o',
                                 'url' => '#',
+                                'items' => [
+                                    [
+                                    'label' => 'New', 'icon' => 'circle-thin', 'url' => ['/static/create'],
+                                    // 'template' => '<a href="{url}" class="grid-button" data-toggle="control-sidebar">{icon}{label}</a>',
+                                    ],
+                                    ['label' => 'Admin', 'icon' => 'circle-thin', 'url' => ['/static'],],
+                                ],
                             ],
                         ],
                     ],
-                    ['label' => 'Reporting', 'icon' => 'fa fa-database', 'url' => ['/reporting']],                   
+                    ['label' => 'Reporting', 'icon' => 'database', 'url' => ['/reporting']],                   
 
                     ['label' => 'Developer Menu', 'options' => ['class' => 'header']],
-                    ['label' => 'Gii', 'icon' => 'fa fa-file-code-o', 'url' => ['/gii']],
-                    ['label' => 'Debug', 'icon' => 'fa fa-bug', 'url' => ['/debug']],
+                    ['label' => 'Gii', 'icon' => 'file-code-o', 'url' => ['/gii']],
+                    ['label' => 'Debug', 'icon' => 'bug', 'url' => ['/debug']],
                     ['label' => 'Login', 'url' => ['site/login'], 'visible' => Yii::$app->user->isGuest],
                 ],
             ]
