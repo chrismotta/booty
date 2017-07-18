@@ -74,7 +74,8 @@ class PlacementsController extends Controller
                 'model'           => $model->model,
                 'status'          => $model->status,
                 'imps'            => $model->imps,
-                'size'            => $model->size
+                'size'            => $model->size,
+                'health_check_imps' => $model->health_check_imps
             ]);
   
             return $this->redirect(['view', 'id' => $model->id]);
@@ -104,7 +105,8 @@ class PlacementsController extends Controller
                 'model'           => $model->model,
                 'status'          => $model->status,
                 'imps'            => $model->imps,
-                'size'            => $model->size
+                'size'            => $model->size,
+                'health_check_imps' => $model->health_check_imps
             ]);
          
             return $this->redirect(['view', 'id' => $model->id]);
@@ -124,6 +126,9 @@ class PlacementsController extends Controller
     public function actionDelete($id)
     {
         $this->findModel($id)->delete();
+
+        $cache = new \Predis\Client( \Yii::$app->params['predisConString'] );
+        $cache->del( 'placement:'.$id );
 
         return $this->redirect(['index']);
     }

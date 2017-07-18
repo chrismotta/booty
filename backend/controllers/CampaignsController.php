@@ -118,7 +118,8 @@ class CampaignsController extends Controller
     public function actionDelete($id)
     {
         $this->findModel($id)->delete();
-
+        $cache = new \Predis\Client( \Yii::$app->params['predisConString'] );
+        $cache->del( 'campaign:'.$id );
         return $this->redirect(['index']);
     }
 
