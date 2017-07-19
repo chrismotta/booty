@@ -32,7 +32,19 @@ $this->params['breadcrumbs'][] = $this->title;
             // 'carrier',
             // 'StaticCampaigns_id',
 
-            ['class' => 'yii\grid\ActionColumn'],
+            [
+                'class' => 'yii\grid\ActionColumn',
+                'template' => '{update} {assignment} {delete}',
+                'buttons' => [
+                    'assignment' => function ($url, $model, $key) {
+                        return Html::a(
+                            '<span class="glyphicon glyphicon-th-list"></span>', 
+                            $url,
+                            []
+                            );
+                    },
+                ],
+            ],
         ],
     ]); ?>
 <?php Pjax::end(); ?></div>

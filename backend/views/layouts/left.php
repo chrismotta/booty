@@ -133,7 +133,7 @@
                             ],
                         ],
                     ],
-                    ['label' => 'Reporting', 'icon' => 'database', 'url' => ['/reporting']],                   
+                    ['label' => 'Reporting', 'icon' => 'bar-chart', 'url' => ['/reporting']],                   
 
                     ['label' => 'Developer Menu', 'options' => ['class' => 'header']],
                     ['label' => 'Gii', 'icon' => 'file-code-o', 'url' => ['/gii']],

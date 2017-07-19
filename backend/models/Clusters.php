@@ -93,4 +93,40 @@ class Clusters extends \yii\db\ActiveRecord
     {
         return $this->hasMany(Campaigns::className(), ['id' => 'Campaigns_id'])->viaTable('Clusters_has_Campaigns', ['Clusters_id' => 'id']);
     }
+
+    /**
+     * Get all avaliable and assigned roles/permission
+     * @return array
+     */
+    public function getItems()
+    {
+        $avaliable = [];
+        $assigned = [];
+        
+        /*
+        $manager = Yii::$app->getAuthManager();
+        foreach (array_keys($manager->getRoles()) as $name) {
+            $avaliable[$name] = 'role';
+        }
+
+        foreach (array_keys($manager->getPermissions()) as $name) {
+            if ($name[0] != '/') {
+                $avaliable[$name] = 'permission';
+            }
+        }
+
+        foreach ($manager->getAssignments($this->id) as $item) {
+            $assigned[$item->roleName] = $avaliable[$item->roleName];
+            unset($avaliable[$item->roleName]);
+        }
+         */
+        
+        $avaliable['bla'] = ['ble'];
+        $avaliable['fra'] = ['fre'];
+
+        return[
+            'avaliable' => $avaliable,
+            'assigned' => $assigned
+        ];
+    }
 }

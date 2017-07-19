@@ -56,6 +56,7 @@ class Campaigns extends \yii\db\ActiveRecord
             'landing_url' => 'Landing Url',
             'creative_320x50' => 'Creative 320x50',
             'creative_300x250' => 'Creative 300x250',
+            'affiliateName' => 'Affiliate',
         ];
     }
 

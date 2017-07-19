@@ -5,6 +5,8 @@ namespace backend\controllers;
 use Yii;
 use app\models\Clusters;
 use app\models\ClustersSearch;
+use app\models\Campaigns;
+use app\models\CampaignsSearch;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
@@ -118,15 +120,20 @@ class ClustersController extends Controller
      */
     public function actionAssignment($id)
     {
-        $model = $this->findModel($id);
+        $availableModel = new CampaignsSearch();
+        $availableProvider = $availableModel->search(Yii::$app->request->queryParams);
 
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            return $this->redirect(['view', 'id' => $model->id]);
-        } else {
-            return $this->render('assignment', [
-                'model' => $model,
-            ]);
-        }
+        $assignedModel = new CampaignsSearch();
+        $assignedModel->id=1;
+        $assignedProvider = $assignedModel->search(Yii::$app->request->queryParams);
+
+        return $this->render('assignment', [
+            'availableModel' => $availableModel,
+            'availableProvider' => $availableProvider,
+            'assignedModel' => $assignedModel,
+            'assignedProvider' => $assignedProvider,
+            'id' => $id,
+        ]);
     }
 
     /**

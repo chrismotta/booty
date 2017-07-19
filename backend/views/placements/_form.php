@@ -26,7 +26,7 @@ use yii\widgets\ActiveForm;
 
     <?= $form->field($model, 'size')->textInput(['maxlength' => true]) ?>
 
-    <?= $form->field($model, 'health_check_imps')->textInput() ?>
+    <!-- <?= $form->field($model, 'health_check_imps')->textInput() ?> -->
 
     <div class="form-group">
         <?= Html::submitButton($model->isNewRecord ? 'Create' : 'Update', ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary']) ?>

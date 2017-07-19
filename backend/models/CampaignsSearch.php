@@ -12,6 +12,8 @@ use app\models\Campaigns;
  */
 class CampaignsSearch extends Campaigns
 {
+    public $affiliateName;
+
     /**
      * @inheritdoc
      */
@@ -19,7 +21,7 @@ class CampaignsSearch extends Campaigns
     {
         return [
             [['id', 'Affiliates_id'], 'integer'],
-            [['name', 'landing_url', 'creative_320x50', 'creative_300x250'], 'safe'],
+            [['name', 'landing_url', 'creative_320x50', 'creative_300x250', 'affiliateName'], 'safe'],
             [['payout'], 'number'],
         ];
     }
@@ -43,7 +45,8 @@ class CampaignsSearch extends Campaigns
     public function search($params)
     {
         $query = Campaigns::find();
-
+        $query->joinWith(['affiliates']);
+        
         // add conditions that should always apply here
 
         $dataProvider = new ActiveDataProvider([
@@ -51,6 +54,14 @@ class CampaignsSearch extends Campaigns
         ]);
 
         $this->load($params);
+
+        // The key is the attribute name on our "TourSearch" instance
+        $dataProvider->sort->attributes['affiliateName'] = [
+            // The tables are the ones our relation are configured to
+            // in my case they are prefixed with "tbl_"
+            'asc' => ['Affiliates.name' => SORT_ASC],
+            'desc' => ['Affiliates.name' => SORT_DESC],
+        ];
 
         if (!$this->validate()) {
             // uncomment the following line if you do not want to return any records when validation fails
@@ -60,15 +71,16 @@ class CampaignsSearch extends Campaigns
 
         // grid filtering conditions
         $query->andFilterWhere([
-            'id' => $this->id,
+            'Campaigns.id' => $this->id,
             'Affiliates_id' => $this->Affiliates_id,
             'payout' => $this->payout,
         ]);
 
-        $query->andFilterWhere(['like', 'name', $this->name])
+        $query->andFilterWhere(['like', 'Campaigns.name', $this->name])
             ->andFilterWhere(['like', 'landing_url', $this->landing_url])
             ->andFilterWhere(['like', 'creative_320x50', $this->creative_320x50])
-            ->andFilterWhere(['like', 'creative_300x250', $this->creative_300x250]);
+            ->andFilterWhere(['like', 'creative_300x250', $this->creative_300x250])
+            ->andFilterWhere(['like', 'Affiliates.name', $this->affiliateName]);
 
         return $dataProvider;
     }
