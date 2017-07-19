@@ -73,7 +73,6 @@ class PlacementsController extends Controller
                 'payout'          => $model->payout,
                 'model'           => $model->model,
                 'status'          => $model->status,
-                'imps'            => $model->imps,
                 'size'            => $model->size,
                 'health_check_imps' => $model->health_check_imps
             ]);
@@ -104,7 +103,6 @@ class PlacementsController extends Controller
                 'payout'          => $model->payout,
                 'model'           => $model->model,
                 'status'          => $model->status,
-                'imps'            => $model->imps,
                 'size'            => $model->size,
                 'health_check_imps' => $model->health_check_imps
             ]);
