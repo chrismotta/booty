@@ -66,18 +66,18 @@ class PlacementsController extends Controller
         $model = new Placements();
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            /*
-            $cache->setMap( 'placement:'.$model->id,  [
+
+            $cache = new \Predis\Client( \Yii::$app->params['predisConString'] );
+            $cache->hmset( 'placement:'.$model->id,  [
                 'frequency_cap'   => $model->frequency_cap,
                 'payout'          => $model->payout,
                 'model'           => $model->model,
-                'cluster_id'      => 5,
-                'cluster_name'    => 'Cluster 5',
-                'status'          => 'health_check',
-                'imps'            => 0,
-                'size'            => '320x50'
-            ]);            
-            */
+                'status'          => $model->status,
+                'imps'            => $model->imps,
+                'size'            => $model->size,
+                'health_check_imps' => $model->health_check_imps
+            ]);
+  
             return $this->redirect(['view', 'id' => $model->id]);
         } else {
             return $this->render('create', [
@@ -97,7 +97,7 @@ class PlacementsController extends Controller
         $model = $this->findModel($id);
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            /*
+
             $cache = new \Predis\Client( \Yii::$app->params['predisConString'] );
             $cache->hmset( 'placement:'.$model->id,  [
                 'frequency_cap'   => $model->frequency_cap,
@@ -105,9 +105,10 @@ class PlacementsController extends Controller
                 'model'           => $model->model,
                 'status'          => $model->status,
                 'imps'            => $model->imps,
-                'size'            => $model->size
+                'size'            => $model->size,
+                'health_check_imps' => $model->health_check_imps
             ]);
-            */            
+         
             return $this->redirect(['view', 'id' => $model->id]);
         } else {
             return $this->render('update', [
@@ -125,6 +126,9 @@ class PlacementsController extends Controller
     public function actionDelete($id)
     {
         $this->findModel($id)->delete();
+
+        $cache = new \Predis\Client( \Yii::$app->params['predisConString'] );
+        $cache->del( 'placement:'.$id );
 
         return $this->redirect(['index']);
     }

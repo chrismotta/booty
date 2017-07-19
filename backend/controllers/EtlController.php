@@ -505,7 +505,7 @@ class EtlController extends \yii\web\Controller
                     if ( !isset($clusterLog['device']) || !$clusterLog['device'] || $clusterLog['device']=='' )
                         $clusterLog['device'] = 'NULL';
                     else
-                        $clusterLog['device'] = '"'.$clusterLog['device'].'"';
+                        $clusterLog['device'] = '"'.ucwords(strtolower($clusterLog['device'])).'"';
 
 
                     if ( isset($clusterLog['device_brand']) && $clusterLog['device_brand'] && $clusterLog['device_brand']!='' )

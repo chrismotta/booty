@@ -20,6 +20,7 @@ class CampaignLogsSearch extends CampaignLogs
     public $fields_group1;
     public $fields_group2;
 
+
     /**
      * @inheritdoc
      */
@@ -108,9 +109,18 @@ class CampaignLogsSearch extends CampaignLogs
                     case 'revenue':
                         $fields[] = 'sum(F_CampaignLogs.'.$field.') AS '.$field;
                     break;
+                    case 'clicks':
+                        $fields[] = 'count(F_CampaignLogs.click_time) AS '.$field;
+                    break;         
+                    case 'convs':
+                        $fields[] = 'count(F_CampaignLogs.conv_time) AS '.$field;
+                    break;                                                   
                     case 'cluster':
-                        $fields[] = 'F_ClusterLogs.cluster_id AS '.$field;
-                    break;                    
+                        $fields[] = 'F_ClusterLogs.cluster_name AS '.$field;
+                    break;    
+                    case 'placement':
+                        $fields[] = 'D_Placement.name AS '.$field;
+                    break;                                         
                     default:
                         $fields[] = 'F_ClusterLogs.'.$field.' AS '.$field;
                     break;
@@ -165,6 +175,14 @@ class CampaignLogsSearch extends CampaignLogs
             'asc' => ['D_Placement.status' => SORT_ASC],
             'desc' => ['D_Placement.status' => SORT_DESC],
         ];            
+        $dataProvider->sort->attributes['cluster'] = [
+            'asc' => ['F_ClusterLogs.cluster_name' => SORT_ASC],
+            'desc' => ['F_ClusterLogs.cluster_name' => SORT_DESC],
+        ];        
+        $dataProvider->sort->attributes['placement'] = [
+            'asc' => ['D_Placement.name' => SORT_ASC],
+            'desc' => ['D_Placement.name' => SORT_DESC],
+        ];                
         $dataProvider->sort->attributes['country'] = [
             'asc' => ['F_ClusterLogs.country' => SORT_ASC],
             'desc' => ['F_ClusterLogs.country' => SORT_DESC],
@@ -184,7 +202,7 @@ class CampaignLogsSearch extends CampaignLogs
         $dataProvider->sort->attributes['device_brand'] = [
             'asc' => ['F_ClusterLogs.device_brand' => SORT_ASC],
             'desc' => ['F_ClusterLogs.device_brand' => SORT_DESC],
-        ];        
+        ];
         $dataProvider->sort->attributes['device_model'] = [
             'asc' => ['F_ClusterLogs.device_model' => SORT_ASC],
             'desc' => ['F_ClusterLogs.device_model' => SORT_DESC],
@@ -213,6 +231,14 @@ class CampaignLogsSearch extends CampaignLogs
             'asc' => ['F_ClusterLogs.imps' => SORT_ASC],
             'desc' => ['F_ClusterLogs.imps' => SORT_DESC],
         ];
+        $dataProvider->sort->attributes['clicks'] = [
+            'asc' => ['count(F_CampaignLogs.click_time)' => SORT_ASC],
+            'desc' => ['count(F_CampaignLogs.click_time)' => SORT_DESC],
+        ];
+        $dataProvider->sort->attributes['convs'] = [
+            'asc' => ['count(F_CampaignLogs.conv_time)' => SORT_ASC],
+            'desc' => ['count(F_CampaignLogs.conv_time)' => SORT_DESC],
+        ];                     
 
 
         // filters
@@ -230,9 +256,9 @@ class CampaignLogsSearch extends CampaignLogs
         $query->andFilterWhere( ['<=', 'date(imp_time)', $dateEnd] );
 
 
-        if ( isset($params['CampaignLogsSearch']['publisher']) && $params['CampaignLogsSearch']['publisher'] ){
+        if ( isset($params['publisher']) && $params['publisher'] ){
             $first = true;
-            foreach ( $params['CampaignLogsSearch']['publisher'] as $id )
+            foreach ( $params['publisher'] as $id )
             {
                 if ( $first ){
                     $query->andFilterWhere( ['=', 'D_Placement.Publishers_id', $id] );
@@ -244,9 +270,9 @@ class CampaignLogsSearch extends CampaignLogs
             }
         }
 
-        if ( isset($params['CampaignLogsSearch']['affiliate']) && $params['CampaignLogsSearch']['affiliate'] ){
+        if ( isset($params['affiliate']) && $params['affiliate'] ){
             $first = true;
-            foreach ( $params['CampaignLogsSearch']['affiliate'] as $id )
+            foreach ( $params['affiliate'] as $id )
             {
                 if ( $first ){
                     $query->andFilterWhere( ['=', 'D_Campaign.Affiliates_id', $id] );
@@ -258,9 +284,9 @@ class CampaignLogsSearch extends CampaignLogs
             }
         }
 
-        if ( isset($params['CampaignLogsSearch']['campaign']) && $params['CampaignLogsSearch']['campaign'] ){
+        if ( isset($params['campaign']) && $params['campaign'] ){
             $first = true;
-            foreach ( $params['CampaignLogsSearch']['campaign'] as $id )
+            foreach ( $params['campaign'] as $id )
             {
                 if ( $first ){
                     $query->andFilterWhere( ['=', 'D_Campaign.id', $id] );
@@ -272,9 +298,37 @@ class CampaignLogsSearch extends CampaignLogs
             }
         }
 
-        if ( isset($params['CampaignLogsSearch']['carrier']) && $params['CampaignLogsSearch']['carrier'] ){
+        if ( isset($params['cluster']) && $params['cluster'] ){
             $first = true;
-            foreach ( $params['CampaignLogsSearch']['carrier'] as $id )
+            foreach ( $params['cluster'] as $id )
+            {
+                if ( $first ){
+                    $query->andFilterWhere( ['=', 'F_ClusterLogs.cluster_id', $id] );
+                    $first = false;
+                }
+                else{
+                    $query->orFilterWhere( ['=', 'F_ClusterLogs.cluster_id', $id] );
+                }
+            }
+        }
+
+        if ( isset($params['placement']) && $params['placement'] ){
+            $first = true;
+            foreach ( $params['placement'] as $id )
+            {
+                if ( $first ){
+                    $query->andFilterWhere( ['=', 'F_ClusterLogs.D_Placement_id', $id] );
+                    $first = false;
+                }
+                else{
+                    $query->orFilterWhere( ['=', 'F_ClusterLogs.D_Placement_id', $id] );
+                }
+            }
+        }        
+
+        if ( isset($params['carrier']) && $params['carrier'] ){
+            $first = true;
+            foreach ( $params['carrier'] as $id )
             {
                 if ( $first ){
                     $query->andFilterWhere( ['=', 'F_ClusterLogs.carrier', $id] );
@@ -286,9 +340,9 @@ class CampaignLogsSearch extends CampaignLogs
             }
         }
 
-        if ( isset($params['CampaignLogsSearch']['country']) && $params['CampaignLogsSearch']['country'] ){
+        if ( isset($params['country']) && $params['country'] ){
             $first = true;
-            foreach ( $params['CampaignLogsSearch']['country'] as $id )
+            foreach ( $params['country'] as $id )
             {
                 if ( $first ){
                     $query->andFilterWhere( ['=', 'F_ClusterLogs.country', $id] );
@@ -300,11 +354,10 @@ class CampaignLogsSearch extends CampaignLogs
             }
         }    
 
-        if ( isset($params['CampaignLogsSearch']['device']) && $params['CampaignLogsSearch']['device'] ){
+        if ( isset($params['device']) && $params['device'] ){
             $first = true;
-            foreach ( $params['CampaignLogsSearch']['device'] as $id )
+            foreach ( $params['device'] as $id )
             {
-                var_export($id);die();
                 if ( $first ){
                     $query->andFilterWhere( ['=', 'F_ClusterLogs.device', $id] );
                     $first = false;
@@ -315,9 +368,9 @@ class CampaignLogsSearch extends CampaignLogs
             }
         }              
 
-        if ( isset($params['CampaignLogsSearch']['device_brand']) && $params['CampaignLogsSearch']['device_brand'] ){
+        if ( isset($params['device_brand']) && $params['device_brand'] ){
             $first = true;
-            foreach ( $params['CampaignLogsSearch']['device_brand'] as $id )
+            foreach ( $params['device_brand'] as $id )
             {
                 if ( $first ){
                     $query->andFilterWhere( ['=', 'F_ClusterLogs.device_brand', $id] );
@@ -329,9 +382,9 @@ class CampaignLogsSearch extends CampaignLogs
             }
         }          
 
-        if ( isset($params['CampaignLogsSearch']['device_model']) && $params['CampaignLogsSearch']['device_model'] ){
+        if ( isset($params['device_model']) && $params['device_model'] ){
             $first = true;
-            foreach ( $params['CampaignLogsSearch']['device_model'] as $id )
+            foreach ( $params['device_model'] as $id )
             {
                 if ( $first ){
                     $query->andFilterWhere( ['=', 'F_ClusterLogs.device_model', $id] );
@@ -343,9 +396,9 @@ class CampaignLogsSearch extends CampaignLogs
             }
         }            
 
-        if ( isset($params['CampaignLogsSearch']['os']) && $params['CampaignLogsSearch']['os'] ){
+        if ( isset($params['os']) && $params['os'] ){
             $first = true;
-            foreach ( $params['CampaignLogsSearch']['os'] as $id )
+            foreach ( $params['os'] as $id )
             {
                 if ( $first ){
                     $query->andFilterWhere( ['=', 'F_ClusterLogs.os', $id] );
@@ -357,9 +410,9 @@ class CampaignLogsSearch extends CampaignLogs
             }
         }      
 
-        if ( isset($params['CampaignLogsSearch']['os_version']) && $params['CampaignLogsSearch']['os_version'] ){
+        if ( isset($params['os_version']) && $params['os_version'] ){
             $first = true;
-            foreach ( $params['CampaignLogsSearch']['os_version'] as $id )
+            foreach ( $params['os_version'] as $id )
             {
                 if ( $first ){
                     $query->andFilterWhere( ['=', 'F_ClusterLogs.os_version', $id] );
@@ -371,9 +424,9 @@ class CampaignLogsSearch extends CampaignLogs
             }
         }
 
-        if ( isset($params['CampaignLogsSearch']['browser']) && $params['CampaignLogsSearch']['browser'] ){
+        if ( isset($params['browser']) && $params['browser'] ){
             $first = true;
-            foreach ( $params['CampaignLogsSearch']['browser'] as $id )
+            foreach ( $params['browser'] as $id )
             {
                 if ( $first ){
                     $query->andFilterWhere( ['=', 'F_ClusterLogs.browser', $id] );
@@ -385,9 +438,9 @@ class CampaignLogsSearch extends CampaignLogs
             }
         }            
 
-        if ( isset($params['CampaignLogsSearch']['browser_version']) && $params['CampaignLogsSearch']['browser_version'] ){
+        if ( isset($params['browser_version']) && $params['browser_version'] ){
             $first = true;
-            foreach ( $params['CampaignLogsSearch']['browser_version'] as $id )
+            foreach ( $params['browser_version'] as $id )
             {
                 if ( $first ){
                     $query->andFilterWhere( ['=', 'F_ClusterLogs.browser_version', $id] );
@@ -399,9 +452,9 @@ class CampaignLogsSearch extends CampaignLogs
             }
         }    
 
-        if ( isset($params['CampaignLogsSearch']['placement']) && $params['CampaignLogsSearch']['placement'] ){
+        if ( isset($params['placement']) && $params['placement'] ){
             $first = true;
-            foreach ( $params['CampaignLogsSearch']['placement'] as $id )
+            foreach ( $params['placement'] as $id )
             {
                 if ( $first ){
                     $query->andFilterWhere( ['=', 'D_Placement.id', $id] );

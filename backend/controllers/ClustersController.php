@@ -68,6 +68,24 @@ class ClustersController extends Controller
         $model = new Clusters();
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
+
+            $cache = new \Predis\Client( \Yii::$app->params['predisConString'] );
+            $cache->hmset( 'placement:'.$model->placement->id,  [
+                'cluster_id'      => $model->id,
+                'cluster_name'    => $model->name,                
+            ]);
+
+            $cache->hmset( 'cluster:'.$model->id,  [
+                'country'           => $model->country,
+                'carrier'           => $model->carrier,
+                'connection_type'   => $model->connection_type, 
+                'static_cp_land'    => $model->StaticCampaigns->landing_url,
+                'static_cp_300x250' => $model->StaticCampaigns->creative_300x250,
+                'static_cp_320x50'  => $model->StaticCampaigns->creative_320x50, 
+                'os'                => '' 
+            ]);
+
+
             return $this->redirect(['view', 'id' => $model->id]);
         } else {
             return $this->render('create', [
@@ -87,7 +105,7 @@ class ClustersController extends Controller
         $model = $this->findModel($id);
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
-                /*
+
             $cache = new \Predis\Client( \Yii::$app->params['predisConString'] );
             $cache->hmset( 'placement:'.$model->placement->id,  [
                 'cluster_id'      => $model->id,
@@ -103,7 +121,7 @@ class ClustersController extends Controller
                 'static_cp_320x50'  => $model->StaticCampaigns->creative_320x50, 
                 'os'                => '' 
             ]);
-            */
+
             return $this->redirect(['view', 'id' => $model->id]);
         } else {
             return $this->render('update', [
@@ -145,7 +163,9 @@ class ClustersController extends Controller
     public function actionDelete($id)
     {
         $this->findModel($id)->delete();
-
+        $cache = new \Predis\Client( \Yii::$app->params['predisConString'] );
+        $cache->del( 'cluster:'.$id );
+        $cache->del( 'clusterlist:'.$id );
         return $this->redirect(['index']);
     }
 
