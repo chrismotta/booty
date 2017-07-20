@@ -72,16 +72,16 @@ class ClustersController extends Controller
             $cache = new \Predis\Client( \Yii::$app->params['predisConString'] );
             $cache->hmset( 'placement:'.$model->placement->id,  [
                 'cluster_id'      => $model->id,
-                'cluster_name'    => $model->name,                
+                'cluster_name'    => $model->name,
             ]);
 
             $cache->hmset( 'cluster:'.$model->id,  [
                 'country'           => strtolower($model->country),
                 'os'                => $model->os,
                 'connection_type'   => strtolower($model->connection_type), 
-                'static_cp_land'    => $model->StaticCampaigns->landing_url,
-                'static_cp_300x250' => $model->StaticCampaigns->creative_300x250,
-                'static_cp_320x50'  => $model->StaticCampaigns->creative_320x50 
+                'static_cp_land'    => $model->staticCampaigns->landing_url,
+                'static_cp_300x250' => $model->staticCampaigns->creative_300x250,
+                'static_cp_320x50'  => $model->staticCampaigns->creative_320x50 
             ]);
 
 
@@ -115,9 +115,9 @@ class ClustersController extends Controller
                 'country'           => strtolower($model->country),
                 'os'                => $model->os,
                 'connection_type'   => strtolower($model->connection_type), 
-                'static_cp_land'    => $model->StaticCampaigns->landing_url,
-                'static_cp_300x250' => $model->StaticCampaigns->creative_300x250,
-                'static_cp_320x50'  => $model->StaticCampaigns->creative_320x50 
+                'static_cp_land'    => $model->staticCampaigns->landing_url,
+                'static_cp_300x250' => $model->staticCampaigns->creative_300x250,
+                'static_cp_320x50'  => $model->staticCampaigns->creative_320x50 
             ]);
 
             return $this->redirect(['view', 'id' => $model->id]);

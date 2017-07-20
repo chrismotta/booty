@@ -573,7 +573,7 @@ class EtlController extends \yii\web\Controller
                         $health_check_imps = $this->_redis->hget( 'placement:'.$clusterLog['placement_id'], 'imps' );
 
                         if ( $health_check_imps && $health_check_imps>0 )
-                            $this->_placementSql     .= 'UPDATE Placements SET health_check_imps='.$health_check_imps.' WHERE id='.$clusterLog['placement_id'].';';
+                            $this->_placementSql     .= 'UPDATE Placements SET imps='.$health_check_imps.' WHERE id='.$clusterLog['placement_id'].';';
                         $this->_count++;
                     }
 

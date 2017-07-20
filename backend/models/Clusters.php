@@ -12,7 +12,7 @@ use Yii;
  * @property integer $Placements_id
  * @property string $country
  * @property string $connection_type
- * @property string $carrier
+ * @property string $os
  * @property integer $StaticCampaigns_id
  *
  * @property Placements $placements
@@ -38,8 +38,8 @@ class Clusters extends \yii\db\ActiveRecord
         return [
             [['name', 'Placements_id', 'StaticCampaigns_id'], 'required'],
             [['Placements_id', 'StaticCampaigns_id'], 'integer'],
-            [['connection_type'], 'string'],
-            [['name', 'carrier'], 'string', 'max' => 255],
+            [['connection_type', 'os'], 'string'],
+            [['name'], 'string', 'max' => 255],
             [['country'], 'string', 'max' => 2],
             [['Placements_id'], 'exist', 'skipOnError' => true, 'targetClass' => Placements::className(), 'targetAttribute' => ['Placements_id' => 'id']],
             [['StaticCampaigns_id'], 'exist', 'skipOnError' => true, 'targetClass' => StaticCampaigns::className(), 'targetAttribute' => ['StaticCampaigns_id' => 'id']],
@@ -57,18 +57,11 @@ class Clusters extends \yii\db\ActiveRecord
             'Placements_id' => 'Placements ID',
             'country' => 'Country',
             'connection_type' => 'Connection Type',
-            'carrier' => 'Carrier',
+            'os' => 'Os',
             'StaticCampaigns_id' => 'Static Campaigns ID',
         ];
     }
 
-    /**
-     * @return \yii\db\ActiveQuery
-     */
-    public function getPlacements()
-    {
-        return $this->hasOne(Placements::className(), ['id' => 'Placements_id']);
-    }
 
     /**
      * @return \yii\db\ActiveQuery
@@ -93,6 +86,14 @@ class Clusters extends \yii\db\ActiveRecord
     {
         return $this->hasMany(Campaigns::className(), ['id' => 'Campaigns_id'])->viaTable('Clusters_has_Campaigns', ['Clusters_id' => 'id']);
     }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getPlacement()
+    {
+        return $this->hasOne(Placements::className(), ['id' => 'Placements_id']);
+    }    
 
     /**
      * Get all avaliable and assigned roles/permission

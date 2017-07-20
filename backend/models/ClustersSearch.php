@@ -19,7 +19,7 @@ class ClustersSearch extends Clusters
     {
         return [
             [['id', 'Placements_id', 'StaticCampaigns_id'], 'integer'],
-            [['name', 'country', 'connection_type', 'carrier'], 'safe'],
+            [['name', 'country', 'connection_type', 'os'], 'safe'],
         ];
     }
 
@@ -67,7 +67,7 @@ class ClustersSearch extends Clusters
         $query->andFilterWhere(['like', 'name', $this->name])
             ->andFilterWhere(['like', 'country', $this->country])
             ->andFilterWhere(['like', 'connection_type', $this->connection_type])
-            ->andFilterWhere(['like', 'carrier', $this->carrier]);
+            ->andFilterWhere(['like', 'os', $this->os]);
 
         return $dataProvider;
     }

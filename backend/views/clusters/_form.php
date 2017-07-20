@@ -22,7 +22,7 @@ use yii\bootstrap\ActiveForm;
 
     <?= $form->field($model, 'connection_type')->dropDownList([ '3g' => '3g', 'wifi' => 'Wifi', ], ['prompt' => '']) ?>
 
-    <?= $form->field($model, 'carrier')->textInput(['maxlength' => true]) ?>
+    <?= $form->field($model, 'os')->dropDownList([ 'Android' => 'Android', 'iOS' => 'iOS', 'Windows' => 'Windows', 'BlackBerry' => 'BlackBerry' ], ['prompt' => '']) ?>
 
     <?= $form->field($model, 'StaticCampaigns_id')->textInput() ?>
 
