@@ -38,7 +38,8 @@ class Campaigns extends \yii\db\ActiveRecord
             [['id', 'Affiliates_id', 'name', 'payout', 'landing_url'], 'required'],
             [['id', 'Affiliates_id'], 'integer'],
             [['payout'], 'number'],
-            [['name', 'landing_url', 'creative_320x50', 'creative_300x250'], 'string', 'max' => 255],
+            [['name', 'landing_url', 'creative_320x50', 'creative_300x250', 'os', 'connection_type'], 'string', 'max' => 255],
+            [['country'], 'string', 'max' => 2],
             [['Affiliates_id'], 'exist', 'skipOnError' => true, 'targetClass' => Affiliates::className(), 'targetAttribute' => ['Affiliates_id' => 'id']],
         ];
     }
@@ -57,6 +58,9 @@ class Campaigns extends \yii\db\ActiveRecord
             'creative_320x50' => 'Creative 320x50',
             'creative_300x250' => 'Creative 300x250',
             'affiliateName' => 'Affiliate',
+            'connection_type' => 'Connection Type',
+            'os' => 'OS',
+            'country' => 'Country'
         ];
     }
 
