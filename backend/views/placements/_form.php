@@ -24,9 +24,10 @@ use yii\widgets\ActiveForm;
 
     <?= $form->field($model, 'status')->dropDownList([ 'health_check' => 'Health check', 'active' => 'Active', 'testing' => 'Testing', 'paused' => 'Paused', ], ['prompt' => '']) ?>
 
-    <?= $form->field($model, 'size')->textInput(['maxlength' => true]) ?>
+    <?= $form->field($model, 'size')->dropDownList([ '300x250' => '300x250', '320x50' => '320x50', ], ['prompt' => '']) ?>
 
-    <!-- <?= $form->field($model, 'health_check_imps')->textInput() ?> -->
+    <?php $model->health_check_imps = 10000; ?>
+    <?= $form->field($model, 'health_check_imps')->textInput() ?>
 
     <div class="form-group">
         <?= Html::submitButton($model->isNewRecord ? 'Create' : 'Update', ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary']) ?>

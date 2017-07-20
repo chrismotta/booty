@@ -37,7 +37,7 @@ class Placements extends \yii\db\ActiveRecord
     {
         return [
             [['Publishers_id', 'frequency_cap', 'payout', 'model', 'size'], 'required'],
-            [['Publishers_id', 'frequency_cap', 'health_check_imps'], 'integer'],
+            [['Publishers_id', 'frequency_cap', 'health_check_imps', 'imps'], 'integer'],
             [['payout'], 'number'],
             [['model', 'status'], 'string'],
             [['name', 'size'], 'string', 'max' => 255],
@@ -59,6 +59,7 @@ class Placements extends \yii\db\ActiveRecord
             'model' => 'Model',
             'status' => 'Status',
             'size' => 'Size',
+            'imps' => 'Imps',
             'health_check_imps' => 'Health Check Imps',
         ];
     }

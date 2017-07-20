@@ -74,7 +74,8 @@ class PlacementsController extends Controller
                 'model'           => $model->model,
                 'status'          => $model->status,
                 'size'            => $model->size,
-                'health_check_imps' => $model->health_check_imps
+                'imps'            => (int)$model->imps,
+                'health_check_imps' => (int)$model->health_check_imps
             ]);
   
             return $this->redirect(['view', 'id' => $model->id]);
@@ -104,7 +105,8 @@ class PlacementsController extends Controller
                 'model'           => $model->model,
                 'status'          => $model->status,
                 'size'            => $model->size,
-                'health_check_imps' => $model->health_check_imps
+                'imps'            => (int)$model->imps,
+                'health_check_imps' => (int)$model->health_check_imps
             ]);
          
             return $this->redirect(['view', 'id' => $model->id]);

@@ -33,7 +33,7 @@ $this->params['breadcrumbs'][] = $this->title;
             'Placements_id',
             'country',
             'connection_type',
-            'carrier',
+            'os',
             'StaticCampaigns_id',
         ],
     ]) ?>
