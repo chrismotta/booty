@@ -39,7 +39,8 @@ $this->params['breadcrumbs'][] = $this->title;
                     'assignment' => function ($url, $model, $key) {
                         return Html::a(
                             '<span class="glyphicon glyphicon-th-list"></span>', 
-                            $url
+                            $url,
+                            []
                             );
                     },
                 ],

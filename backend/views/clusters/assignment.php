@@ -7,7 +7,8 @@ use yii\widgets\Pjax;
 /* @var $searchModel app\models\ClustersSearch */
 /* @var $dataProvider yii\data\ActiveDataProvider */
 
-$this->title = 'Cluster #'.$clustersModel->id.' "'.$clustersModel->name.'": Assaignment';
+$clusterID = $clustersModel->id;
+$this->title = 'Cluster #'.$clusterID.' "'.$clustersModel->name.'": Assaignment';
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 
@@ -15,7 +16,8 @@ $this->params['breadcrumbs'][] = $this->title;
 
 <div class="clusters-index col-sm-12 col-md-8">
 <h4>Available</h4>
-<?php Pjax::begin(); ?>    <?= GridView::widget([
+<?php Pjax::begin(); ?>    
+<?= GridView::widget([
         'id' => 'available',
         'dataProvider' => $availableProvider,
         'filterModel' => $availableModel,
@@ -27,19 +29,15 @@ $this->params['breadcrumbs'][] = $this->title;
                 'value'=>'affiliates.name',
             ],
             'name',
-
             [
                 'class' => 'yii\grid\ActionColumn',
-                'template' => '{add}',
+                'template' => '{assigncampaign}',
 
                 'buttons' => [
-                    'add' => function ($url, $model, $key) {
+                    'assigncampaign' => function ($url, $model, $key) use ($clusterID) {
                         return Html::a(
                             '<span class="glyphicon glyphicon-plus"></span>', 
-                            ['add', 'id'=>$key],
-                            [
-                                'class' => 'grid-button',
-                            ]
+                            ['assigncampaign', 'cid'=>$key, 'id'=>$clusterID]
                             );
                     },
                 ]
@@ -52,7 +50,7 @@ $this->params['breadcrumbs'][] = $this->title;
 
 <div class="clusters-index col-sm-12 col-md-4">
 <h4>Assigned</h4>
-<?php Pjax::begin(); ?>    <?= GridView::widget([
+<?= GridView::widget([
         'id' => 'assigned',
         'dataProvider' => $assignedProvider,
         // 'filterModel' => $assignedModel,
@@ -67,22 +65,19 @@ $this->params['breadcrumbs'][] = $this->title;
 
             [
                 'class' => 'yii\grid\ActionColumn',
-                'template' => '{remove}',
+                'template' => '{unassigncampaign}',
 
                 'buttons' => [
-                    'remove' => function ($url, $model, $key) {
+                    'unassigncampaign' => function ($url, $model, $key) use ($clusterID) {
                         return Html::a(
                             '<span class="glyphicon glyphicon-minus"></span>', 
-                            ['remove', 'id'=>$key],
-                            [
-                                'class' => 'grid-button',
-                            ]
+                            ['unassigncampaign', 'cid'=>$key, 'id'=>$clusterID]
                             );
-                    },
+                    }
                 ]
             ]
         ],
     ]); ?>
-<?php Pjax::end(); ?></div>
+</div>
 
 </div>

@@ -137,7 +137,7 @@ class ClustersController extends Controller
     public function actionAssignment($id)
     {
         $availableModel = new CampaignsSearch();
-        $availableProvider = $availableModel->searchAvailable(Yii::$app->request->queryParams);
+        $availableProvider = $availableModel->searchAvailable(Yii::$app->request->queryParams, $id);
 
         $assignedModel = new CampaignsSearch();
         $assignedProvider = $assignedModel->searchAssigned($id);
@@ -203,6 +203,6 @@ class ClustersController extends Controller
 
 
         // debug
-        echo $return;
+        // echo $return;
     }
 }
