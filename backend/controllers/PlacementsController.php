@@ -99,15 +99,14 @@ class PlacementsController extends Controller
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
 
             $cache = new \Predis\Client( \Yii::$app->params['predisConString'] );
-            $cache->hmset( 'placement:'.$model->id,  [
-                'frequency_cap'   => $model->frequency_cap,
-                'payout'          => $model->payout,
-                'model'           => $model->model,
-                'status'          => $model->status,
-                'size'            => $model->size,
-                'imps'            => (int)$model->imps,
-                'health_check_imps' => (int)$model->health_check_imps
-            ]);
+
+            $cache->hset( 'placement:'.$model->id, 'frequency_cap', $model->frequency_cap );
+            $cache->hset( 'placement:'.$model->id, 'payout', $model->payout );
+            $cache->hset( 'placement:'.$model->id, 'model', $model->model );
+            $cache->hset( 'placement:'.$model->id, 'status', $model->status );
+            $cache->hset( 'placement:'.$model->id, 'size', $model->size );
+            $cache->hset( 'placement:'.$model->id, 'imps', (int)$model->imps );
+            $cache->hset( 'placement:'.$model->id, 'health_check_imps', (int)$model->health_check_imps );
          
             return $this->redirect(['view', 'id' => $model->id]);
         } else {
