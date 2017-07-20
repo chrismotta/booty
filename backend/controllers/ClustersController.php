@@ -70,10 +70,9 @@ class ClustersController extends Controller
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
 
             $cache = new \Predis\Client( \Yii::$app->params['predisConString'] );
-            $cache->hmset( 'placement:'.$model->placement->id,  [
-                'cluster_id'      => $model->id,
-                'cluster_name'    => $model->name,
-            ]);
+
+            $cache->hset( 'placement:'.$model->id, 'cluster_id', $model->id );
+            $cache->hset( 'placement:'.$model->id, 'cluster_name', $model->name );
 
             $cache->hmset( 'cluster:'.$model->id,  [
                 'country'           => strtolower($model->country),
@@ -106,19 +105,16 @@ class ClustersController extends Controller
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
 
             $cache = new \Predis\Client( \Yii::$app->params['predisConString'] );
-            $cache->hmset( 'placement:'.$model->placement->id,  [
-                'cluster_id'      => $model->id,
-                'cluster_name'    => $model->name,                
-            ]);
 
-            $cache->hmset( 'cluster:'.$model->id,  [
-                'country'           => strtolower($model->country),
-                'os'                => $model->os,
-                'connection_type'   => strtolower($model->connection_type), 
-                'static_cp_land'    => $model->staticCampaigns->landing_url,
-                'static_cp_300x250' => $model->staticCampaigns->creative_300x250,
-                'static_cp_320x50'  => $model->staticCampaigns->creative_320x50 
-            ]);
+            $cache->hset( 'placement:'.$model->id, 'cluster_id', $model->id );
+            $cache->hset( 'placement:'.$model->id, 'cluster_name', $model->name );
+
+            $cache->hset( 'cluster:'.$model->id, 'country', strtolower($model->country) );
+            $cache->hset( 'cluster:'.$model->id, 'os', $model->os );
+            $cache->hset( 'cluster:'.$model->id, 'connection_type', strtolower($model->connection_type) );
+            $cache->hset( 'cluster:'.$model->id, 'static_cp_land', $model->staticCampaigns->landing_url );
+            $cache->hset( 'cluster:'.$model->id, 'static_cp_300x250', $model->staticCampaigns->creative_300x250 );
+            $cache->hset( 'cluster:'.$model->id, 'static_cp_320x50', $model->staticCampaigns->creative_320x50 );
 
             return $this->redirect(['view', 'id' => $model->id]);
         } else {
@@ -190,7 +186,8 @@ class ClustersController extends Controller
         $campaign = CampaignsSearch::findOne($campaignID);
         $return = $campaign->assignToCluster($id);
 
-
+        $cache = new \Predis\Client( \Yii::$app->params['predisConString'] );
+        $cache->sadd( 'clusterlist:'.$id, $campaign->id );
         // debug
         echo $return;
     }
@@ -201,6 +198,8 @@ class ClustersController extends Controller
         $campaign = CampaignsSearch::findOne($campaignID);
         $return = $campaign->unassignToCluster($id);
 
+        $cache = new \Predis\Client( \Yii::$app->params['predisConString'] );
+        $cache->srem( 'clusterlist:'.$id, $campaign->id );
 
         // debug
         // echo $return;
