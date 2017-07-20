@@ -84,4 +84,79 @@ class CampaignsSearch extends Campaigns
 
         return $dataProvider;
     }
+
+    public function searchAvailable($params)
+    {
+        $query = Campaigns::find();
+        $query->joinWith(['affiliates']);
+        
+        // add conditions that should always apply here
+
+        $dataProvider = new ActiveDataProvider([
+            'query' => $query,
+        ]);
+
+        $this->load($params);
+
+        // The key is the attribute name on our "TourSearch" instance
+        $dataProvider->sort->attributes['affiliateName'] = [
+            // The tables are the ones our relation are configured to
+            // in my case they are prefixed with "tbl_"
+            'asc' => ['Affiliates.name' => SORT_ASC],
+            'desc' => ['Affiliates.name' => SORT_DESC],
+        ];
+
+        if (!$this->validate()) {
+            // uncomment the following line if you do not want to return any records when validation fails
+            // $query->where('0=1');
+            return $dataProvider;
+        }
+
+        // grid filtering conditions
+        $query->andFilterWhere([
+            'Campaigns.id' => $this->id,
+            'Affiliates_id' => $this->Affiliates_id,
+            'payout' => $this->payout,
+        ]);
+
+        $query->andFilterWhere(['like', 'Campaigns.name', $this->name])
+            ->andFilterWhere(['like', 'landing_url', $this->landing_url])
+            ->andFilterWhere(['like', 'creative_320x50', $this->creative_320x50])
+            ->andFilterWhere(['like', 'creative_300x250', $this->creative_300x250])
+            ->andFilterWhere(['like', 'Affiliates.name', $this->affiliateName]);
+
+        return $dataProvider;
+    }
+
+    public function searchAssigned($clusterID){
+
+        $query = Campaigns::find();
+        $query->joinWith(['clusters']);
+
+        $query->andFilterWhere(['Clusters.id'=>$clusterID]);
+
+        $dataProvider = new ActiveDataProvider([
+            'query' => $query,
+        ]);
+
+        $dataProvider->sort = false;
+
+        return $dataProvider;
+
+    }
+
+    public function assignToCluster($clusterID){
+        $cluster = Clusters::findOne($clusterID);
+        $return = $this->link('clusters', $cluster);
+        
+        return  $return;
+    }
+
+    public function unassignToCluster($clusterID){
+        $cluster = Clusters::findOne($clusterID);
+        $return = $this->unlink('clusters', $cluster, true);
+        
+        return  $return;
+    }
+
 }

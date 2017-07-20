@@ -7,7 +7,7 @@ use yii\widgets\Pjax;
 /* @var $searchModel app\models\ClustersSearch */
 /* @var $dataProvider yii\data\ActiveDataProvider */
 
-$this->title = 'Clusters '.$id.': Assaignment';
+$this->title = 'Cluster #'.$clustersModel->id.' "'.$clustersModel->name.'": Assaignment';
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 

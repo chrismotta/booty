@@ -137,18 +137,19 @@ class ClustersController extends Controller
     public function actionAssignment($id)
     {
         $availableModel = new CampaignsSearch();
-        $availableProvider = $availableModel->search(Yii::$app->request->queryParams);
+        $availableProvider = $availableModel->searchAvailable(Yii::$app->request->queryParams);
 
         $assignedModel = new CampaignsSearch();
-        $assignedModel->id=1;
-        $assignedProvider = $assignedModel->search(Yii::$app->request->queryParams);
+        $assignedProvider = $assignedModel->searchAssigned($id);
+
+        $clustersModel = Clusters::findOne($id);
 
         return $this->render('assignment', [
             'availableModel' => $availableModel,
             'availableProvider' => $availableProvider,
             'assignedModel' => $assignedModel,
             'assignedProvider' => $assignedProvider,
-            'id' => $id,
+            'clustersModel' => $clustersModel,
         ]);
     }
 
@@ -181,5 +182,27 @@ class ClustersController extends Controller
         } else {
             throw new NotFoundHttpException('The requested page does not exist.');
         }
+    }
+
+    public function actionAssigncampaign($id){
+        $campaignID = isset($_GET['cid']) ? $_GET['cid'] : null;
+
+        $campaign = CampaignsSearch::findOne($campaignID);
+        $return = $campaign->assignToCluster($id);
+
+
+        // debug
+        echo $return;
+    }
+
+    public function actionUnassigncampaign($id){
+        $campaignID = isset($_GET['cid']) ? $_GET['cid'] : null;
+
+        $campaign = CampaignsSearch::findOne($campaignID);
+        $return = $campaign->unassignToCluster($id);
+
+
+        // debug
+        echo $return;
     }
 }
