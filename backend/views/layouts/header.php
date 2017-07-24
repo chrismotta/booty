@@ -3,7 +3,7 @@ use yii\helpers\Html;
 
 /* @var $this \yii\web\View */
 /* @var $content string */
-
+$username = isset( Yii::$app->user->identity->username ) ? Yii::$app->user->identity->username : null;
 ?>
 
 <header class="main-header">
@@ -71,7 +71,7 @@ use yii\helpers\Html;
                 <li class="dropdown user user-menu">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown">
                         <img src="<?php echo Yii::$app->homeUrl?>img/generic_user.png" class="user-image" alt="User Image"/>
-                        <span class="hidden-xs"><?php echo Yii::$app->user->identity->username ?></span>
+                        <span class="hidden-xs"><?php echo $username ?></span>
                     </a>
                     <ul class="dropdown-menu">
                         <!-- User image -->
@@ -81,7 +81,7 @@ use yii\helpers\Html;
                                  alt="User Image"/>
 
                             <p>
-                                <?php echo Yii::$app->user->identity->username ?>
+                                <?php echo $username ?>
                                 <small>Member since Feb. 2015</small>
                             </p>
                         </li>
