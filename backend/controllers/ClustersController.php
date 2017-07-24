@@ -188,8 +188,10 @@ class ClustersController extends Controller
 
         $cache = new \Predis\Client( \Yii::$app->params['predisConString'] );
         $cache->sadd( 'clusterlist:'.$id, $campaign->id );
+        
         // debug
-        echo $return;
+        // echo $return;
+        return $this->redirect(Yii::$app->request->referrer);
     }
 
     public function actionUnassigncampaign($id){
@@ -203,5 +205,6 @@ class ClustersController extends Controller
 
         // debug
         // echo $return;
+        return $this->redirect(Yii::$app->request->referrer);
     }
 }

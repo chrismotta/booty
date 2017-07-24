@@ -29,6 +29,13 @@ $this->params['breadcrumbs'][] = $this->title;
                 'value'=>'affiliates.name',
             ],
             'name',
+            'country',
+            'os',
+            [
+                'attribute' => 'connection_type',
+                'label' => 'C. Type',
+            ],
+
             [
                 'class' => 'yii\grid\ActionColumn',
                 'template' => '{assigncampaign}',
