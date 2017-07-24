@@ -16,7 +16,7 @@ $this->params['breadcrumbs'][] = $this->title;
 
 <div class="clusters-index col-sm-12 col-md-8">
 <h4>Available</h4>
-<?php Pjax::begin(); ?>    
+<?php // Pjax::begin(); ?>    
 <?= GridView::widget([
         'id' => 'available',
         'dataProvider' => $availableProvider,
@@ -44,12 +44,13 @@ $this->params['breadcrumbs'][] = $this->title;
             ]
         ],
     ]); ?>
-<?php Pjax::end(); ?>
+<?php // Pjax::end(); ?>
 </div>
 
 
 <div class="clusters-index col-sm-12 col-md-4">
 <h4>Assigned</h4>
+<?php // Pjax::begin(); ?>    
 <?= GridView::widget([
         'id' => 'assigned',
         'dataProvider' => $assignedProvider,
@@ -78,6 +79,7 @@ $this->params['breadcrumbs'][] = $this->title;
             ]
         ],
     ]); ?>
+<?php // Pjax::end(); ?>
 </div>
 
 </div>
