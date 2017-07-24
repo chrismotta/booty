@@ -33,7 +33,7 @@ $affiliates = models\Affiliates::find()->asArray()->all();
             ],            
             'language' => 'us',
             'options' => [
-                'placeholder' => 'Select an affiliate ...', 
+                'placeholder' => 'Select an affiliate...', 
             ],
             'pluginOptions' => [
                 'maximumInputLength' => 50
