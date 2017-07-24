@@ -3,6 +3,7 @@ use yii\helpers\Html;
 
 /* @var $this \yii\web\View */
 /* @var $content string */
+
 ?>
 
 <header class="main-header">
@@ -70,19 +71,21 @@ use yii\helpers\Html;
                 <li class="dropdown user user-menu">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown">
                         <img src="<?php echo Yii::$app->homeUrl?>img/generic_user.png" class="user-image" alt="User Image"/>
-                        <span class="hidden-xs">Eduardo Diaz</span>
+                        <span class="hidden-xs"><?php echo Yii::$app->user->identity->username ?></span>
                     </a>
                     <ul class="dropdown-menu">
                         <!-- User image -->
+
                         <li class="user-header">
                             <img src="img/generic_user.png" class="img-circle"
                                  alt="User Image"/>
 
                             <p>
-                                Eduardo Diaz - IT Manager
+                                <?php echo Yii::$app->user->identity->username ?>
                                 <small>Member since Feb. 2015</small>
                             </p>
                         </li>
+
                         <!-- Menu Body -->
                         <!--li class="user-body">
                             <div class="col-xs-4 text-center">
@@ -97,6 +100,7 @@ use yii\helpers\Html;
                         </li-->
                         <!-- Menu Footer-->
                         <li class="user-footer">
+
                             <div class="pull-left">
                                 <a href="#" class="btn btn-default btn-flat">Profile</a>
                             </div>
