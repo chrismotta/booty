@@ -2,10 +2,14 @@
 
 use yii\helpers\Html;
 use yii\widgets\ActiveForm;
-
+use app\models;
+use kartik\select2\Select2;
+use yii\helpers\ArrayHelper;
 /* @var $this yii\web\View */
 /* @var $model app\models\Campaigns */
 /* @var $form yii\widgets\ActiveForm */
+
+$affiliates = models\Affiliates::find()->asArray()->all();
 ?>
 
 <div class="campaigns-form">
@@ -14,7 +18,28 @@ use yii\widgets\ActiveForm;
 
     <?= $form->field($model, 'id')->textInput() ?>
 
-    <?= $form->field($model, 'Affiliates_id')->textInput() ?>
+    <?= 
+        '<label class="control-label">Admin User</label>';
+        echo Select2::widget( [
+            'model' => $model, 
+            'attribute' => 'Affiliates_id',
+            'data' => ArrayHelper::map( 
+                $affiliates, 
+                'id', 
+                'name' 
+            ),
+            'addon' => [
+                'contentAfter' => '<div style="height:25px;">&nbsp;</div>',
+            ],            
+            'language' => 'us',
+            'options' => [
+                'placeholder' => 'Select an affiliate ...', 
+            ],
+            'pluginOptions' => [
+                'maximumInputLength' => 50
+            ],
+        ]);            
+    ?>
 
     <?= $form->field($model, 'name')->textInput(['maxlength' => true]) ?>
 

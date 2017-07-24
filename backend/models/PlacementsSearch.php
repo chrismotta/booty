@@ -19,7 +19,7 @@ class PlacementsSearch extends Placements
     {
         return [
             [['id', 'Publishers_id', 'frequency_cap', 'health_check_imps'], 'integer'],
-            [['name', 'model', 'status', 'size'], 'safe'],
+            [['name', 'model', 'status', 'size', 'publisher', ], 'safe'],
             [['payout'], 'number'],
         ];
     }
@@ -43,11 +43,20 @@ class PlacementsSearch extends Placements
     public function search($params)
     {
         $query = Placements::find();
-
+        $query->joinWith(['publishers']);
         // add conditions that should always apply here
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
+            'sort' => ['attributes' => [ 'id','name', 'frequency_cap','payout', 'publisher']]
+        ]);
+
+        $query->select([
+            'Placements.id',
+            'frequency_cap',
+            'Placements.name',
+            'payout',
+            'Publishers.name as publisher'
         ]);
 
         $this->load($params);

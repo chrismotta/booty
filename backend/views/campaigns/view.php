@@ -29,7 +29,10 @@ $this->params['breadcrumbs'][] = $this->title;
         'model' => $model,
         'attributes' => [
             'id',
-            'Affiliates_id',
+            [
+                'label'     => 'Affiliate',
+                'attribute' => 'affiliates.name'
+            ],
             'name',
             'payout',
             'landing_url:url',

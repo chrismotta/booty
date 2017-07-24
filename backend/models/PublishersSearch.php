@@ -12,6 +12,8 @@ use app\models\Publishers;
  */
 class PublishersSearch extends Publishers
 {
+
+
     /**
      * @inheritdoc
      */
@@ -19,7 +21,7 @@ class PublishersSearch extends Publishers
     {
         return [
             [['id', 'admin_user'], 'integer'],
-            [['name', 'short_name'], 'safe'],
+            [['name', 'short_name', 'admin_user'], 'safe'],
         ];
     }
 
@@ -42,12 +44,23 @@ class PublishersSearch extends Publishers
     public function search($params)
     {
         $query = Publishers::find();
+        $query->joinWith(['adminUser']);
 
+        
         // add conditions that should always apply here
+
+        $query->select([
+            'Publishers.id',
+            'name',
+            'short_name',
+            'user.username as username'
+        ]);
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
+            'sort' => ['attributes' => [ 'id','name', 'short_name', 'username']]
         ]);
+
 
         $this->load($params);
 

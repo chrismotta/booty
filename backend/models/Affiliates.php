@@ -19,6 +19,7 @@ use Yii;
  */
 class Affiliates extends \yii\db\ActiveRecord
 {
+    public $username;
     /**
      * @inheritdoc
      */

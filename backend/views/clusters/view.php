@@ -30,11 +30,17 @@ $this->params['breadcrumbs'][] = $this->title;
         'attributes' => [
             'id',
             'name',
-            'Placements_id',
+            [
+                'label'     => 'Placement',
+                'attribute' => 'placement.name'
+            ],
             'country',
             'connection_type',
             'os',
-            'StaticCampaigns_id',
+            [
+                'label'     => 'Static Campaign',
+                'attribute' => 'staticCampaigns.name'
+            ]
         ],
     ]) ?>
 

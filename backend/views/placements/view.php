@@ -29,7 +29,10 @@ $this->params['breadcrumbs'][] = $this->title;
         'model' => $model,
         'attributes' => [
             'id',
-            'Publishers_id',
+            [
+                'label'     => 'Publisher',
+                'attribute' => 'publishers.name'
+            ],
             'name',
             'frequency_cap',
             'payout',

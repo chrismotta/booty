@@ -22,6 +22,7 @@ use Yii;
  */
 class Placements extends \yii\db\ActiveRecord
 {
+    public $publisher;
     /**
      * @inheritdoc
      */
@@ -61,6 +62,7 @@ class Placements extends \yii\db\ActiveRecord
             'size' => 'Size',
             'imps' => 'Imps',
             'health_check_imps' => 'Health Check Imps',
+            'publisher' => 'Publisher',
         ];
     }
 

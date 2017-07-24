@@ -22,6 +22,8 @@ use Yii;
  */
 class Clusters extends \yii\db\ActiveRecord
 {
+    public $placement;
+    public $static_campaign;
     /**
      * @inheritdoc
      */

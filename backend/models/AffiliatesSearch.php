@@ -19,7 +19,7 @@ class AffiliatesSearch extends Affiliates
     {
         return [
             [['id', 'admin_user'], 'integer'],
-            [['name', 'short_name', 'user_id', 'api_key'], 'safe'],
+            [['name', 'short_name', 'user_id', 'api_key', 'admin_user'], 'safe'],
         ];
     }
 
@@ -47,6 +47,20 @@ class AffiliatesSearch extends Affiliates
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
+        ]);
+        $query->joinWith(['adminUser']);
+
+        $query->select([
+            'Affiliates.id',
+            'name',
+            'short_name',
+            'user_id',
+            'user.username as username'
+        ]);
+
+        $dataProvider = new ActiveDataProvider([
+            'query' => $query,
+            'sort' => ['attributes' => [ 'id','name', 'short_name','user_id', 'api_key', 'username']]
         ]);
 
         $this->load($params);

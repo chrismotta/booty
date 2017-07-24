@@ -3,12 +3,23 @@
 use yii\helpers\Html;
 use yii\grid\GridView;
 use yii\widgets\Pjax;
+use app\models;
+use kartik\select2\Select2;
+use yii\helpers\ArrayHelper;
 /* @var $this yii\web\View */
 /* @var $searchModel app\models\CampaignsSearch */
 /* @var $dataProvider yii\data\ActiveDataProvider */
 
 $this->title = 'Campaigns';
 $this->params['breadcrumbs'][] = $this->title;
+
+$affiliates = models\Affiliates::find()->asArray()->all();
+
+$filterByAffiliate = ArrayHelper::map( 
+    $affiliates, 
+    'id', 
+    'name' 
+);
 ?>
 <div class="campaigns-index">
 
@@ -25,7 +36,22 @@ $this->params['breadcrumbs'][] = $this->title;
             ['class' => 'yii\grid\SerialColumn'],
 
             'id',
-            'Affiliates_id',
+            [
+                'attribute' => 'affiliate',
+                'label'     => 'Affiliate',
+                'filter' => Select2::widget([
+                    'model' => $searchModel,
+                    'attribute' => 'Affiliates_id',
+                    'data' => $filterByAffiliate,
+                    'theme' => Select2::THEME_BOOTSTRAP,
+                    'pluginOptions' => [
+                        'allowClear' => true
+                    ],
+                    'options' => [
+                        'placeholder' => 'Select an Affiliate...',
+                    ]
+                ]),                
+            ],
             'name',
             'payout',
             'landing_url:url',

@@ -21,7 +21,7 @@ class CampaignsSearch extends Campaigns
     {
         return [
             [['id', 'Affiliates_id'], 'integer'],
-            [['name', 'landing_url', 'creative_320x50', 'creative_300x250', 'affiliateName'], 'safe'],
+            [['name', 'landing_url', 'creative_320x50', 'creative_300x250', 'affiliateName', 'affiliate'], 'safe'],
             [['payout'], 'number'],
         ];
     }
@@ -51,6 +51,15 @@ class CampaignsSearch extends Campaigns
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
+            'sort' => ['attributes' => [ 'id','name', 'landing_url','payout', 'affiliate']]            
+        ]);
+
+        $query->select([
+            'Campaigns.id',
+            'landing_url',
+            'Campaigns.name',
+            'payout',
+            'Affiliates.name as affiliate'
         ]);
 
         $this->load($params);

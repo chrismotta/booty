@@ -21,6 +21,7 @@ use Yii;
  */
 class Campaigns extends \yii\db\ActiveRecord
 {
+    public $affiliate;
     /**
      * @inheritdoc
      */

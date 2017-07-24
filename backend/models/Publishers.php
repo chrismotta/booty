@@ -17,6 +17,7 @@ use Yii;
  */
 class Publishers extends \yii\db\ActiveRecord
 {
+    public $username;
     /**
      * @inheritdoc
      */

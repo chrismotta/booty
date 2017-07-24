@@ -19,7 +19,7 @@ class ClustersSearch extends Clusters
     {
         return [
             [['id', 'Placements_id', 'StaticCampaigns_id'], 'integer'],
-            [['name', 'country', 'connection_type', 'os'], 'safe'],
+            [['name', 'country', 'connection_type', 'os', 'placement', 'static_campaign'], 'safe'],
         ];
     }
 
@@ -42,11 +42,21 @@ class ClustersSearch extends Clusters
     public function search($params)
     {
         $query = Clusters::find();
-
+        $query->joinWith(['placement']);
+        $query->joinWith(['staticCampaigns']);
         // add conditions that should always apply here
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
+            'sort' => ['attributes' => [ 'id','name', 'country','connection_type', 'placement']]
+        ]);
+
+        $query->select([
+            'Clusters.id',
+            'country',
+            'Clusters.name',
+            'connection_type',
+            'Placements.name as placement'
         ]);
 
         $this->load($params);

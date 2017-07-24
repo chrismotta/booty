@@ -31,7 +31,10 @@ $this->params['breadcrumbs'][] = $this->title;
             'id',
             'name',
             'short_name',
-            'admin_user',
+            [
+                'label'     => 'Admin User',
+                'attribute' => 'adminUser.username'
+            ]
         ],
     ]) ?>
 
