@@ -7,8 +7,8 @@ $username = isset( Yii::$app->user->identity->username ) ? Yii::$app->user->iden
 ?>
 
 <header class="main-header">
-
-    <?= Html::a('<span class="logo-mini"><img src="'.Yii::$app->homeUrl.'/img/splad-iso.png" style="vertical-align: top; width: 38px; margin-top: 3px;" /></span><span class="logo-lg"><img src="'.Yii::$app->homeUrl.'/img/splad-logo.png" style="vertical-align: top; width: 120px; margin-top: 3px;" /></span>', Yii::$app->homeUrl, ['class' => 'logo']) ?>
+    <? $path = Yii::$app->getUrlManager()->getBaseUrl() ?>
+    <?= Html::a('<span class="logo-mini"><img src="'. $path .'/img/splad-iso.png" style="vertical-align: top; width: 38px; margin-top: 3px;" /></span><span class="logo-lg"><img src="'.Yii::$app->homeUrl.'/img/splad-logo.png" style="vertical-align: top; width: 120px; margin-top: 3px;" /></span>', Yii::$app->homeUrl, ['class' => 'logo']) ?>
 
     <nav class="navbar navbar-static-top" role="navigation">
 
