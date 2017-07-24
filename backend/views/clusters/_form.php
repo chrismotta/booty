@@ -48,7 +48,7 @@ $staticCampaigns = models\StaticCampaigns::find()->asArray()->all();
     <?= $form->field($model, 'os')->dropDownList([ 'Android' => 'Android', 'iOS' => 'iOS', 'Windows' => 'Windows', 'BlackBerry' => 'BlackBerry' ], ['prompt' => '']) ?>
 
     <?= 
-        '<label class="control-label">Placement</label>';
+        '<label class="control-label">Static Campaign</label>';
         echo Select2::widget( [
             'model' => $model,
             'attribute' => 'StaticCampaigns_id',
@@ -62,7 +62,7 @@ $staticCampaigns = models\StaticCampaigns::find()->asArray()->all();
             ],
             'language' => 'us',
             'options' => [
-                'placeholder' => 'Select a publisher ...', 
+                'placeholder' => 'Select a static campaign...', 
             ],
             'pluginOptions' => [
                 'maximumInputLength' => 50

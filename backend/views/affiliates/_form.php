@@ -38,7 +38,7 @@ $users = models\User::find()->asArray()->all();
             ],            
             'language' => 'us',
             'options' => [
-                'placeholder' => 'Select a publisher ...', 
+                'placeholder' => 'Select a publisher...', 
             ],
             'pluginOptions' => [
                 'maximumInputLength' => 50
