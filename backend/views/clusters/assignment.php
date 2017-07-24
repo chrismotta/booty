@@ -33,7 +33,7 @@ $this->params['breadcrumbs'][] = $this->title;
             'os',
             [
                 'attribute' => 'connection_type',
-                'label' => 'C. Type',
+                'label' => 'Conn. Type',
             ],
 
             [
