@@ -2,17 +2,40 @@
 
 use yii\helpers\Html;
 use yii\widgets\ActiveForm;
-
+use app\models;
+use kartik\select2\Select2;
+use yii\helpers\ArrayHelper;
 /* @var $this yii\web\View */
 /* @var $model app\models\Placements */
 /* @var $form yii\widgets\ActiveForm */
+
+$publishers       = models\Publishers::find()->asArray()->all();
 ?>
 
 <div class="placements-form">
 
     <?php $form = ActiveForm::begin(); ?>
 
-    <?= $form->field($model, 'Publishers_id')->textInput() ?>
+    <?= 
+        '<label class="control-label">Publisher</label>';
+        echo Select2::widget( [
+            'model' => $model,
+            'attribute' => 'Publishers_id',
+            'name' => 'publisher',
+            'data' => ArrayHelper::map( 
+                $publishers, 
+                'id', 
+                'name' 
+            ),
+            'language' => 'us',
+            'options' => [
+                'placeholder' => 'Select a publisher ...', 
+            ],
+            'pluginOptions' => [
+                'maximumInputLength' => 50
+            ],
+        ]);            
+    ?>
 
     <?= $form->field($model, 'name')->textInput(['maxlength' => true]) ?>
 
