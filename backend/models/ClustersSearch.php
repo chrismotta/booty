@@ -42,19 +42,11 @@ class ClustersSearch extends Clusters
     public function search($params)
     {
         $query = Clusters::find();
-        $query->joinWith(['staticCampaigns']);
+        // $query->joinWith(['staticCampaigns']);
         // add conditions that should always apply here
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
-            'sort' => ['attributes' => [ 'id','name', 'country','connection_type']]
-        ]);
-
-        $query->select([
-            'Clusters.id',
-            'country',
-            'Clusters.name',
-            'connection_type',
         ]);
 
         $this->load($params);

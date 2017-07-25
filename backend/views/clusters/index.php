@@ -32,8 +32,8 @@ $this->params['breadcrumbs'][] = $this->title;
             'id',
             'name',
             'country',
+            'os',
             'connection_type',
-            // 'carrier',
             // 'StaticCampaigns_id',
 
             [
