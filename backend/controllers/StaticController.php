@@ -8,6 +8,7 @@ use app\models\StaticCampaignsSearch;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
+use app\models;
 
 /**
  * StaticController implements the CRUD actions for StaticCampaigns model.
@@ -85,6 +86,18 @@ class StaticController extends Controller
         $model = $this->findModel($id);
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
+
+            $cache = new \Predis\Client( \Yii::$app->params['predisConString'] );
+            $clusters = models\Clusters::findAll( ['StaticCampaigns_id' => $model->id] );
+
+            foreach ( $clusters AS $cluster )
+            {
+                $cache->hmset( 'cluster:'.$cluster->id,  [
+                    'static_cp_land'    => $model->landing_url,
+                    'static_cp_300x250' => $model->creative_300x250,
+                    'static_cp_320x50'  => $model->creative_320x50 
+                ]);
+            }
             return $this->redirect(['view', 'id' => $model->id]);
         } else {
             return $this->render('update', [

@@ -27,8 +27,24 @@ $this->params['breadcrumbs'][] = $this->title;
             'id',
             'name',
             'landing_url:url',
-            'creative_300x250',
-            'creative_320x50',
+            [
+                'attribute' => 'creative_300x250',
+                'contentOptions'  => [
+                    'style' =>'max-height:125px;max-width:150px;overflow:hidden;'
+                ],
+                'headerOptions'  => [
+                    'style' => 'max-height:125px;max-width:150px;overflow:hidden;'
+                ],              
+            ],
+            [
+                'attribute' => 'creative_320x50',
+                'contentOptions'  => [
+                    'style' =>'max-height:125px;max-width:150px;overflow:hidden;'
+                ],
+                'headerOptions'  => [
+                    'style' => 'max-height:125px;max-width:150px;overflow:hidden;'
+                ],              
+            ],            
 
             ['class' => 'yii\grid\ActionColumn'],
         ],

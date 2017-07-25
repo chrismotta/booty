@@ -67,11 +67,11 @@ class ClustersSearch extends Clusters
 
         // grid filtering conditions
         $query->andFilterWhere([
-            'id' => $this->id,
+            'Clusters.id' => $this->id,
             'StaticCampaigns_id' => $this->StaticCampaigns_id,
         ]);
 
-        $query->andFilterWhere(['like', 'name', $this->name])
+        $query->andFilterWhere(['like', 'Clusters.name', $this->name])
             ->andFilterWhere(['like', 'country', $this->country])
             ->andFilterWhere(['like', 'connection_type', $this->connection_type])
             ->andFilterWhere(['like', 'os', $this->os]);

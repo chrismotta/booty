@@ -71,7 +71,7 @@ class PlacementsSearch extends Placements
 
         // grid filtering conditions
         $query->andFilterWhere([
-            'id' => $this->id,
+            'Placements.id' => $this->id,
             'Publishers_id' => $this->Publishers_id,
             'Clusters_id' => $this->Clusters_id,
             'frequency_cap' => $this->frequency_cap,

@@ -71,9 +71,6 @@ class ClustersController extends Controller
 
             $cache = new \Predis\Client( \Yii::$app->params['predisConString'] );
 
-            $cache->hset( 'placement:'.$model->id, 'cluster_id', $model->id );
-            $cache->hset( 'placement:'.$model->id, 'cluster_name', $model->name );
-
             $cache->hmset( 'cluster:'.$model->id,  [
                 'country'           => strtolower($model->country),
                 'os'                => $model->os,
@@ -105,9 +102,6 @@ class ClustersController extends Controller
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
 
             $cache = new \Predis\Client( \Yii::$app->params['predisConString'] );
-
-            $cache->hset( 'placement:'.$model->id, 'cluster_id', $model->id );
-            $cache->hset( 'placement:'.$model->id, 'cluster_name', $model->name );
 
             $cache->hset( 'cluster:'.$model->id, 'country', strtolower($model->country) );
             $cache->hset( 'cluster:'.$model->id, 'os', $model->os );

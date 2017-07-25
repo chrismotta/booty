@@ -73,8 +73,8 @@ class AffiliatesSearch extends Affiliates
 
         // grid filtering conditions
         $query->andFilterWhere([
-            'id' => $this->id,
-            'admin_user' => $this->admin_user,
+            'Affiliates.id' => $this->id,
+            'Affiliates.admin_user' => $this->admin_user,
         ]);
 
         $query->andFilterWhere(['like', 'name', $this->name])
