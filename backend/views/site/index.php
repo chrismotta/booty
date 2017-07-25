@@ -2,7 +2,7 @@
 
 /* @var $this yii\web\View */
 
-// $this->title = 'SPD Dashboard';
+$this->title = 'Splad Dashboard';
 ?>
 <div class="site-index">
 
