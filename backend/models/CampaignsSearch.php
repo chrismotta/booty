@@ -137,9 +137,9 @@ class CampaignsSearch extends Campaigns
             ->andFilterWhere(['like', 'creative_300x250', $this->creative_300x250])
             ->andFilterWhere(['like', 'Affiliates.name', $this->affiliateName]);
         
-        $query->andFilterWhere([
-            '!=', 'Clusters.id', 1
-        ]);
+        // $query->andFilterWhere([
+        //     '!=', 'Clusters.id', 1
+        // ]);
 
         return $dataProvider;
     }
