@@ -23,6 +23,7 @@ use Yii;
 class Placements extends \yii\db\ActiveRecord
 {
     public $publisher;
+    public $cluster;
     /**
      * @inheritdoc
      */
@@ -37,12 +38,13 @@ class Placements extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['Publishers_id', 'frequency_cap', 'payout', 'model', 'size'], 'required'],
+            [['Publishers_id', 'Clusters_id', 'frequency_cap', 'payout', 'model', 'size'], 'required'],
             [['Publishers_id', 'frequency_cap', 'health_check_imps', 'imps'], 'integer'],
             [['payout'], 'number'],
             [['model', 'status'], 'string'],
             [['name', 'size'], 'string', 'max' => 255],
-            [['Publishers_id'], 'exist', 'skipOnError' => true, 'targetClass' => Publishers::className(), 'targetAttribute' => ['Publishers_id' => 'id']],
+            [['Publishers_id'], 'exist', 'skipOnError' => true, 'targetClass' => Publishers::className(), 'targetAttribute' => ['Publishers_id' => 'id']], 
+            [['Clusters_id'], 'exist', 'skipOnError' => true, 'targetClass' => Clusters::className(), 'targetAttribute' => ['Clusters_id' => 'id']], 
         ];
     }
 
@@ -63,6 +65,8 @@ class Placements extends \yii\db\ActiveRecord
             'imps' => 'Imps',
             'health_check_imps' => 'Health Check Imps',
             'publisher' => 'Publisher',
+            'Clusters_id' => 'Clusters ID',
+            'cluster' => 'Cluster'
         ];
     }
 
@@ -71,7 +75,7 @@ class Placements extends \yii\db\ActiveRecord
      */
     public function getClusters()
     {
-        return $this->hasMany(Clusters::className(), ['Placements_id' => 'id']);
+        return $this->hasOne(Clusters::className(), ['Clusters_id' => 'id']);
     }
 
     /**

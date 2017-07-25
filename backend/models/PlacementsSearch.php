@@ -18,8 +18,8 @@ class PlacementsSearch extends Placements
     public function rules()
     {
         return [
-            [['id', 'Publishers_id', 'frequency_cap', 'health_check_imps'], 'integer'],
-            [['name', 'model', 'status', 'size', 'publisher', ], 'safe'],
+            [['id', 'Publishers_id','Clusters_id', 'frequency_cap', 'health_check_imps'], 'integer'],
+            [['name', 'model', 'status', 'size', 'publisher', 'cluster' ], 'safe'],
             [['payout'], 'number'],
         ];
     }
@@ -44,6 +44,7 @@ class PlacementsSearch extends Placements
     {
         $query = Placements::find();
         $query->joinWith(['publishers']);
+        $query->joinWith(['clusters']);
         // add conditions that should always apply here
 
         $dataProvider = new ActiveDataProvider([

@@ -18,7 +18,7 @@ class ClustersSearch extends Clusters
     public function rules()
     {
         return [
-            [['id', 'Placements_id', 'StaticCampaigns_id'], 'integer'],
+            [['id', 'StaticCampaigns_id'], 'integer'],
             [['name', 'country', 'connection_type', 'os', 'placement', 'static_campaign'], 'safe'],
         ];
     }
@@ -42,13 +42,12 @@ class ClustersSearch extends Clusters
     public function search($params)
     {
         $query = Clusters::find();
-        $query->joinWith(['placement']);
         $query->joinWith(['staticCampaigns']);
         // add conditions that should always apply here
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
-            'sort' => ['attributes' => [ 'id','name', 'country','connection_type', 'placement']]
+            'sort' => ['attributes' => [ 'id','name', 'country','connection_type']]
         ]);
 
         $query->select([
@@ -56,7 +55,6 @@ class ClustersSearch extends Clusters
             'country',
             'Clusters.name',
             'connection_type',
-            'Placements.name as placement'
         ]);
 
         $this->load($params);
@@ -70,7 +68,6 @@ class ClustersSearch extends Clusters
         // grid filtering conditions
         $query->andFilterWhere([
             'id' => $this->id,
-            'Placements_id' => $this->Placements_id,
             'StaticCampaigns_id' => $this->StaticCampaigns_id,
         ]);
 
