@@ -100,7 +100,10 @@ class CampaignsSearch extends Campaigns
     public function searchAvailable($params, $clusterID)
     {
         $query = Campaigns::find();
-        $query->joinWith(['affiliates', 'clusters']);
+        $query->joinWith(['affiliates']);
+
+        $subQuery = ClustersHasCampaigns::find()->where(['Clusters_id'=>$clusterID]);
+        $query->leftJoin(['cc' => $subQuery], 'Campaigns.id = cc.Campaigns_id');
         
         // add conditions that should always apply here
 
@@ -136,10 +139,8 @@ class CampaignsSearch extends Campaigns
             ->andFilterWhere(['like', 'creative_320x50', $this->creative_320x50])
             ->andFilterWhere(['like', 'creative_300x250', $this->creative_300x250])
             ->andFilterWhere(['like', 'Affiliates.name', $this->affiliateName]);
-        
-        // $query->andFilterWhere([
-        //     '!=', 'Clusters.id', 1
-        // ]);
+
+        $query->andWhere(['cc.Clusters_id' => null]);
 
         return $dataProvider;
     }
