@@ -41,7 +41,6 @@ $filterByCluster = ArrayHelper::map(
         'dataProvider' => $dataProvider,
         'filterModel' => $searchModel,
         'columns' => [
-            ['class' => 'yii\grid\SerialColumn'],
 
             'id',
             [
