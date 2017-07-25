@@ -44,6 +44,7 @@ use dmstr\widgets\Alert;
 </footer>
 
 <!-- Control Sidebar -->
+<!-- 
 <aside class="control-sidebar control-sidebar-light">
     <div class="close-sidebar">
         <a href="#" data-toggle="control-sidebar" class="close-sidebar-button"><i class="fa fa-close"></i></a>
@@ -51,7 +52,8 @@ use dmstr\widgets\Alert;
     <div class="pad">
         <iframe  id="control-sidebar" width="100%" height="400px" frameborder="no" scrolling="no"></iframe>
     </div>
-</aside><!-- /.control-sidebar -->
+</aside>
+ --><!-- /.control-sidebar -->
 <!-- Add the sidebar's background. This div must be placed
      immediately after the control sidebar -->
 <div class='control-sidebar-bg'></div>

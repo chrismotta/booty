@@ -6,13 +6,11 @@ use yii\widgets\DetailView;
 /* @var $this yii\web\View */
 /* @var $model app\models\Placements */
 
-$this->title = $model->name;
+$this->title = 'Placement #'.$model->id.': '.$model->name;
 $this->params['breadcrumbs'][] = ['label' => 'Placements', 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="placements-view">
-
-    <h1><?= Html::encode($this->title) ?></h1>
 
     <p>
         <?= Html::a('Update', ['update', 'id' => $model->id], ['class' => 'btn btn-primary']) ?>
@@ -23,6 +21,14 @@ $this->params['breadcrumbs'][] = $this->title;
                 'method' => 'post',
             ],
         ]) ?>
+    </p>
+    <p>
+        <hr/>
+        <h4>Iframe Tag</h4>
+        <?= Html::textarea('iframeTag', '<iframe src="" frameborder="0" scrolling="no" width="" height=""></iframe>', ['class' => 'form-control']) ?>
+        <h4>Javascript Tag</h4>
+        <?= Html::textarea('javascriptTag', '<script type="text/javascript" src=""></script>', ['class' => 'form-control']) ?>
+        <hr/>
     </p>
 
     <?= DetailView::widget([
