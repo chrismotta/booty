@@ -25,7 +25,25 @@ $this->params['breadcrumbs'][] = $this->title;
     <p>
         <hr/>
         <h4>Iframe Tag</h4>
-        <?= Html::textarea('iframeTag', '<iframe src="" frameborder="0" scrolling="no" width="" height=""></iframe>', ['class' => 'form-control']) ?>
+        <?
+        $adDomain = "http//ad.spdx.co/";
+        $iframeSrc = $adDomain . $model->id . '/';
+        switch ($model->size) {
+            case '300x250':
+                $width = "300";
+                $height = "250";
+                break;
+            case '320x50':
+                $width = "320";
+                $height = "50";
+                break;
+            default:
+                $width = "";
+                $height = "";
+                break;
+        }
+        ?>
+        <?= Html::textarea('iframeTag', '<iframe src="'.$iframeSrc.'" frameborder="0" scrolling="no" width="'.$width.'" height="'.$height.'"></iframe>', ['class' => 'form-control']) ?>
         <h4>Javascript Tag</h4>
         <?= Html::textarea('javascriptTag', '<script type="text/javascript" src=""></script>', ['class' => 'form-control']) ?>
         <hr/>
