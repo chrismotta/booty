@@ -79,9 +79,9 @@ $filterByCluster = ArrayHelper::map(
             'name',
             'frequency_cap',
             'payout',
-            // 'model',
-            // 'status',
-            // 'size',
+            'model',
+            'size',
+            'status',
             // 'health_check_imps',
 
             ['class' => 'yii\grid\ActionColumn'],

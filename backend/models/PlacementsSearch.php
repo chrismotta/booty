@@ -49,8 +49,16 @@ class PlacementsSearch extends Placements
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
-            'sort' => ['attributes' => [ 'id','name', 'frequency_cap','payout', 'publisher', 'cluster']]
+            // 'sort' => ['attributes' => [ 'id','name', 'frequency_cap','payout', 'publisher', 'cluster', 'model', 'size', 'status']]
         ]);
+        $dataProvider->sort->attributes['cluster'] = [
+            'asc' => ['Clusters.name' => SORT_ASC],
+            'desc' => ['Clusters.name' => SORT_DESC]
+            ];
+        $dataProvider->sort->attributes['publisher'] = [
+            'asc' => ['Publishers.name' => SORT_ASC],
+            'desc' => ['Publishers.name' => SORT_DESC]
+            ];
 
         $query->select([
             'Placements.id',
@@ -58,7 +66,10 @@ class PlacementsSearch extends Placements
             'Placements.name',
             'payout',
             'Publishers.name as publisher',
-            'Clusters.name as cluster'
+            'Clusters.name as cluster',
+            'model',
+            'size',
+            'status',
         ]);
 
         $this->load($params);

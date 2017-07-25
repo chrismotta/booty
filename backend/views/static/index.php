@@ -22,8 +22,6 @@ $this->params['breadcrumbs'][] = $this->title;
         'dataProvider' => $dataProvider,
         'filterModel' => $searchModel,
         'columns' => [
-            ['class' => 'yii\grid\SerialColumn'],
-
             'id',
             'name',
             'landing_url:url',
@@ -35,6 +33,10 @@ $this->params['breadcrumbs'][] = $this->title;
                 'headerOptions'  => [
                     'style' => 'max-height:125px;max-width:150px;overflow:hidden;'
                 ],              
+            ],
+            [
+                'format' => 'image',
+                'value'=>function($data) { return $data->creative_320x50; },
             ],
             [
                 'attribute' => 'creative_320x50',
