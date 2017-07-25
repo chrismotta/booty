@@ -97,8 +97,12 @@ class PlacementsController extends Controller
     public function actionUpdate($id)
     {
         $model = $this->findModel($id);
+        $p = $model->load(Yii::$app->request->post());
 
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
+        if ( $model->status=='health_check' )
+            $model->imps = 0;
+
+        if ( $p && $model->save()) {
 
             $cache = new \Predis\Client( \Yii::$app->params['predisConString'] );
 
