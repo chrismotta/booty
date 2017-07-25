@@ -33,7 +33,7 @@ if (Yii::$app->controller->action->id === 'login') {
         <meta charset="<?= Yii::$app->charset ?>"/>
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <?= Html::csrfMetaTags() ?>
-        <title><?= Html::encode($this->title) ?></title>
+        <title>Splad :: <?= Html::encode($this->title) ?></title>
         <?php $this->head() ?>
     </head>
     <body class="hold-transition skin-black-light sidebar-mini">
