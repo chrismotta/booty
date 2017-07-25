@@ -158,9 +158,7 @@ class EtlController extends \yii\web\Controller
                 $this->_sendMail ( self::ALERT_FROM, self::ALERT_TO, $this->_alertSubject, $msg );
 
             die($msg);
-        }
-
-        return true;        
+        }       
     }
 
 

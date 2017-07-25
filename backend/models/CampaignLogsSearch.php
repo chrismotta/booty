@@ -146,11 +146,16 @@ class CampaignLogsSearch extends CampaignLogs
 
 
         // relations
+        $query->rightJoin([
+            'F_ClusterLogs ON (F_ClusterLogs.session_hash=F_CampaignLogs.session_hash)',
+        ]);
 
+        $query->leftJoin([
+            'D_Placement ON ( F_ClusterLogs.D_Placement_id=D_Placement.id )',
+        ]);
+        
         $query->joinWith([
             'campaign',
-            'clusterLog',
-            'clusterLog.placement',
         ]);
         
  
