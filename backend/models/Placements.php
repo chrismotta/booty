@@ -38,8 +38,8 @@ class Placements extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['Publishers_id', 'Clusters_id', 'frequency_cap', 'payout', 'model', 'size'], 'required'],
-            [['Publishers_id', 'frequency_cap', 'health_check_imps', 'imps'], 'integer'],
+            [['Publishers_id', 'frequency_cap', 'payout', 'model', 'size'], 'required'],
+            [['Publishers_id', 'Clusters_id', 'frequency_cap', 'health_check_imps', 'imps'], 'integer'],
             [['payout'], 'number'],
             [['model', 'status'], 'string'],
             [['name', 'size'], 'string', 'max' => 255],
@@ -75,7 +75,7 @@ class Placements extends \yii\db\ActiveRecord
      */
     public function getClusters()
     {
-        return $this->hasOne(Clusters::className(), ['Clusters_id' => 'id']);
+        return $this->hasOne(Clusters::className(), ['id' => 'Clusters_id']);
     }
 
     /**

@@ -12,13 +12,7 @@ use yii\helpers\ArrayHelper;
 
 $this->title = 'Clusters';
 $this->params['breadcrumbs'][] = $this->title;
-$placements = models\Placements::find()->asArray()->all();
 
-$filterByPlacement = ArrayHelper::map( 
-    $placements, 
-    'id', 
-    'name' 
-);
 
 ?>
 <div class="clusters-index">
@@ -37,22 +31,6 @@ $filterByPlacement = ArrayHelper::map(
 
             'id',
             'name',
-            [
-                'attribute' => 'placement',
-                'label'     => 'Placement',
-                'filter' => Select2::widget([
-                    'model' => $searchModel,
-                    'attribute' => 'Placements_id',
-                    'data' => $filterByPlacement,
-                    'theme' => Select2::THEME_BOOTSTRAP,
-                    'pluginOptions' => [
-                        'allowClear' => true
-                    ],
-                    'options' => [
-                        'placeholder' => 'Select placement...',
-                    ]
-                ]),                
-            ],
             'country',
             'connection_type',
             // 'carrier',

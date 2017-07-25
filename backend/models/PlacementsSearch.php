@@ -49,7 +49,7 @@ class PlacementsSearch extends Placements
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
-            'sort' => ['attributes' => [ 'id','name', 'frequency_cap','payout', 'publisher']]
+            'sort' => ['attributes' => [ 'id','name', 'frequency_cap','payout', 'publisher', 'cluster']]
         ]);
 
         $query->select([
@@ -57,7 +57,8 @@ class PlacementsSearch extends Placements
             'frequency_cap',
             'Placements.name',
             'payout',
-            'Publishers.name as publisher'
+            'Publishers.name as publisher',
+            'Clusters.name as cluster'
         ]);
 
         $this->load($params);
@@ -72,6 +73,7 @@ class PlacementsSearch extends Placements
         $query->andFilterWhere([
             'id' => $this->id,
             'Publishers_id' => $this->Publishers_id,
+            'Clusters_id' => $this->Clusters_id,
             'frequency_cap' => $this->frequency_cap,
             'payout' => $this->payout,
             'health_check_imps' => $this->health_check_imps,

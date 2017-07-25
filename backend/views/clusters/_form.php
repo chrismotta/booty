@@ -9,7 +9,6 @@ use yii\helpers\ArrayHelper;
 /* @var $model app\models\Clusters */
 /* @var $form yii\widgets\ActiveForm */
 
-$placements      = models\Placements::find()->asArray()->all();
 $staticCampaigns = models\StaticCampaigns::find()->asArray()->all();
 ?>
 
@@ -21,25 +20,7 @@ $staticCampaigns = models\StaticCampaigns::find()->asArray()->all();
 
     <?= $form->field($model, 'name')->textInput(['maxlength' => true]) ?>
 
-    <?= 
-        '<label class="control-label">Placement</label>';
-        echo Select2::widget( [
-            'model' => $model,
-            'attribute' => 'Placements_id',
-            'data' => ArrayHelper::map( 
-                $placements, 
-                'id', 
-                'name' 
-            ),
-            'language' => 'us',
-            'options' => [
-                'placeholder' => 'Select a publisher ...', 
-            ],
-            'pluginOptions' => [
-                'maximumInputLength' => 50
-            ],
-        ]);            
-    ?>
+
 
     <?= $form->field($model, 'country')->textInput(['maxlength' => true]) ?>
 

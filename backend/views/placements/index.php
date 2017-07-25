@@ -20,6 +20,14 @@ $filterByPublisher = ArrayHelper::map(
     'id', 
     'name' 
 );
+
+$clusters = models\Clusters::find()->asArray()->all();
+
+$filterByCluster = ArrayHelper::map( 
+    $clusters, 
+    'id', 
+    'name' 
+);
 ?>
 <div class="placements-index">
 
@@ -52,6 +60,22 @@ $filterByPublisher = ArrayHelper::map(
                     ]
                 ]),                
             ],
+            [
+                'attribute' => 'cluster',
+                'label'     => 'Cluster',
+                'filter' => Select2::widget([
+                    'model' => $searchModel,
+                    'attribute' => 'Clusters_id',
+                    'data' => $filterByCluster,
+                    'theme' => Select2::THEME_BOOTSTRAP,
+                    'pluginOptions' => [
+                        'allowClear' => true
+                    ],
+                    'options' => [
+                        'placeholder' => 'Select cluster...',
+                    ]
+                ]),                
+            ],            
             'name',
             'frequency_cap',
             'payout',

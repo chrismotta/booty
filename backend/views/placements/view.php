@@ -39,6 +39,10 @@ $this->params['breadcrumbs'][] = $this->title;
                 'label'     => 'Publisher',
                 'attribute' => 'publishers.name'
             ],
+            [
+                'label'     => 'Cluster',
+                'attribute' => 'clusters.name'
+            ],            
             'name',
             'frequency_cap',
             'payout',
