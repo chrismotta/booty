@@ -22,7 +22,6 @@ use Yii;
  */
 class Clusters extends \yii\db\ActiveRecord
 {
-    public $placement;
     public $static_campaign;
     /**
      * @inheritdoc
@@ -38,12 +37,11 @@ class Clusters extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['name', 'Placements_id', 'StaticCampaigns_id'], 'required'],
-            [['Placements_id', 'StaticCampaigns_id'], 'integer'],
+            [['name', 'StaticCampaigns_id'], 'required'],
+            [['StaticCampaigns_id'], 'integer'],
             [['connection_type', 'os'], 'string'],
             [['name'], 'string', 'max' => 255],
             [['country'], 'string', 'max' => 2],
-            [['Placements_id'], 'exist', 'skipOnError' => true, 'targetClass' => Placements::className(), 'targetAttribute' => ['Placements_id' => 'id']],
             [['StaticCampaigns_id'], 'exist', 'skipOnError' => true, 'targetClass' => StaticCampaigns::className(), 'targetAttribute' => ['StaticCampaigns_id' => 'id']],
         ];
     }
@@ -56,7 +54,6 @@ class Clusters extends \yii\db\ActiveRecord
         return [
             'id' => 'ID',
             'name' => 'Name',
-            'Placements_id' => 'Placements ID',
             'country' => 'Country',
             'connection_type' => 'Connection Type',
             'os' => 'Os',
@@ -89,13 +86,6 @@ class Clusters extends \yii\db\ActiveRecord
         return $this->hasMany(Campaigns::className(), ['id' => 'Campaigns_id'])->viaTable('Clusters_has_Campaigns', ['Clusters_id' => 'id']);
     }
 
-    /**
-     * @return \yii\db\ActiveQuery
-     */
-    public function getPlacement()
-    {
-        return $this->hasOne(Placements::className(), ['id' => 'Placements_id']);
-    }    
 
     /**
      * Get all avaliable and assigned roles/permission
