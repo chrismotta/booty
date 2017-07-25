@@ -66,13 +66,20 @@ class ClustersController extends Controller
     public function actionCreate()
     {
         $model = new Clusters();
+        $p = $model->load(Yii::$app->request->post());
 
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
+        if ( !$model->connection_type || $model->connection_type=='' )
+            $model->connection_type = null;
 
+        if ( !$model->os || $model->os=='' )
+            $model->os = null;
+
+        if ( !$model->country || $model->country=='' )
+            $model->country = null;
+
+
+        if ( $p  && $model->save()) {
             $cache = new \Predis\Client( \Yii::$app->params['predisConString'] );
-
-            $cache->hset( 'placement:'.$model->id, 'cluster_id', $model->id );
-            $cache->hset( 'placement:'.$model->id, 'cluster_name', $model->name );
 
             $cache->hmset( 'cluster:'.$model->id,  [
                 'country'           => strtolower($model->country),
@@ -82,7 +89,6 @@ class ClustersController extends Controller
                 'static_cp_300x250' => $model->staticCampaigns->creative_300x250,
                 'static_cp_320x50'  => $model->staticCampaigns->creative_320x50 
             ]);
-
 
             return $this->redirect(['view', 'id' => $model->id]);
         } else {
@@ -102,12 +108,20 @@ class ClustersController extends Controller
     {
         $model = $this->findModel($id);
 
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
+        $p = $model->load(Yii::$app->request->post());
+
+        if ( !$model->connection_type || $model->connection_type=='' )
+            $model->connection_type = null;
+
+        if ( !$model->os || $model->os=='' )
+            $model->os = null;
+
+        if ( !$model->country || $model->country=='' )
+            $model->country = null;
+
+        if ( $p && $model->save()) {
 
             $cache = new \Predis\Client( \Yii::$app->params['predisConString'] );
-
-            $cache->hset( 'placement:'.$model->id, 'cluster_id', $model->id );
-            $cache->hset( 'placement:'.$model->id, 'cluster_name', $model->name );
 
             $cache->hset( 'cluster:'.$model->id, 'country', strtolower($model->country) );
             $cache->hset( 'cluster:'.$model->id, 'os', $model->os );

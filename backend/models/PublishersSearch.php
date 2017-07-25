@@ -72,8 +72,8 @@ class PublishersSearch extends Publishers
 
         // grid filtering conditions
         $query->andFilterWhere([
-            'id' => $this->id,
-            'admin_user' => $this->admin_user,
+            'Publishers.id' => $this->id,
+            'Publishers.admin_user' => $this->admin_user,
         ]);
 
         $query->andFilterWhere(['like', 'name', $this->name])
