@@ -25,8 +25,8 @@ $this->params['breadcrumbs'][] = $this->title;
     <p>
         <hr/>
         <h4>Iframe Tag</h4>
-        <?
-        $adDomain = "http//ad.spdx.co/";
+        <?php
+        $adDomain = "//ad.spdx.co/";
         $iframeSrc = $adDomain . $model->id . '/';
         switch ($model->size) {
             case '300x250':
