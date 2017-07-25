@@ -137,3 +137,17 @@ a.desc:after {
     position: absolute;
     right: 0px;
 }
+
+.img-column-320x50 {
+    width: 200px;
+}
+.img-column-320x50 img {
+    width: 100%;
+}
+
+.img-column-300x250 {
+    width: 150px;
+}
+.img-column-300x250 img {
+    width: 100%;
+}

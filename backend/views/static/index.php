@@ -26,27 +26,39 @@ $this->params['breadcrumbs'][] = $this->title;
             'name',
             'landing_url:url',
             [
-                'attribute' => 'creative_300x250',
-                'contentOptions'  => [
-                    'style' =>'max-height:125px;max-width:150px;overflow:hidden;'
-                ],
-                'headerOptions'  => [
-                    'style' => 'max-height:125px;max-width:150px;overflow:hidden;'
-                ],              
-            ],
-            [
+                'label'  => '320x50',
                 'format' => 'image',
-                'value'=>function($data) { return $data->creative_320x50; },
+                'value'  => function($data) { return $data->creative_320x50; },
+                'contentOptions'  => [
+                    'class' =>'img-column-320x50',
+                ],
             ],
             [
-                'attribute' => 'creative_320x50',
+                'label'  => '300x250',
+                'format' => 'image',
+                'value'  => function($data) { return $data->creative_300x250; },
                 'contentOptions'  => [
-                    'style' =>'max-height:125px;max-width:150px;overflow:hidden;'
+                    'class' =>'img-column-300x250',
                 ],
-                'headerOptions'  => [
-                    'style' => 'max-height:125px;max-width:150px;overflow:hidden;'
-                ],              
-            ],            
+            ],
+            // [
+            //     'attribute' => 'creative_300x250',
+            //     'contentOptions'  => [
+            //         'style' =>'max-height:125px;max-width:150px;overflow:hidden;'
+            //     ],
+            //     'headerOptions'  => [
+            //         'style' => 'max-height:125px;max-width:150px;overflow:hidden;'
+            //     ],              
+            // ],
+            // [
+            //     'attribute' => 'creative_320x50',
+            //     'contentOptions'  => [
+            //         'style' =>'max-height:125px;max-width:150px;overflow:hidden;'
+            //     ],
+            //     'headerOptions'  => [
+            //         'style' => 'max-height:125px;max-width:150px;overflow:hidden;'
+            //     ],              
+            // ],            
 
             ['class' => 'yii\grid\ActionColumn'],
         ],
