@@ -45,6 +45,12 @@ $affiliates = models\Affiliates::find()->asArray()->all();
 
     <?= $form->field($model, 'payout')->textInput(['maxlength' => true]) ?>
 
+    <?= $form->field($model, 'country')->textInput(['maxlength' => true]) ?>
+
+    <?= $form->field($model, 'os')->dropDownList([ 'Android' => 'Android', 'iOS' => 'iOS', 'Windows' => 'Windows', 'BlackBerry' => 'BlackBerry' ], ['prompt' => '']) ?>
+
+    <?= $form->field($model, 'connection_type')->dropDownList([ '3g' => '3g', 'wifi' => 'Wifi', ], ['prompt' => '']) ?>
+
     <?= $form->field($model, 'landing_url')->textInput(['maxlength' => true]) ?>
 
     <?= $form->field($model, 'creative_320x50')->textInput(['maxlength' => true]) ?>

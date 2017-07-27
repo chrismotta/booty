@@ -33,10 +33,16 @@ $this->params['breadcrumbs'][] = $this->title;
             ],
             'name',
             'payout',
+            'country',
+            'os',
+            'connection_type',
             'landing_url:url',
             'creative_320x50',
             'creative_300x250',
         ],
     ]) ?>
+
+    <?= Html::img($model->creative_320x50, ['alt' => '320x50', 'style' => 'margin-right:10px']) ?>
+    <?= Html::img($model->creative_300x250, ['alt' => '300x250', 'style' => 'margin-right:10px']) ?>
 
 </div>

@@ -53,7 +53,10 @@ $filterByAffiliate = ArrayHelper::map(
             ],
             'name',
             'payout',
-            'landing_url:url',
+            'country',
+            'os',
+            'connection_type',
+            // 'landing_url:url',
             // 'creative_320x50',
             // 'creative_300x250',
 
