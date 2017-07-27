@@ -790,6 +790,248 @@ class EtlController extends \yii\web\Controller
             ],
             $sql
         );
-    }           
+    }
+
+
+    public function actionStats ( )
+    {
+        $date = isset($_GET['date']) && $_GET['date'] ? $_GET['date'] : date( 'Y-m-d' );
+
+        $sql = '
+            INSERT IGNORE INTO Dashboard (                
+                country,
+                date,
+                imps,
+                unique_users,
+                installs,          
+                cost,
+                revenue
+            ) 
+            SELECT * FROM (
+                SELECT 
+                    cl.country AS country, 
+                    cl.imp_time AS date, 
+                    sum( cl.imps ) AS imps, 
+                    count( cl.session_hash ) AS unique_users,
+                    sum(CASE 
+                        WHEN date(cp.conv_time)=date(cl.imp_time) THEN 1 
+                        ELSE 0 
+                    END) AS installs, 
+                    sum( cl.cost ) AS cost,
+                    sum( cp.revenue ) AS revenue 
+                FROM F_CampaignLogs cp 
+                RIGHT JOIN F_ClusterLogs cl ON ( cp.session_hash = cl.session_hash ) 
+                WHERE date(cl.imp_time)="'.$date.'" 
+                GROUP BY date(cl.imp_time), cl.country 
+            ) AS r
+            ON DUPLICATE KEY UPDATE 
+                imps = r.imps, 
+                unique_users = r.unique_users, 
+                installs = r.installs, 
+                cost = r.cost, 
+                revenue = r.revenue;
+        ';
+
+        \Yii::$app->db->createCommand( $sql )->execute();
+    }
+
+/*
+    public function actionDailymaintenance ( )
+    {
+        $etl     = isset( $_GET['etl'] ) && $_GET['etl'] ? false : true;
+
+        $showAll = isset( $_GET['showall'] ) && $_GET['showall'] ? true : false;
+
+        $flush = isset( $_GET['flush'] ) && $_GET['flush'] ? true : false;
+
+        $this->_error = false;
+
+        $this->_redis->select( $this->_getYesterdayDatabase() );
+        
+        if ( $flush || $etl )
+        {
+            $this->actionIndex();
+        }
+
+        $dates     = $this->_redis->smembers( 'dates' );
+        $html      = '';
+
+        foreach ( $dates as $date )
+        {   
+            $miniDate  = date( 'Ymd', strtotime($date) );
+            $logCount  = $this->_redis->zcard( 'tags:'.$miniDate );
+            $queries   = (int)ceil( $logCount/($this->_objectLimit/2) );
+
+            for ( $i=0; $i<$queries; $i++ )
+            {
+                $html .= $this->_maintenanceQuery( 
+                    $date,
+                    $miniDate,
+                    $showAll 
+                );
+            }
+
+            unset( $logCount );
+        }
+
+        if ( $this->_error || $html != '' )
+        {
+            $html     = '
+                <html>
+                    <head>
+                    </head>
+                    <body>
+                        <table>
+                            <thead>
+                                <td>STATUS</td>
+                                <td>DATE</td>
+                                <td>TAG ID</td>
+                                <td>REDIS IMPS</td>
+                                <td>MYSQL IMPS</td>
+                                <td>REDIS COST</td>
+                                <td>MYSQL COST</td>
+                                <td>REDIS REVENUE</td>
+                                <td>MYSQL REVENUE</td>
+                            </thead>
+                            <tbody>'.$html.'</tbody>
+                        </table>
+                    </body>
+                </html>
+            ';
+            
+            echo $html;
+
+            if ( !$this->_noalerts )
+                $this->_sendMail ( 
+                    self::ALERT_FROM, 
+                    self::ALERT_TO, 
+                    'AD NIGMA - TRAFFIC COMPARE ERROR ('.$date.')', 
+                    $html 
+                );
+        }
+        else
+        {
+            if (  $flush )
+            {
+                $this->_redis->flushdb();
+            }
+
+            echo ( 'todo bien piola' );
+        }
+    }
+
+
+    private function _maintenanceQuery ( $date, $miniDate, $showAll )
+    {
+        $html      = '';
+        $limit     = ceil($this->_objectLimit/2);
+        $redisTags = $this->_redis->zrange( 'tags:'.$miniDate, 0, $limit );
+
+        $sql       = 'SELECT DISTINCT D_Demand_id AS id, sum(imps) AS imps, sum(cost) AS cost, sum(revenue) AS revenue FROM F_Imp_Compact WHERE date(date_time)="'.$date.'" GROUP BY D_Demand_id LIMIT '. $limit;
+
+        $sql = '
+            SELECT 
+                DISTINCT D_Campaign AS id,
+                sum(cl.imps) AS imps,
+                sum(cl.cost) AS cost,
+
+            FROM  F_CampaignLogs cpl
+            RIGHT JOIN F_ClusterLogs cl ON (cl.session_hash = cpl.session_hash)
+            WHERE date(date_time)="'.$date.'" GROUP BY D_Demand_id LIMIT '. $limit            
+        ';
+
+        $tmpSqlTags   = Yii::app()->db->createCommand( $sql )->queryAll();        
+        $sqlTags = [];
+
+        foreach ( $tmpSqlTags as $tmpSqlTag )
+        {
+            $sqlTagId           = $tmpSqlTag['id'];
+            $sqlTags[$sqlTagId] = [
+                'imps'     => $tmpSqlTag['imps'],
+                'cost'     => $tmpSqlTag['cost'],
+                'revenue'  => $tmpSqlTag['revenue']
+            ];
+        }
+
+        unset ( $tmpSqlTags );
+
+        foreach ( $redisTags as $tagId )
+        {
+            $redisTag = $this->_redis->hgetall( 'req:t:'.$tagId.':'.$miniDate );
+
+            if ( !isset( $sqlTags[$tagId] ) )
+            {
+                $sqlTags[$tagId] = [
+                    'imps'      => 0,
+                    'cost'      => 0.00,
+                    'revenue'   => 0.00
+                ];
+            }
+            if ( !$redisTag )
+            {
+                $html .= '
+                    <tr>
+                        <td style="color:#FC5005;>NO DATA</td>
+                        <td>'.$date.'</td>
+                        <td>'.$tagId.'</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                    </tr>
+                ';
+
+                $this->_error = true;
+                continue;
+            }
+
+            if ( 
+                $redisTag['imps']       != $sqlTags[$tagId]['imps'] 
+                || $redisTag['cost']    != $sqlTags[$tagId]['cost'] 
+                || $redisTag['revenue'] != $sqlTags[$tagId]['revenue']
+            )
+            {
+                $html .= '
+                    <tr>
+                        <td style="color:#B40303;">DISCREPANCY</td>
+                        <td>'.$date.'</td>
+                        <td>'.$tagId.'</td>
+                        <td>'.$redisTag['imps'].'</td>
+                        <td>'.$sqlTags[$tagId]['imps'].'</td>
+                        <td>'.$redisTag['cost'].'</td>
+                        <td>'.$sqlTags[$tagId]['cost'].'</td>
+                        <td>'.$redisTag['revenue'].'</td>
+                        <td>'.$sqlTags[$tagId]['revenue'].'</td>
+                    </tr>
+                ';
+
+                $this->_error = true;
+            }
+
+            if ( $showAll )
+            {
+                $html .= '
+                    <tr>
+                        <td style="color:#079005;">MATCH</td>
+                        <td>'.$date.'</td>
+                        <td>'.$tagId.'</td>
+                        <td>'.$redisTag['imps'].'</td>
+                        <td>'.$sqlTags[$tagId]['imps'].'</td>
+                        <td>'.$redisTag['cost'].'</td>
+                        <td>'.$sqlTags[$tagId]['cost'].'</td>
+                        <td>'.$redisTag['revenue'].'</td>
+                        <td>'.$sqlTags[$tagId]['revenue'].'</td>
+                    </tr>
+                ';                
+            }
+
+            unset( $redisTag );
+        }
+
+        return $html;
+    }  
+    */             
 
 }
