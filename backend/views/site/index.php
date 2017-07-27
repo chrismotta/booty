@@ -1,16 +1,48 @@
 <?php
 /* @var $this yii\web\View */
 use dosamigos\chartjs\ChartJs;
+use conquer\jvectormap\JVectorMapWidget;
+
 
 $this->title = 'Splad Dashboard';
 
-$totals    = $totalsProvider->getModels();
-$byDate    = $byDateProvider->getModels();
-$byCountry = $byCountryProvider->getModels();
+$totals      = $totalsProvider->getModels();
+$byDate      = $byDateProvider->getModels();
+$byCountry   = $byCountryProvider->getModels();
 
-$totalImps  = isset($totals[0]) ? $totals[0]['imps'] : 0; 
-$totalUsers = isset($totals[0]) ? $totals[0]['unique_users'] : 0;
-$totalConvs = isset($totals[0]) ? $totals[0]['installs'] : 0;
+$totalImps   = isset($totals[0]) ? $totals[0]['imps'] : 0; 
+$totalUsers  = isset($totals[0]) ? $totals[0]['unique_users'] : 0;
+$totalConvs  = isset($totals[0]) ? $totals[0]['installs'] : 0;
+
+$revByDate   = [];
+$spendByDate = [];
+$dates       = [];
+
+foreach ( $byDate as $data )
+{
+    $revByDate[]    = $data['revenue'];
+    $spendByDate[]  = $data['cost'];
+
+    $profit = $data['revenue']-$data['cost'];
+
+    if ( $profit < 0 )
+      $profitByDate[] = 0;
+    else
+      $profitByDate[] = $profit;
+    
+    $dates[]        = date('Y-m-d', strtotime($data['date']) );
+}
+
+
+$impsByCountry = [];
+
+foreach ( $byCountry as $data )
+{
+    $code = strtoupper($data['country']);
+    $impsByCountry[$code] = $data['imps'];
+}
+
+
 
 //var_export($byCountry);
 ?>
@@ -105,7 +137,7 @@ $totalConvs = isset($totals[0]) ? $totals[0]['installs'] : 0;
                           'width' => 400
                       ],
                       'data' => [
-                          'labels' => ["January", "February", "March", "April", "May", "June", "July"],
+                          'labels' => $dates,
                           'datasets' => [
                               [
                                   'label' => "Spend",
@@ -115,7 +147,7 @@ $totalConvs = isset($totals[0]) ? $totals[0]['installs'] : 0;
                                   'pointBorderColor' => "#fff",
                                   'pointHoverBackgroundColor' => "#fff",
                                   'pointHoverBorderColor' => "rgba(179,181,198,1)",
-                                  'data' => [65, 59, 90, 81, 56, 55, 40]
+                                  'data' => $spendByDate
                               ],
                               [
                                   'label' => "Revenue",
@@ -125,9 +157,18 @@ $totalConvs = isset($totals[0]) ? $totals[0]['installs'] : 0;
                                   'pointBorderColor' => "#fff",
                                   'pointHoverBackgroundColor' => "#fff",
                                   'pointHoverBorderColor' => "rgba(255,99,132,1)",
-                                  'data' => [28, 48, 40, 19, 96, 27, 100]
-                              ]
-
+                                  'data' => $revByDate
+                              ],
+                              [
+                                  'label' => "Profit",
+                                  'backgroundColor' => "rgba(99,255,132,0.2)",
+                                  'borderColor' => "rgba(99,160,100,1)",
+                                  'pointBackgroundColor' => "rgba(99,160,100,1)",
+                                  'pointBorderColor' => "#fff",
+                                  'pointHoverBackgroundColor' => "#fff",
+                                  'pointHoverBorderColor' => "rgba(99,255,132,1)",
+                                  'data' => $profitByDate
+                              ]                            
                           ]
                       ]
                   ]);
@@ -165,29 +206,48 @@ $totalConvs = isset($totals[0]) ? $totals[0]['installs'] : 0;
               </h3>
             </div>
             <div class="box-body">
-              <div id="world-map" style="height: 250px; width: 100%;"></div>
+              <div id="world-map" style="width:100%;"></div>
+                <?= JVectorMapWidget::widget([
+                    'map'    => 'world_mill_en',
+                    'htmlOptions' => [
+                      'style'   => 'height:280px;width:100%;'
+                    ],
+                    'options' => [
+                      'series' => [
+                        'regions' => [
+                          [
+                            'values'            => $impsByCountry,
+                            'scale'             => ['#C8EEFF', '#0071A4'],
+                            'normalizeFunction' => 'polynomial'
+                          ]
+                        ]  
+                      ]                    
+                    ]
+                ]); ?>              
             </div>
             <!-- /.box-body-->
+            <!--
             <div class="box-footer no-border">
               <div class="row">
                 <div class="col-xs-4 text-center" style="border-right: 1px solid #f4f4f4">
                   <div id="sparkline-1"></div>
                   <div class="knob-label">Impressions</div>
                 </div>
-                <!-- ./col -->
+
                 <div class="col-xs-4 text-center" style="border-right: 1px solid #f4f4f4">
                   <div id="sparkline-2"></div>
                   <div class="knob-label">Unique Users</div>
                 </div>
-                <!-- ./col -->
+
                 <div class="col-xs-4 text-center">
                   <div id="sparkline-3"></div>
                   <div class="knob-label">Installations</div>
                 </div>
-                <!-- ./col -->
+
               </div>
-              <!-- /.row -->
+
             </div>
+            -->
           </div>
           <!-- /.box -->
         </section>

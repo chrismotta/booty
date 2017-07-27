@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "75006ab120c3b719c45525ab5183cf74",
-    "content-hash": "705807dce98d5a1147e9546fe9a8ac49",
+    "hash": "577b1320191ad5b90266d2f8e1136164",
+    "content-hash": "c53c09ba51fd6dd07068459503e9911e",
     "packages": [
         {
             "name": "2amigos/yii2-chartjs-widget",
@@ -517,6 +517,106 @@
                 "yii"
             ],
             "time": "2013-12-10 17:49:58"
+        },
+        {
+            "name": "conquer/excanvas",
+            "version": "1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/borodulin/yii2-excanvas.git",
+                "reference": "55fb1708846feed7c74ee030164e6128d2364071"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/borodulin/yii2-excanvas/zipball/55fb1708846feed7c74ee030164e6128d2364071",
+                "reference": "55fb1708846feed7c74ee030164e6128d2364071",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.4.0",
+                "yiisoft/yii2": "*"
+            },
+            "type": "yii2-extension",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.0.0.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "conquer\\excanvas\\": ""
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Andrey Borodulin",
+                    "email": "borodulin@gmail.com",
+                    "homepage": "https://github.com/borodulin/yii2-excanvas"
+                }
+            ],
+            "description": "Yii2 excanvas assets",
+            "homepage": "https://github.com/borodulin/yii2-excanvas",
+            "keywords": [
+                "excanvas",
+                "extension",
+                "widget",
+                "yii2"
+            ],
+            "time": "2015-04-10 16:16:05"
+        },
+        {
+            "name": "conquer/jvectormap",
+            "version": "1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/borodulin/yii2-jvectormap.git",
+                "reference": "e9558a41a0b518b2871f6a2d1a62fc498a8b548a"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/borodulin/yii2-jvectormap/zipball/e9558a41a0b518b2871f6a2d1a62fc498a8b548a",
+                "reference": "e9558a41a0b518b2871f6a2d1a62fc498a8b548a",
+                "shasum": ""
+            },
+            "require": {
+                "conquer/excanvas": "~1.0.0",
+                "php": ">=5.4.0",
+                "yiisoft/yii2": "*"
+            },
+            "type": "yii2-extension",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.0.1.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "conquer\\jvectormap\\": ""
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Andrey Borodulin",
+                    "email": "borodulin@gmail.com"
+                }
+            ],
+            "description": "Yii2 jvectormap widget",
+            "homepage": "https://github.com/borodulin/yii2-jvectormap",
+            "keywords": [
+                "extension",
+                "jvectrormap",
+                "widget",
+                "yii2"
+            ],
+            "time": "2015-11-20 05:58:17"
         },
         {
             "name": "dmstr/yii2-adminlte-asset",
