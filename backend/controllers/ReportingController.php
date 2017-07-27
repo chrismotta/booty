@@ -39,9 +39,12 @@ class ReportingController extends Controller
         $searchModel  = new CampaignLogsSearch();
         $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
 
+        $totalsProvider = $searchModel->searchTotals(Yii::$app->request->queryParams);        
+
         return $this->render('index', [
             'searchModel'  => $searchModel,
             'dataProvider' => $dataProvider,
+            'totalsProvider' => $totalsProvider,
             'model'        => $model
         ]);
     }

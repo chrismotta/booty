@@ -23,6 +23,8 @@ $this->params['breadcrumbs'][] = $this->title;
 $searchModel->date_start = isset($_GET['CampaignLogsSearch']['date_start']) ? $_GET['CampaignLogsSearch']['date_start'] : date( 'd-m-Y' );
 $searchModel->date_end = isset($_GET['CampaignLogsSearch']['date_end']) ? $_GET['CampaignLogsSearch']['date_end'] : date( 'd-m-Y' );
 
+$totals = $totalsProvider->getModels();
+
 $DPlacement       = models\DPlacement::find()->asArray()->all();
 $DCampaign        = models\DCampaign::find()->asArray()->all();
 
@@ -115,32 +117,39 @@ $this->registerJs(
     {
         switch ($column)
         {
+            case 'imps':
+            case 'convs':
+            case 'clicks':
+                $columns[$p] = [
+                    'attribute' => $column,
+                    'footer'    => $totals[0][$column],
+                ];
+            break;                   
             case 'revenue':
                 $columns[$p] = [
                     'attribute' => $column,
+                    'footer'    => '$ '.number_format($totals[0][$column],2),
                     'value' => function($model, $key, $index, $widget) {
                       return '$ '.number_format($model->revenue,2);
                     },
-                    'options'=>array('style' => 'text-align: right;')
                 ];
             break;            
             case 'cost':
                 $columns[$p] = [
                     'attribute' => $column,
+                    'footer'    => '$ '.number_format($totals[0][$column],2),
                     'value' => function($model, $key, $index, $widget) {
                       return '$ '.number_format($model->cost,2);
                     },
-                    'options'=>array('style' => 'text-align: right;')
                 ];
             break;
         }
     }
 ?>    
-    
-
     <?= GridView::widget([
         'dataProvider' => $dataProvider,
-        'columns' => $columns
+        'columns' => $columns,
+        'showFooter' => true,
     ]); ?>
 <?php Pjax::end(); ?>
     
