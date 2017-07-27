@@ -475,4 +475,296 @@ class CampaignLogsSearch extends CampaignLogs
 
         return $dataProvider;
     }
+
+    public function searchTotals($params)
+    {
+        $query = CampaignLogs::find();
+
+        $dataProvider = new ActiveDataProvider([
+            'query' => $query,
+        ]);
+
+        // fields
+        $fields = [];
+
+        if ( isset($params['CampaignLogsSearch']['fields_group1']) && !empty( $params['CampaignLogsSearch']['fields_group1'] ) )
+        {
+            $filterFields = $params['CampaignLogsSearch']['fields_group1'];
+
+            if ( isset($params['CampaignLogsSearch']['fields_group2']) && !empty( $params['CampaignLogsSearch']['fields_group2'] ) )            
+                $filterFields = array_merge( $filterFields, $params['CampaignLogsSearch']['fields_group2'] );
+
+            foreach ( $filterFields as $field )
+            {
+                switch ( $field )
+                {
+                    case 'imps':
+                    case 'cost':
+                        $fields[] = 'sum(F_ClusterLogs.'.$field.') AS '.$field;
+                    break;
+                    case 'revenue':
+                        $fields[] = 'sum(F_CampaignLogs.'.$field.') AS '.$field;
+                    break;
+                    case 'clicks':
+                        $fields[] = 'count(F_CampaignLogs.click_time) AS '.$field;
+                    break;         
+                    case 'convs':
+                        $fields[] = 'count(F_CampaignLogs.conv_time) AS '.$field;
+                    break;                                              
+                }
+            }         
+        }
+        
+        if  ( !isset($fields) || empty($fields) )
+        {
+            $fields = [
+                'sum(F_ClusterLogs.imps) AS imps'
+            ];
+        }
+
+        $query->select( $fields );
+
+
+        // relations
+        $query->rightJoin([
+            'F_ClusterLogs ON (F_ClusterLogs.session_hash=F_CampaignLogs.session_hash)',
+        ]);
+
+        $query->leftJoin([
+            'D_Placement ON ( F_ClusterLogs.D_Placement_id=D_Placement.id )',
+        ]);
+        
+        $query->joinWith([
+            'campaign',
+        ]);
+
+        // filters
+        if ( isset($params['CampaignLogsSearch']['date_start']) )
+            $dateStart = date( 'Y-m-d', strtotime($params['CampaignLogsSearch']['date_start']) );
+        else
+            $dateStart = date( 'Y-m-d' );
+
+        if ( isset($params['CampaignLogsSearch']['date_end']) )
+            $dateEnd= date( 'Y-m-d', strtotime($params['CampaignLogsSearch']['date_end']) );
+        else
+            $dateEnd = date( 'Y-m-d' );
+      
+        $query->andFilterWhere( ['>=', 'date(imp_time)', $dateStart] );
+        $query->andFilterWhere( ['<=', 'date(imp_time)', $dateEnd] );
+
+
+        if ( isset($params['publisher']) && $params['publisher'] ){
+            $first = true;
+            foreach ( $params['publisher'] as $id )
+            {
+                if ( $first ){
+                    $query->andFilterWhere( ['=', 'D_Placement.Publishers_id', $id] );
+                    $first = false;
+                }
+                else{
+                    $query->orFilterWhere( ['=', 'D_Placement.Publishers_id', $id] );
+                }
+            }
+        }
+
+        if ( isset($params['affiliate']) && $params['affiliate'] ){
+            $first = true;
+            foreach ( $params['affiliate'] as $id )
+            {
+                if ( $first ){
+                    $query->andFilterWhere( ['=', 'D_Campaign.Affiliates_id', $id] );
+                    $first = false;
+                }
+                else{
+                    $query->orFilterWhere( ['=', 'D_Campaign.Affiliates_id', $id] );
+                }
+            }
+        }
+
+        if ( isset($params['campaign']) && $params['campaign'] ){
+            $first = true;
+            foreach ( $params['campaign'] as $id )
+            {
+                if ( $first ){
+                    $query->andFilterWhere( ['=', 'D_Campaign.id', $id] );
+                    $first = false;
+                }
+                else{
+                    $query->orFilterWhere( ['=', 'D_Campaign.id', $id] );
+                }
+            }
+        }
+
+        if ( isset($params['cluster']) && $params['cluster'] ){
+            $first = true;
+            foreach ( $params['cluster'] as $id )
+            {
+                if ( $first ){
+                    $query->andFilterWhere( ['=', 'F_ClusterLogs.cluster_id', $id] );
+                    $first = false;
+                }
+                else{
+                    $query->orFilterWhere( ['=', 'F_ClusterLogs.cluster_id', $id] );
+                }
+            }
+        }
+
+        if ( isset($params['placement']) && $params['placement'] ){
+            $first = true;
+            foreach ( $params['placement'] as $id )
+            {
+                if ( $first ){
+                    $query->andFilterWhere( ['=', 'F_ClusterLogs.D_Placement_id', $id] );
+                    $first = false;
+                }
+                else{
+                    $query->orFilterWhere( ['=', 'F_ClusterLogs.D_Placement_id', $id] );
+                }
+            }
+        }        
+
+        if ( isset($params['carrier']) && $params['carrier'] ){
+            $first = true;
+            foreach ( $params['carrier'] as $id )
+            {
+                if ( $first ){
+                    $query->andFilterWhere( ['=', 'F_ClusterLogs.carrier', $id] );
+                    $first = false;
+                }
+                else{
+                    $query->orFilterWhere( ['=', 'F_ClusterLogs.carrier', $id] );
+                }
+            }
+        }
+
+        if ( isset($params['country']) && $params['country'] ){
+            $first = true;
+            foreach ( $params['country'] as $id )
+            {
+                if ( $first ){
+                    $query->andFilterWhere( ['=', 'F_ClusterLogs.country', $id] );
+                    $first = false;
+                }
+                else{
+                    $query->orFilterWhere( ['=', 'F_ClusterLogs.country', $id] );
+                }
+            }
+        }    
+
+        if ( isset($params['device']) && $params['device'] ){
+            $first = true;
+            foreach ( $params['device'] as $id )
+            {
+                if ( $first ){
+                    $query->andFilterWhere( ['=', 'F_ClusterLogs.device', $id] );
+                    $first = false;
+                }
+                else{
+                    $query->orFilterWhere( ['=', 'F_ClusterLogs.device', $id] );
+                }
+            }
+        }              
+
+        if ( isset($params['device_brand']) && $params['device_brand'] ){
+            $first = true;
+            foreach ( $params['device_brand'] as $id )
+            {
+                if ( $first ){
+                    $query->andFilterWhere( ['=', 'F_ClusterLogs.device_brand', $id] );
+                    $first = false;
+                }
+                else{
+                    $query->orFilterWhere( ['=', 'F_ClusterLogs.device_brand', $id] );
+                }
+            }
+        }          
+
+        if ( isset($params['device_model']) && $params['device_model'] ){
+            $first = true;
+            foreach ( $params['device_model'] as $id )
+            {
+                if ( $first ){
+                    $query->andFilterWhere( ['=', 'F_ClusterLogs.device_model', $id] );
+                    $first = false;
+                }
+                else{
+                    $query->orFilterWhere( ['=', 'F_ClusterLogs.device_model', $id] );
+                }
+            }
+        }            
+
+        if ( isset($params['os']) && $params['os'] ){
+            $first = true;
+            foreach ( $params['os'] as $id )
+            {
+                if ( $first ){
+                    $query->andFilterWhere( ['=', 'F_ClusterLogs.os', $id] );
+                    $first = false;
+                }
+                else{
+                    $query->orFilterWhere( ['=', 'F_ClusterLogs.os', $id] );
+                }
+            }
+        }      
+
+        if ( isset($params['os_version']) && $params['os_version'] ){
+            $first = true;
+            foreach ( $params['os_version'] as $id )
+            {
+                if ( $first ){
+                    $query->andFilterWhere( ['=', 'F_ClusterLogs.os_version', $id] );
+                    $first = false;
+                }
+                else{
+                    $query->orFilterWhere( ['=', 'F_ClusterLogs.os_version', $id] );
+                }
+            }
+        }
+
+        if ( isset($params['browser']) && $params['browser'] ){
+            $first = true;
+            foreach ( $params['browser'] as $id )
+            {
+                if ( $first ){
+                    $query->andFilterWhere( ['=', 'F_ClusterLogs.browser', $id] );
+                    $first = false;
+                }
+                else{
+                    $query->orFilterWhere( ['=', 'F_ClusterLogs.browser', $id] );
+                }
+            }
+        }            
+
+        if ( isset($params['browser_version']) && $params['browser_version'] ){
+            $first = true;
+            foreach ( $params['browser_version'] as $id )
+            {
+                if ( $first ){
+                    $query->andFilterWhere( ['=', 'F_ClusterLogs.browser_version', $id] );
+                    $first = false;
+                }
+                else{
+                    $query->orFilterWhere( ['=', 'F_ClusterLogs.browser_version', $id] );
+                }
+            }
+        }    
+
+        if ( isset($params['placement']) && $params['placement'] ){
+            $first = true;
+            foreach ( $params['placement'] as $id )
+            {
+                if ( $first ){
+                    $query->andFilterWhere( ['=', 'D_Placement.id', $id] );
+                    $first = false;
+                }
+                else{
+                    $query->orFilterWhere( ['=', 'D_Placement.id', $id] );
+                }
+            }
+        }    
+                          
+        //var_export( $query->createCommand()->getRawSql() );die();
+
+        return $dataProvider;
+    }    
 }
