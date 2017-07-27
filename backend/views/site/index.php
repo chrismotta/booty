@@ -123,9 +123,11 @@ foreach ( $byCountry as $data )
           <div class="nav-tabs-custom bg-gray">
             <!-- Tabs within a box -->
             <ul class="nav nav-tabs pull-right">
-              <li class="active"><a href="#revenue-chart" data-toggle="tab">Area</a></li>
+              <li class="active"><a href="#revenue-chart" data-toggle="tab">Rates</a></li>
+              <!--
               <li><a href="#sales-chart" data-toggle="tab">Donut</a></li>
-              <li class="pull-left header"><i class="fa fa-inbox"></i> Rates</li>
+              -->
+              <li class="pull-left header"><i class="fa fa-inbox"></i>Weekly</li>
             </ul>
             <div class="tab-content no-padding">
               <!-- Morris chart - Sales -->            
