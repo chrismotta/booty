@@ -1,12 +1,16 @@
 <?php
-
 /* @var $this yii\web\View */
+use dosamigos\chartjs\ChartJs;
 
 $this->title = 'Splad Dashboard';
 
 $totals    = $totalsProvider->getModels();
 $byDate    = $byDateProvider->getModels();
 $byCountry = $byCountryProvider->getModels();
+
+$totalImps  = isset($totals[0]) ? $totals[0]['imps'] : 0; 
+$totalUsers = isset($totals[0]) ? $totals[0]['unique_users'] : 0;
+$totalConvs = isset($totals[0]) ? $totals[0]['installs'] : 0;
 
 //var_export($byCountry);
 ?>
@@ -20,7 +24,7 @@ $byCountry = $byCountryProvider->getModels();
           <!-- small box -->
           <div class="small-box bg-gray">
             <div class="inner">
-              <h3><?php echo $totals[0]['imps'] ?></h3>
+              <h3><?php echo $totalImps ?></h3>
 
               <p>Today Impressions</p>
             </div>
@@ -35,7 +39,7 @@ $byCountry = $byCountryProvider->getModels();
           <!-- small box -->
           <div class="small-box bg-gray">
             <div class="inner">
-              <h3><?php echo $totals[0]['unique_users'] ?></h3>
+              <h3><?php echo $totalUsers ?></h3>
 
               <p>Today Unique Visitors</p>
             </div>
@@ -50,7 +54,7 @@ $byCountry = $byCountryProvider->getModels();
           <!-- small box -->
           <div class="small-box bg-gray">
             <div class="inner">
-              <h3><?php echo $totals[0]['installs'] ?></h3>
+              <h3><?php echo $totalConvs ?></h3>
 
               <p>Today Installations</p>
             </div>
@@ -65,7 +69,7 @@ $byCountry = $byCountryProvider->getModels();
           <!-- small box -->
           <div class="small-box bg-gray">
             <div class="inner">
-              <h3><?php echo $totals[0]['imps']*$totals[0]['installs']/100 ?><sup style="font-size: 20px">%</sup></h3>
+              <h3><?php echo $totalImps*$totalConvs/100 ?><sup style="font-size: 20px">%</sup></h3>
 
               <p>Today Conversion Rate</p>
             </div>
@@ -92,17 +96,42 @@ $byCountry = $byCountryProvider->getModels();
               <li class="pull-left header"><i class="fa fa-inbox"></i> Rates</li>
             </ul>
             <div class="tab-content no-padding">
-              <!-- Morris chart - Sales -->
-                  <canvas id="myChart" width="400" height="400"></canvas>
-                  <script>
-                    var ctx = document.getElementById("myChart").getContext('2d');
-                    var myLineChart = new Chart(ctx, {
-                        type: 'line',
-                        data: [ 10, 20, 30, 40 ],
-                        options: []
-                    });
-                  </script>               
-              <div class="chart tab-pane active" id="revenue-chart" style="position: relative; height: 300px;">               
+              <!-- Morris chart - Sales -->            
+              <div class="chart tab-pane active" id="revenue-chart" style="position: relative;padding:15px;">               
+                  <?= ChartJs::widget([
+                      'type' => 'line',
+                      'options' => [
+                          'height' => 200,
+                          'width' => 400
+                      ],
+                      'data' => [
+                          'labels' => ["January", "February", "March", "April", "May", "June", "July"],
+                          'datasets' => [
+                              [
+                                  'label' => "Spend",
+                                  'backgroundColor' => "rgba(179,181,198,0.2)",
+                                  'borderColor' => "rgba(179,181,198,1)",
+                                  'pointBackgroundColor' => "rgba(179,181,198,1)",
+                                  'pointBorderColor' => "#fff",
+                                  'pointHoverBackgroundColor' => "#fff",
+                                  'pointHoverBorderColor' => "rgba(179,181,198,1)",
+                                  'data' => [65, 59, 90, 81, 56, 55, 40]
+                              ],
+                              [
+                                  'label' => "Revenue",
+                                  'backgroundColor' => "rgba(255,99,132,0.2)",
+                                  'borderColor' => "rgba(255,99,132,1)",
+                                  'pointBackgroundColor' => "rgba(255,99,132,1)",
+                                  'pointBorderColor' => "#fff",
+                                  'pointHoverBackgroundColor' => "#fff",
+                                  'pointHoverBorderColor' => "rgba(255,99,132,1)",
+                                  'data' => [28, 48, 40, 19, 96, 27, 100]
+                              ]
+
+                          ]
+                      ]
+                  ]);
+                  ?>             
               </div>
               <div class="chart tab-pane" id="sales-chart" style="position: relative; height: 300px;">
               </div>
