@@ -83,7 +83,21 @@ $filterByCluster = ArrayHelper::map(
             'status',
             // 'health_check_imps',
 
-            ['class' => 'yii\grid\ActionColumn'],
+            [
+                'class' => 'yii\grid\ActionColumn',
+                'template' => '{view} {update} {delete}',
+                'buttons' => [
+                    'updateonside' => function ($url, $model, $key) {
+                        return Html::a(
+                            '<span class="glyphicon glyphicon-pencil"></span>', 
+                            $url,
+                            [
+                                'class' => 'grid-button',
+                            ]
+                            );
+                    },
+                ]
+            ],
         ],
     ]); ?>
 <?php Pjax::end(); ?></div>

@@ -57,7 +57,10 @@ $filterByAffiliate = ArrayHelper::map(
             // 'creative_320x50',
             // 'creative_300x250',
 
-            ['class' => 'yii\grid\ActionColumn'],
+            [
+                'class' => 'yii\grid\ActionColumn',
+                'template' => '{view}',
+            ]
         ],
     ]); ?>
 <?php Pjax::end(); ?></div>

@@ -37,7 +37,7 @@ $this->params['breadcrumbs'][] = $this->title;
 
             [
                 'class' => 'yii\grid\ActionColumn',
-                'template' => '{update} {assignment} {delete}',
+                'template' => '{view} {update} {assignment} {delete}',
                 'buttons' => [
                     'assignment' => function ($url, $model, $key) {
                         return Html::a(

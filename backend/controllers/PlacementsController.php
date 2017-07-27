@@ -94,6 +94,11 @@ class PlacementsController extends Controller
      * @param integer $id
      * @return mixed
      */
+    public function actionUpdateonside($id)
+    {
+        $this->layout = 'iframe';
+        return $this->actionUpdate($id);
+    }
     public function actionUpdate($id)
     {
         $model = $this->findModel($id);

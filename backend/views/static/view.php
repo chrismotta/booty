@@ -6,7 +6,7 @@ use yii\widgets\DetailView;
 /* @var $this yii\web\View */
 /* @var $model app\models\StaticCampaigns */
 
-$this->title = $model->name;
+$this->title = 'Static campaign #'.$model->id.': '.$model->name;
 $this->params['breadcrumbs'][] = ['label' => 'Static Campaigns', 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
 ?>
@@ -34,4 +34,6 @@ $this->params['breadcrumbs'][] = $this->title;
         ],
     ]) ?>
 
+    <?= Html::img($model->creative_320x50, ['alt' => '320x50', 'style' => 'margin-right:10px']) ?>
+    <?= Html::img($model->creative_300x250, ['alt' => '300x250', 'style' => 'margin-right:10px']) ?>
 </div>

@@ -6,14 +6,12 @@ use yii\widgets\DetailView;
 /* @var $this yii\web\View */
 /* @var $model app\models\Campaigns */
 
-$this->title = $model->name;
+$this->title = 'Campaign #'.$model->id.': '.$model->name;
 $this->params['breadcrumbs'][] = ['label' => 'Campaigns', 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="campaigns-view">
-
-    <h1><?= Html::encode($this->title) ?></h1>
-
+    <!-- 
     <p>
         <?= Html::a('Update', ['update', 'id' => $model->id], ['class' => 'btn btn-primary']) ?>
         <?= Html::a('Delete', ['delete', 'id' => $model->id], [
@@ -24,7 +22,7 @@ $this->params['breadcrumbs'][] = $this->title;
             ],
         ]) ?>
     </p>
-
+     -->
     <?= DetailView::widget([
         'model' => $model,
         'attributes' => [
