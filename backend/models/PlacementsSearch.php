@@ -90,7 +90,7 @@ class PlacementsSearch extends Placements
             'health_check_imps' => $this->health_check_imps,
         ]);
 
-        $query->andFilterWhere(['like', 'name', $this->name])
+        $query->andFilterWhere(['like', 'Placements.name', $this->name])
             ->andFilterWhere(['like', 'model', $this->model])
             ->andFilterWhere(['like', 'status', $this->status])
             ->andFilterWhere(['like', 'size', $this->size]);
