@@ -60,7 +60,7 @@ class CampaignsSearch extends Campaigns
             'Campaigns.name',
             'payout',
             'Affiliates.name as affiliate',
-            'Campaigns.country',
+            'Campaigns.os',
             'Campaigns.connection_type',
             'Campaigns.country'
         ]);

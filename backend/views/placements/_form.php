@@ -54,6 +54,7 @@ $clusters         = models\Clusters::find()->asArray()->all();
                 'placeholder' => 'Select a cluster...', 
             ],
             'pluginOptions' => [
+                'allowClear' => true,
                 'maximumInputLength' => 50
             ],
         ]);            
