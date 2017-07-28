@@ -122,13 +122,13 @@ $this->registerJs(
             case 'clicks':
                 $columns[$p] = [
                     'attribute' => $column,
-                    'footer'    => $totals[0][$column],
+                    'footer'    => isset($totals[0]) ? $totals[0][$column] : null,
                 ];
             break;                   
             case 'revenue':
                 $columns[$p] = [
                     'attribute' => $column,
-                    'footer'    => '$ '.number_format($totals[0][$column],2),
+                    'footer'    => isset($totals[0]) ? '$ '.number_format($totals[0][$column],2) : null,
                     'value' => function($model, $key, $index, $widget) {
                       return '$ '.number_format($model->revenue,2);
                     },
@@ -137,7 +137,7 @@ $this->registerJs(
             case 'cost':
                 $columns[$p] = [
                     'attribute' => $column,
-                    'footer'    => '$ '.number_format($totals[0][$column],2),
+                    'footer'    => isset($totals[0]) ? '$ '.number_format($totals[0][$column],2) : null,
                     'value' => function($model, $key, $index, $widget) {
                       return '$ '.number_format($model->cost,2);
                     },

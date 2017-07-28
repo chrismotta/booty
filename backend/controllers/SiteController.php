@@ -6,6 +6,7 @@ use yii\web\Controller;
 use yii\filters\VerbFilter;
 use yii\filters\AccessControl;
 use common\models\LoginForm;
+use app\models;
 
 /**
  * Site controller
@@ -60,7 +61,17 @@ class SiteController extends Controller
      */
     public function actionIndex()
     {
-        return $this->render('index');
+        $model             = new models\Dashboard;
+        $totalsProvider    = $model->loadData();
+        $byDateProvider    = $model->loadData( ['date'], ['date' => 'ASC'] );
+        $byCountryProvider = $model->loadData( ['country'] );
+
+        return $this->render('index', [
+            'model'             => $model,
+            'totalsProvider'    => $totalsProvider,
+            'byDateProvider'    => $byDateProvider,
+            'byCountryProvider' => $byCountryProvider
+        ]);
     }
 
     /**

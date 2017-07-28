@@ -1,8 +1,52 @@
 <?php
-
 /* @var $this yii\web\View */
+use dosamigos\chartjs\ChartJs;
+use conquer\jvectormap\JVectorMapWidget;
 
-$this->title = 'Splad Dashboard';
+
+$this->title  = 'Splad Dashboard';
+
+$totals       = $totalsProvider->getModels();
+$byDate       = $byDateProvider->getModels();
+$byCountry    = $byCountryProvider->getModels();
+
+$totalImps    = isset($totals[0]) ? $totals[0]['imps'] : 0; 
+$totalUsers   = isset($totals[0]) ? $totals[0]['unique_users'] : 0;
+$totalConvs   = isset($totals[0]) ? $totals[0]['installs'] : 0;
+
+$revByDate    = [];
+$spendByDate  = [];
+$dates        = [];
+
+$profitByDate = [];
+
+foreach ( $byDate as $data )
+{
+    $revByDate[]    = $data['revenue'];
+    $spendByDate[]  = $data['cost'];
+
+    $profit = $data['revenue']-$data['cost'];
+
+    if ( $profit < 0 )
+      $profitByDate[] = 0;
+    else
+      $profitByDate[] = $profit;
+    
+    $dates[]        = date('Y-m-d', strtotime($data['date']) );
+}
+
+
+$impsByCountry = [];
+
+foreach ( $byCountry as $data )
+{
+    $code = strtoupper($data['country']);
+    $impsByCountry[$code] = $data['imps'];
+}
+
+
+
+//var_export($byCountry);
 ?>
 <div class="site-index">
 
@@ -14,7 +58,7 @@ $this->title = 'Splad Dashboard';
           <!-- small box -->
           <div class="small-box bg-gray">
             <div class="inner">
-              <h3>0</h3>
+              <h3><?php echo $totalImps ?></h3>
 
               <p>Today Impressions</p>
             </div>
@@ -29,7 +73,7 @@ $this->title = 'Splad Dashboard';
           <!-- small box -->
           <div class="small-box bg-gray">
             <div class="inner">
-              <h3>0</h3>
+              <h3><?php echo $totalUsers ?></h3>
 
               <p>Today Unique Visitors</p>
             </div>
@@ -44,7 +88,7 @@ $this->title = 'Splad Dashboard';
           <!-- small box -->
           <div class="small-box bg-gray">
             <div class="inner">
-              <h3>0</h3>
+              <h3><?php echo $totalConvs ?></h3>
 
               <p>Today Installations</p>
             </div>
@@ -59,7 +103,7 @@ $this->title = 'Splad Dashboard';
           <!-- small box -->
           <div class="small-box bg-gray">
             <div class="inner">
-              <h3>0<sup style="font-size: 20px">%</sup></h3>
+              <h3><?php echo $totalImps*$totalConvs/100 ?><sup style="font-size: 20px">%</sup></h3>
 
               <p>Today Conversion Rate</p>
             </div>
@@ -81,14 +125,61 @@ $this->title = 'Splad Dashboard';
           <div class="nav-tabs-custom bg-gray">
             <!-- Tabs within a box -->
             <ul class="nav nav-tabs pull-right">
-              <li class="active"><a href="#revenue-chart" data-toggle="tab">Area</a></li>
+              <li class="active"><a href="#revenue-chart" data-toggle="tab">Rates</a></li>
+              <!--
               <li><a href="#sales-chart" data-toggle="tab">Donut</a></li>
-              <li class="pull-left header"><i class="fa fa-inbox"></i> Rates</li>
+              -->
+              <li class="pull-left header"><i class="fa fa-inbox"></i>Weekly</li>
             </ul>
             <div class="tab-content no-padding">
-              <!-- Morris chart - Sales -->
-              <div class="chart tab-pane active" id="revenue-chart" style="position: relative; height: 300px;"></div>
-              <div class="chart tab-pane" id="sales-chart" style="position: relative; height: 300px;"></div>
+              <!-- Morris chart - Sales -->            
+              <div class="chart tab-pane active" id="revenue-chart" style="position: relative;padding:15px;">               
+                  <?= ChartJs::widget([
+                      'type' => 'line',
+                      'options' => [
+                          'height' => 200,
+                          'width' => 400
+                      ],
+                      'data' => [
+                          'labels' => $dates,
+                          'datasets' => [
+                              [
+                                  'label' => "Spend",
+                                  'backgroundColor' => "rgba(179,181,198,0.2)",
+                                  'borderColor' => "rgba(179,181,198,1)",
+                                  'pointBackgroundColor' => "rgba(179,181,198,1)",
+                                  'pointBorderColor' => "#fff",
+                                  'pointHoverBackgroundColor' => "#fff",
+                                  'pointHoverBorderColor' => "rgba(179,181,198,1)",
+                                  'data' => $spendByDate
+                              ],
+                              [
+                                  'label' => "Revenue",
+                                  'backgroundColor' => "rgba(255,99,132,0.2)",
+                                  'borderColor' => "rgba(255,99,132,1)",
+                                  'pointBackgroundColor' => "rgba(255,99,132,1)",
+                                  'pointBorderColor' => "#fff",
+                                  'pointHoverBackgroundColor' => "#fff",
+                                  'pointHoverBorderColor' => "rgba(255,99,132,1)",
+                                  'data' => $revByDate
+                              ],
+                              [
+                                  'label' => "Profit",
+                                  'backgroundColor' => "rgba(99,255,132,0.2)",
+                                  'borderColor' => "rgba(99,160,100,1)",
+                                  'pointBackgroundColor' => "rgba(99,160,100,1)",
+                                  'pointBorderColor' => "#fff",
+                                  'pointHoverBackgroundColor' => "#fff",
+                                  'pointHoverBorderColor' => "rgba(99,255,132,1)",
+                                  'data' => $profitByDate
+                              ]                            
+                          ]
+                      ]
+                  ]);
+                  ?>             
+              </div>
+              <div class="chart tab-pane" id="sales-chart" style="position: relative; height: 300px;">
+              </div>
             </div>
           </div>
           <!-- /.nav-tabs-custom -->
@@ -119,29 +210,48 @@ $this->title = 'Splad Dashboard';
               </h3>
             </div>
             <div class="box-body">
-              <div id="world-map" style="height: 250px; width: 100%;"></div>
+              <div id="world-map" style="width:100%;"></div>
+                <?= JVectorMapWidget::widget([
+                    'map'    => 'world_mill_en',
+                    'htmlOptions' => [
+                      'style'   => 'height:280px;width:100%;'
+                    ],
+                    'options' => [
+                      'series' => [
+                        'regions' => [
+                          [
+                            'values'            => $impsByCountry,
+                            'scale'             => ['#C8EEFF', '#0071A4'],
+                            'normalizeFunction' => 'polynomial'
+                          ]
+                        ]  
+                      ]                    
+                    ]
+                ]); ?>              
             </div>
             <!-- /.box-body-->
+            <!--
             <div class="box-footer no-border">
               <div class="row">
                 <div class="col-xs-4 text-center" style="border-right: 1px solid #f4f4f4">
                   <div id="sparkline-1"></div>
                   <div class="knob-label">Impressions</div>
                 </div>
-                <!-- ./col -->
+
                 <div class="col-xs-4 text-center" style="border-right: 1px solid #f4f4f4">
                   <div id="sparkline-2"></div>
                   <div class="knob-label">Unique Users</div>
                 </div>
-                <!-- ./col -->
+
                 <div class="col-xs-4 text-center">
                   <div id="sparkline-3"></div>
                   <div class="knob-label">Installations</div>
                 </div>
-                <!-- ./col -->
+
               </div>
-              <!-- /.row -->
+
             </div>
+            -->
           </div>
           <!-- /.box -->
         </section>
