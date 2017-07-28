@@ -128,7 +128,7 @@ $this->registerJs(
             case 'revenue':
                 $columns[$p] = [
                     'attribute' => $column,
-                    'footer'    => isset($totals[0]) ? '$ '.number_format($totals[0][$column],2) : null,
+                    'footer'    => isset($totals[0]) ? '$ '.number_format($totals[0][$column],6) : null,
                     'value' => function($model, $key, $index, $widget) {
                       return '$ '.number_format($model->revenue,2);
                     },
@@ -137,7 +137,7 @@ $this->registerJs(
             case 'cost':
                 $columns[$p] = [
                     'attribute' => $column,
-                    'footer'    => isset($totals[0]) ? '$ '.number_format($totals[0][$column],2) : null,
+                    'footer'    => isset($totals[0]) ? '$ '.number_format($totals[0][$column],6) : null,
                     'value' => function($model, $key, $index, $widget) {
                       return '$ '.number_format($model->cost,2);
                     },
