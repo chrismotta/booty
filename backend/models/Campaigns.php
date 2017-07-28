@@ -36,7 +36,7 @@ class Campaigns extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['id', 'Affiliates_id', 'name', 'payout', 'landing_url'], 'required'],
+            [['Affiliates_id', 'name', 'payout', 'landing_url'], 'required'],
             [['id', 'Affiliates_id'], 'integer'],
             [['payout'], 'number'],
             [['name', 'landing_url', 'creative_320x50', 'creative_300x250', 'os', 'connection_type'], 'string', 'max' => 255],
