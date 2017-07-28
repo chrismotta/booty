@@ -231,7 +231,9 @@ class EtlController extends \yii\web\Controller
 					cpl.conv_time="'.\date( 'Y-m-d H:i:s', $convTime ).'", 
 					cpl.revenue = c.payout, 
 					cl.cost = CASE 
-						WHEN p.model = "RS" THEN (c.payout*p.payout)/100 END 
+						WHEN p.model = "RS" THEN (c.payout*p.payout)/100 
+                        ELSE cl.cost  
+                    END 
 				WHERE 
 					click_id = '.$param.' 
 			;';
@@ -551,7 +553,7 @@ class EtlController extends \yii\web\Controller
                         "'.$clusterLog['cluster_name'].'",
                         '.$clusterLog['imps'].',
                         "'.\date( 'Y-m-d H:i:s', $clusterLog['imp_time'] ).'",
-                        '.$clusterLog['cost'].',
+                        "'.$clusterLog['cost'].'",
                         '.$clusterLog['country'].',
                         '.$clusterLog['connection_type'].',
                         '.$clusterLog['carrier'].',
