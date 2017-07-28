@@ -513,7 +513,7 @@ class EtlController extends \yii\web\Controller
 
 
                     if ( isset($clusterLog['device_model']) && $clusterLog['device_model'] && $clusterLog['device_model']!='' )
-                        $clusterLog['device_model'] = '"'.$this->_escapeSql( $clusterLog['device_model'] ).'",';
+                        $clusterLog['device_model'] = '"'.$this->_escapeSql( $clusterLog['device_model'] ).'"';
                     else
                         $clusterLog['device_model'] = 'NULL';
 
