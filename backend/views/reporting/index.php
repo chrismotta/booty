@@ -130,7 +130,7 @@ $this->registerJs(
                     'attribute' => $column,
                     'footer'    => isset($totals[0]) ? '$ '.number_format($totals[0][$column],6) : null,
                     'value' => function($model, $key, $index, $widget) {
-                      return '$ '.number_format($model->revenue,2);
+                      return '$ '.number_format($model->revenue,6);
                     },
                 ];
             break;            
@@ -139,7 +139,7 @@ $this->registerJs(
                     'attribute' => $column,
                     'footer'    => isset($totals[0]) ? '$ '.number_format($totals[0][$column],6) : null,
                     'value' => function($model, $key, $index, $widget) {
-                      return '$ '.number_format($model->cost,2);
+                      return '$ '.number_format($model->cost,6);
                     },
                 ];
             break;
