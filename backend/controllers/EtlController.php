@@ -118,7 +118,7 @@ class EtlController extends \yii\web\Controller
             die($msg);
         }
 
-        /*
+
         try
         {
             $this->convs();
@@ -132,7 +132,7 @@ class EtlController extends \yii\web\Controller
 
             die($msg);
         }
-        */
+
         try
         {
             $this->_updatePlacements();
