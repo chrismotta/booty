@@ -54,7 +54,7 @@ class Dashboard extends \yii\db\ActiveRecord
     }
 
 
-    public function loadData ( array $groupBy = null, array $fields = null )
+    public function loadData ( array $groupBy = null, array $orderBy = null, array $fields = null )
     {
         $query = Dashboard::find();
 
@@ -66,6 +66,9 @@ class Dashboard extends \yii\db\ActiveRecord
 
         if ( $groupBy )
             $query->groupBy( $groupBy );
+
+        if ( $orderBy )
+            $query->orderBy( $orderBy );
 
         if ( $fields )
             $query->select($fields);

@@ -63,7 +63,7 @@ class SiteController extends Controller
     {
         $model             = new models\Dashboard;
         $totalsProvider    = $model->loadData();
-        $byDateProvider    = $model->loadData( ['date'] );
+        $byDateProvider    = $model->loadData( ['date'], ['date' => 'ASC'] );
         $byCountryProvider = $model->loadData( ['country'] );
 
         return $this->render('index', [

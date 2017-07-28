@@ -20,7 +20,6 @@ $dates        = [];
 
 $profitByDate = [];
 
-
 foreach ( $byDate as $data )
 {
     $revByDate[]    = $data['revenue'];
