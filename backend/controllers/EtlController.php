@@ -118,6 +118,7 @@ class EtlController extends \yii\web\Controller
             die($msg);
         }
 
+        /*
         try
         {
             $this->convs();
@@ -131,7 +132,7 @@ class EtlController extends \yii\web\Controller
 
             die($msg);
         }
-
+        */
         try
         {
             $this->_updatePlacements();
@@ -553,7 +554,7 @@ class EtlController extends \yii\web\Controller
                         "'.$clusterLog['cluster_name'].'",
                         '.$clusterLog['imps'].',
                         "'.\date( 'Y-m-d H:i:s', $clusterLog['imp_time'] ).'",
-                        "'.$clusterLog['cost'].'",
+                        '.$clusterLog['cost'].',
                         '.$clusterLog['country'].',
                         '.$clusterLog['connection_type'].',
                         '.$clusterLog['carrier'].',
