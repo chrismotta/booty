@@ -4,19 +4,22 @@ use dosamigos\chartjs\ChartJs;
 use conquer\jvectormap\JVectorMapWidget;
 
 
-$this->title = 'Splad Dashboard';
+$this->title  = 'Splad Dashboard';
 
-$totals      = $totalsProvider->getModels();
-$byDate      = $byDateProvider->getModels();
-$byCountry   = $byCountryProvider->getModels();
+$totals       = $totalsProvider->getModels();
+$byDate       = $byDateProvider->getModels();
+$byCountry    = $byCountryProvider->getModels();
 
-$totalImps   = isset($totals[0]) ? $totals[0]['imps'] : 0; 
-$totalUsers  = isset($totals[0]) ? $totals[0]['unique_users'] : 0;
-$totalConvs  = isset($totals[0]) ? $totals[0]['installs'] : 0;
+$totalImps    = isset($totals[0]) ? $totals[0]['imps'] : 0; 
+$totalUsers   = isset($totals[0]) ? $totals[0]['unique_users'] : 0;
+$totalConvs   = isset($totals[0]) ? $totals[0]['installs'] : 0;
 
-$revByDate   = [];
-$spendByDate = [];
-$dates       = [];
+$revByDate    = [];
+$spendByDate  = [];
+$dates        = [];
+
+$profitByDate = [];
+
 
 foreach ( $byDate as $data )
 {
