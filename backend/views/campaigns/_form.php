@@ -16,10 +16,9 @@ $affiliates = models\Affiliates::find()->asArray()->all();
 
     <?php $form = ActiveForm::begin(); ?>
 
-    <?= $form->field($model, 'id')->textInput() ?>
 
     <?= 
-        '<label class="control-label">Admin User</label>';
+        '<label class="control-label">Affiliate</label>';
         echo Select2::widget( [
             'model' => $model, 
             'attribute' => 'Affiliates_id',
