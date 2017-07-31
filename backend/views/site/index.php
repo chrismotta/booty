@@ -4,25 +4,30 @@ use dosamigos\chartjs\ChartJs;
 use conquer\jvectormap\JVectorMapWidget;
 
 
-$this->title   = 'Splad Dashboard';
+$this->title    = 'Splad Dashboard';
 
-$totals        = $totalsProvider->getModels();
-$byDate        = $byDateProvider->getModels();
-$byCountry     = $byCountryProvider->getModels();
+$totals         = $totalsProvider->getModels();
+$yesterday      = $yesterdayProvider->getModels();
+$byDate         = $byDateProvider->getModels();
+$byCountry      = $byCountryProvider->getModels();
 
-$totalImps     = isset($totals[0]) ? $totals[0]['imps'] : 0; 
-$totalUsers    = isset($totals[0]) ? $totals[0]['unique_users'] : 0;
-$totalConvs    = isset($totals[0]) ? $totals[0]['installs'] : 0;
+$totalImps      = isset($totals[0]) ? $totals[0]['imps'] : 0; 
+$totalUsers     = isset($totals[0]) ? $totals[0]['unique_users'] : 0;
+$totalConvs     = isset($totals[0]) ? $totals[0]['installs'] : 0;
 
-$revByDate     = [];
-$spendByDate   = [];
-$profitByDate  = [];
-$dates         = [];
-$impsByCountry = [];
+$yesterdayImps  = isset($yesterday[0]) ? $yesterday[0]['imps'] : 0; 
+$yesterdayUsers = isset($yesterday[0]) ? $yesterday[0]['unique_users'] : 0;
+$yesterdayConvs = isset($yesterday[0]) ? $yesterday[0]['installs'] : 0;
 
-$from          = new DateTime(date("Y-m-d", strtotime("-7 days")));
-$to            = new DateTime(date("Y-m-d"));
-$daterange     = new DatePeriod($from, new DateInterval('P1D'), $to);
+$revByDate      = [];
+$spendByDate    = [];
+$profitByDate   = [];
+$dates          = [];
+$impsByCountry  = [];
+
+$from           = new DateTime(date("Y-m-d", strtotime("-7 days")));
+$to             = new DateTime(date("Y-m-d"));
+$daterange      = new DatePeriod($from, new DateInterval('P1D'), $to);
 
 
 foreach( $daterange as $date )
@@ -44,6 +49,12 @@ foreach( $daterange as $date )
             $profitByDate[] = $profit;
 
           break;
+        }
+        else
+        {
+            $revByDate[]    = 0;
+            $spendByDate[]  = 0;
+            $profitByDate[] = 0;
         }
     }
 
@@ -73,7 +84,7 @@ foreach ( $byCountry as $data )
               <span class="info-box-number"><?php echo $totalImps ?></span>
               <!-- The progress section is optional -->
               <div class="progress">
-                <div class="progress-bar" style="width: 70%"></div>
+                <div class="progress-bar" style="width: <?php echo $totalImps*$yesterdayImps/100 ?>%"></div>
               </div>
               <span class="progress-description">
                 Yesterday %
@@ -95,7 +106,7 @@ foreach ( $byCountry as $data )
               <span class="info-box-number"><?php echo $totalUsers ?></span>
               <!-- The progress section is optional -->
               <div class="progress">
-                <div class="progress-bar" style="width: 0%"></div>
+                <div class="progress-bar" style="width: <?php echo $totalUsers*$yesterdayUsers/100 ?>%"></div>
               </div>
               <span class="progress-description">
                 Yesterday %
@@ -117,7 +128,7 @@ foreach ( $byCountry as $data )
               <span class="info-box-number"><?php echo $totalConvs ?></span>
               <!-- The progress section is optional -->
               <div class="progress">
-                <div class="progress-bar" style="width: 70%"></div>
+                <div class="progress-bar" style="width: <?php echo $totalConvs*$yesterdayConvs/100 ?>%"></div>
               </div>
               <span class="progress-description">
                 Yesterday %
@@ -139,7 +150,7 @@ foreach ( $byCountry as $data )
               <span class="info-box-number"><?php echo $totalImps*$totalConvs/100 ?><sup style="font-size: 10px">%</sup></span>
               <!-- The progress section is optional -->
               <div class="progress">
-                <div class="progress-bar" style="width: 70%"></div>
+                <div class="progress-bar" style="width: <?php echo ($totalImps*$totalConvs/100)*($yesterdayImps*$yesterdayConvs/100)/100 ?>%"></div>
               </div>
               <span class="progress-description">
                 Yesterday %

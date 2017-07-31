@@ -69,11 +69,17 @@ class SiteController extends Controller
             [[ '=', 'date(date)','CURDATE()' ]]
         );
 
+        $yesterdayProvider = $model->loadData( 
+            null, 
+            null, 
+            [[ '=', 'date(date)','DATE(NOW()- INTERVAL 1 DAY)' ]]
+        );        
+
         $byDateProvider    = $model->loadData( 
             ['date(date)'], 
             ['date(date)' => 'ASC'], 
             [['>=', 'date(date)', new \yii\db\Expression('date(NOW() - INTERVAL 7 DAY)')]],
-            [ 'date(date) as date', 'imps', 'unique_users']
+            [ 'date(date) as date', 'imps', 'unique_users', 'cost']
         );
 
         $byCountryProvider = $model->loadData( 
@@ -85,6 +91,7 @@ class SiteController extends Controller
         return $this->render('index', [
             'model'             => $model,
             'totalsProvider'    => $totalsProvider,
+            'yesterdayProvider' => $yesterdayProvider,
             'byDateProvider'    => $byDateProvider,
             'byCountryProvider' => $byCountryProvider
         ]);

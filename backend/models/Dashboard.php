@@ -35,6 +35,7 @@ class Dashboard extends \yii\db\ActiveRecord
             [['country'], 'required'],
             [['country'], 'string', 'max' => 2],
             [['country'], 'unique'],
+            [['cost', 'revenue'], 'number'],
         ];
     }
 
@@ -50,6 +51,8 @@ class Dashboard extends \yii\db\ActiveRecord
             'installs' => 'Installs',
             'conv_rate' => 'Conv Rate',
             'country' => 'Country',
+            'cost'  => 'Cost',
+            'revenue' => 'Revenue'
         ];
     }
 
