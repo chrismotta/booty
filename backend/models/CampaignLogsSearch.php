@@ -57,15 +57,21 @@ class CampaignLogsSearch extends CampaignLogs
             'query' => $query,
         ]);
 
-        //$this->load($params);
 
-        // validation
-        /*
-        if (!$this->validate()) {
-            $query->where('0=1');
-            return $dataProvider;
-        }
-        */
+        // relations
+
+        $query->joinWith([
+            'campaign',
+        ]);
+
+        $query->rightJoin([
+            'F_ClusterLogs ON (F_ClusterLogs.session_hash=F_CampaignLogs.session_hash)',
+        ]);
+
+        $query->leftJoin([
+            'D_Placement ON ( F_ClusterLogs.D_Placement_id=D_Placement.id )',
+        ]);
+
 
         // fields
         $fields = [];
@@ -146,21 +152,7 @@ class CampaignLogsSearch extends CampaignLogs
         $query->groupBy( $group );
         $query->select( $fields );
 
-
-        // relations
-
-        $query->joinWith([
-            'campaign',
-        ]);
-
-        $query->rightJoin([
-            'F_ClusterLogs ON (F_ClusterLogs.session_hash=F_CampaignLogs.session_hash)',
-        ]);
-
-        $query->leftJoin([
-            'D_Placement ON ( F_ClusterLogs.D_Placement_id=D_Placement.id )',
-        ]);
-        
+  
  
         // sorting
         $dataProvider->sort->attributes['campaign'] = [
