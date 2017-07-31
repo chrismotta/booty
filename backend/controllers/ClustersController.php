@@ -82,6 +82,7 @@ class ClustersController extends Controller
             $cache = new \Predis\Client( \Yii::$app->params['predisConString'] );
 
             $cache->hmset( 'cluster:'.$model->id,  [
+                'name'              => $model->name,
                 'country'           => strtolower($model->country),
                 'os'                => $model->os,
                 'connection_type'   => strtolower($model->connection_type), 
@@ -123,6 +124,7 @@ class ClustersController extends Controller
 
             $cache = new \Predis\Client( \Yii::$app->params['predisConString'] );
 
+            $cache->hset( 'cluster:'.$model->id, 'name', $model->name );
             $cache->hset( 'cluster:'.$model->id, 'country', strtolower($model->country) );
             $cache->hset( 'cluster:'.$model->id, 'os', $model->os );
             $cache->hset( 'cluster:'.$model->id, 'connection_type', strtolower($model->connection_type) );
