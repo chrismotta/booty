@@ -15,9 +15,10 @@ $affiliates = models\Affiliates::find()->asArray()->all();
 <div class="box box-info">
     <div class="box-body">
 <div class="campaigns-form">
-
+        
     <?php $form = ActiveForm::begin(); ?>
 
+    <div class="col-md-6">
 
     <?= 
         '<label class="control-label">Affiliate</label>';
@@ -47,8 +48,11 @@ $affiliates = models\Affiliates::find()->asArray()->all();
     <?= $form->field($model, 'payout')->textInput(['maxlength' => true]) ?>
 
     <?= $form->field($model, 'country')->textInput(['maxlength' => true]) ?>
-
+    
     <?= $form->field($model, 'os')->dropDownList([ 'Android' => 'Android', 'iOS' => 'iOS', 'Windows' => 'Windows', 'BlackBerry' => 'BlackBerry' ], ['prompt' => '']) ?>
+
+    </div>
+    <div class="col-md-6">
 
     <?= $form->field($model, 'connection_type')->dropDownList([ '3g' => '3g', 'wifi' => 'Wifi', ], ['prompt' => '']) ?>
 
@@ -58,7 +62,9 @@ $affiliates = models\Affiliates::find()->asArray()->all();
 
     <?= $form->field($model, 'creative_300x250')->textInput(['maxlength' => true]) ?>
 
-    <div class="form-group">
+    </div>
+
+    <div class="form-group col-md-12">
         <?= Html::submitButton($model->isNewRecord ? 'Create' : 'Update', ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary']) ?>
     </div>
 

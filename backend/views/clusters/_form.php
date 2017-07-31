@@ -20,13 +20,16 @@ $staticCampaigns = models\StaticCampaigns::find()->asArray()->all();
         //'layout' => 'horizontal',
         ]); ?>
 
+    <div class="col-md-6">
+
     <?= $form->field($model, 'name')->textInput(['maxlength' => true]) ?>
-
-
 
     <?= $form->field($model, 'country')->textInput(['maxlength' => true]) ?>
 
     <?= $form->field($model, 'connection_type')->dropDownList([ '3g' => '3g', 'wifi' => 'Wifi', ], ['prompt' => '']) ?>
+
+    </div>
+    <div class="col-md-6">
 
     <?= $form->field($model, 'os')->dropDownList([ 'Android' => 'Android', 'iOS' => 'iOS', 'Windows' => 'Windows', 'BlackBerry' => 'BlackBerry' ], ['prompt' => '']) ?>
 
@@ -52,6 +55,9 @@ $staticCampaigns = models\StaticCampaigns::find()->asArray()->all();
             ],
         ]);            
     ?>
+
+    </div>
+    <div class="col-md-12">
 
     <?=         
         Html::submitButton($model->isNewRecord ? 'Create' : 'Update', ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary']) 

@@ -19,10 +19,15 @@ $users = models\User::find()->asArray()->all();
 
     <?php $form = ActiveForm::begin(); ?>
 
+    <div class="col-md-6">
+
     <?= $form->field($model, 'name')->textInput(['maxlength' => true]) ?>
 
     <?= $form->field($model, 'short_name')->textInput(['maxlength' => true]) ?>
 
+    </div>
+    <div class="col-md-6">
+    
     <?= 
         '<label class="control-label">Admin User</label>';
         echo Select2::widget( [
@@ -45,11 +50,15 @@ $users = models\User::find()->asArray()->all();
             ],
         ]);            
     ?>
-</div>
+
+    </div>
+    <div class="col-md-12">
 
     <div class="form-group">
 
         <?= Html::submitButton($model->isNewRecord ? 'Create' : 'Update', ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary']) ?>
+    </div>
+
     </div>
 
     <?php ActiveForm::end(); ?>

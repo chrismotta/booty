@@ -19,6 +19,8 @@ $clusters         = models\Clusters::find()->asArray()->all();
 
     <?php $form = ActiveForm::begin(); ?>
 
+    <div class="col-md-6">
+
     <?= 
         '<label class="control-label">Publisher</label>';
         echo Select2::widget( [
@@ -68,6 +70,9 @@ $clusters         = models\Clusters::find()->asArray()->all();
 
     <?= $form->field($model, 'payout')->textInput(['maxlength' => true]) ?>
 
+    </div>
+    <div class="col-md-6">
+
     <?= $form->field($model, 'model')->dropDownList([ 'CPM' => 'CPM', 'RS' => 'RS', ], ['prompt' => '']) ?>
 
     <?= $form->field($model, 'size')->dropDownList([ '300x250' => '300x250', '320x50' => '320x50', ], ['prompt' => '']) ?>
@@ -81,8 +86,13 @@ $clusters         = models\Clusters::find()->asArray()->all();
 
     <?= $form->field($model, 'health_check_imps')->textInput() ?>
 
+    </div>
+    <div class="col-md-12">
+
     <div class="form-group">
         <?= Html::submitButton($model->isNewRecord ? 'Create' : 'Update', ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary']) ?>
+    </div>
+
     </div>
 
     <?php ActiveForm::end(); ?>
