@@ -20,6 +20,7 @@ use yii\helpers\ArrayHelper;
 $this->title = 'Reporting';
 $this->params['breadcrumbs'][] = $this->title;
 
+
 $searchModel->date_start = isset($_GET['CampaignLogsSearch']['date_start']) ? $_GET['CampaignLogsSearch']['date_start'] : date( 'd-m-Y' );
 $searchModel->date_end = isset($_GET['CampaignLogsSearch']['date_end']) ? $_GET['CampaignLogsSearch']['date_end'] : date( 'd-m-Y' );
 
@@ -72,6 +73,8 @@ $this->registerJs(
 );
 ?>
 
+<div class="box box-default">
+<div class="box-body">
 
 <div class="campaign-logs-index">
 
@@ -155,5 +158,7 @@ $this->registerJs(
     
 </div>
 
+</div><!-- box body -->
+</div><!-- box -->
 
 </div>

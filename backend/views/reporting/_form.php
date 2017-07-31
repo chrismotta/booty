@@ -464,6 +464,8 @@ if ( isset($params['browser_version']) && $params['browser_version'] ){
             ],
         ]);           
     ?>
+
+    <br>
  
     <?= 
         $form->field($searchModel, 'fields_group1')->checkboxList(
