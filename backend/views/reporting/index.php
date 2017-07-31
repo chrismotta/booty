@@ -57,7 +57,7 @@ else
 if ( isset($params['CampaignLogsSearch']['fields_group2']) && !empty($params['CampaignLogsSearch']['fields_group2']) )
     $columns = array_merge( $columns, $params['CampaignLogsSearch']['fields_group2'] );
 
-
+echo '<br/>';
 
 foreach ( $columns as $column )
 {
