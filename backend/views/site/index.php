@@ -4,39 +4,51 @@ use dosamigos\chartjs\ChartJs;
 use conquer\jvectormap\JVectorMapWidget;
 
 
-$this->title  = 'Splad Dashboard';
+$this->title   = 'Splad Dashboard';
 
-$totals       = $totalsProvider->getModels();
-$byDate       = $byDateProvider->getModels();
-$byCountry    = $byCountryProvider->getModels();
+$totals        = $totalsProvider->getModels();
+$byDate        = $byDateProvider->getModels();
+$byCountry     = $byCountryProvider->getModels();
 
-$totalImps    = isset($totals[0]) ? $totals[0]['imps'] : 0; 
-$totalUsers   = isset($totals[0]) ? $totals[0]['unique_users'] : 0;
-$totalConvs   = isset($totals[0]) ? $totals[0]['installs'] : 0;
+$totalImps     = isset($totals[0]) ? $totals[0]['imps'] : 0; 
+$totalUsers    = isset($totals[0]) ? $totals[0]['unique_users'] : 0;
+$totalConvs    = isset($totals[0]) ? $totals[0]['installs'] : 0;
 
-$revByDate    = [];
-$spendByDate  = [];
-$dates        = [];
-
-$profitByDate = [];
-
-foreach ( $byDate as $data )
-{
-    $revByDate[]    = $data['revenue'];
-    $spendByDate[]  = $data['cost'];
-
-    $profit = $data['revenue']-$data['cost'];
-
-    if ( $profit < 0 )
-      $profitByDate[] = 0;
-    else
-      $profitByDate[] = $profit;
-    
-    $dates[]        = date('Y-m-d', strtotime($data['date']) );
-}
-
-
+$revByDate     = [];
+$spendByDate   = [];
+$profitByDate  = [];
+$dates         = [];
 $impsByCountry = [];
+
+$from          = new DateTime(date("Y-m-d", strtotime("-7 days")));
+$to            = new DateTime(date("Y-m-d"));
+$daterange     = new DatePeriod($from, new DateInterval('P1D'), $to);
+
+
+foreach( $daterange as $date )
+{
+    $formattedDate = $date->format("Y-m-d");
+
+    foreach ( $byDate as $data )
+    {
+        if ( $data['date'] == $formattedDate )
+        {
+          $revByDate[]    = $data['revenue'];
+          $spendByDate[]  = $data['cost'];
+
+          $profit = $data['revenue']-$data['cost'];
+
+          if ( $profit < 0 )
+            $profitByDate[] = 0;
+          else
+            $profitByDate[] = $profit;
+
+          break;
+        }
+    }
+
+    $dates[] = $formattedDate;
+}
 
 foreach ( $byCountry as $data )
 {
@@ -44,10 +56,8 @@ foreach ( $byCountry as $data )
     $impsByCountry[$code] = $data['imps'];
 }
 
-
-
-//var_export($byCountry);
 ?>
+
 <div class="site-index">
 
     <!-- Main content -->

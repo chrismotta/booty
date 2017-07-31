@@ -54,7 +54,7 @@ class Dashboard extends \yii\db\ActiveRecord
     }
 
 
-    public function loadData ( array $groupBy = null, array $orderBy = null, array $fields = null )
+    public function loadData ( array $groupBy = null, array $orderBy = null, array $filters = null, array $fields = null )
     {
         $query = Dashboard::find();
 
@@ -62,7 +62,14 @@ class Dashboard extends \yii\db\ActiveRecord
             'query' => $query,
         ]);
 
-        $query->filterWhere(['>=', 'date', new \yii\db\Expression('NOW() - INTERVAL 7 DAY')]);
+        if ( $filters )
+        {
+            foreach ( $filters as $filter )
+            {
+                $query->andFilterWhere( $filter );
+            }
+        }
+
 
         if ( $groupBy )
             $query->groupBy( $groupBy );
