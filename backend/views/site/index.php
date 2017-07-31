@@ -55,65 +55,92 @@ foreach ( $byCountry as $data )
       <!-- Small boxes (Stat box) -->
       <div class="row">
         <div class="col-lg-3 col-xs-6">
-          <!-- small box -->
-          <div class="small-box bg-gray">
-            <div class="inner">
-              <h3><?php echo $totalImps ?></h3>
-
-              <p>Today Impressions</p>
+          <!-- Apply any bg-* class to to the info-box to color it -->
+          <div class="info-box bg-aqua">
+            <span class="info-box-icon"><i class="fa fa-users"></i></span>
+            <div class="info-box-content">
+              <span class="info-box-text">Impressions</span>
+              <span class="info-box-number"><?php echo $totalImps ?></span>
+              <!-- The progress section is optional -->
+              <div class="progress">
+                <div class="progress-bar" style="width: 70%"></div>
+              </div>
+              <span class="progress-description">
+                Yesterday %
+              </span>
             </div>
-            <div class="icon">
-              <i class="ion ion-bag"></i>
-            </div>
-            <a href="#" class="small-box-footer">More info <i class="fa fa-arrow-circle-right"></i></a>
+            <!-- /.info-box-content -->
           </div>
+          <!-- /.info-box -->
+
         </div>
         <!-- ./col -->
         <div class="col-lg-3 col-xs-6">
-          <!-- small box -->
-          <div class="small-box bg-gray">
-            <div class="inner">
-              <h3><?php echo $totalUsers ?></h3>
 
-              <p>Today Unique Visitors</p>
+          <!-- Apply any bg-* class to to the info-box to color it -->
+          <div class="info-box bg-aqua">
+            <span class="info-box-icon"><i class="fa fa-user"></i></span>
+            <div class="info-box-content">
+              <span class="info-box-text">Unique</span>
+              <span class="info-box-number"><?php echo $totalUsers ?></span>
+              <!-- The progress section is optional -->
+              <div class="progress">
+                <div class="progress-bar" style="width: 70%"></div>
+              </div>
+              <span class="progress-description">
+                Yesterday %
+              </span>
             </div>
-            <div class="icon">
-              <i class="ion ion-pie-graph"></i>
-            </div>
-            <a href="#" class="small-box-footer">More info <i class="fa fa-arrow-circle-right"></i></a>
+            <!-- /.info-box-content -->
           </div>
+          <!-- /.info-box -->
+
         </div>
         <!-- ./col -->
         <div class="col-lg-3 col-xs-6">
-          <!-- small box -->
-          <div class="small-box bg-gray">
-            <div class="inner">
-              <h3><?php echo $totalConvs ?></h3>
 
-              <p>Today Installations</p>
+          <!-- Apply any bg-* class to to the info-box to color it -->
+          <div class="info-box bg-aqua">
+            <span class="info-box-icon"><i class="fa fa-download"></i></span>
+            <div class="info-box-content">
+              <span class="info-box-text">Instals</span>
+              <span class="info-box-number"><?php echo $totalConvs ?></span>
+              <!-- The progress section is optional -->
+              <div class="progress">
+                <div class="progress-bar" style="width: 70%"></div>
+              </div>
+              <span class="progress-description">
+                Yesterday %
+              </span>
             </div>
-            <div class="icon">
-              <i class="ion ion-person-add"></i>
-            </div>
-            <a href="#" class="small-box-footer">More info <i class="fa fa-arrow-circle-right"></i></a>
+            <!-- /.info-box-content -->
           </div>
+          <!-- /.info-box -->
+
         </div>
         <!-- ./col -->
         <div class="col-lg-3 col-xs-6">
-          <!-- small box -->
-          <div class="small-box bg-gray">
-            <div class="inner">
-              <h3><?php echo $totalImps*$totalConvs/100 ?><sup style="font-size: 20px">%</sup></h3>
 
-              <p>Today Conversion Rate</p>
+          <!-- Apply any bg-* class to to the info-box to color it -->
+          <div class="info-box bg-aqua">
+            <span class="info-box-icon"><i class="fa fa-database"></i></span>
+            <div class="info-box-content">
+              <span class="info-box-text">Conversion Rate</span>
+              <span class="info-box-number"><?php echo $totalImps*$totalConvs/100 ?><sup style="font-size: 10px">%</sup></span>
+              <!-- The progress section is optional -->
+              <div class="progress">
+                <div class="progress-bar" style="width: 70%"></div>
+              </div>
+              <span class="progress-description">
+                Yesterday %
+              </span>
             </div>
-            <div class="icon">
-              <i class="ion ion-stats-bars"></i>
-            </div>
-            <a href="#" class="small-box-footer">More info <i class="fa fa-arrow-circle-right"></i></a>
+            <!-- /.info-box-content -->
           </div>
+          <!-- /.info-box -->
+
         </div>
-        <!-- ./col -->
+
       </div>
       <!-- /.row -->
 
@@ -260,3 +287,5 @@ foreach ( $byCountry as $data )
     </section>
 
 </div>
+
+<br>

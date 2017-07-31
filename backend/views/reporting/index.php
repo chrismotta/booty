@@ -95,7 +95,6 @@ $this->registerJs(
 
 
 <div>
-<br/>
 
 <?=
     ExportMenu::widget([
