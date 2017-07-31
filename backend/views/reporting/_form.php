@@ -309,7 +309,7 @@ if ( isset($params['browser_version']) && $params['browser_version'] ){
       </div>
     <div class="box-body">
 
-    <dir class="col-md-6">
+    <dir class="col-md-4">
 
     <?= 
         '<label class="control-label">Publisher</label>';
@@ -416,6 +416,9 @@ if ( isset($params['browser_version']) && $params['browser_version'] ){
         ]);           
     ?>
 
+    </dir>
+    <dir class="col-md-4">
+
     <?=
         '<label class="control-label">Country</label>';
         echo Select2::widget( [
@@ -447,9 +450,6 @@ if ( isset($params['browser_version']) && $params['browser_version'] ){
             ],
         ]);           
     ?>    
-
-    </dir>
-    <dir class="col-md-6">
 
     <?=
         '<label class="control-label">Device</label>';
@@ -498,6 +498,9 @@ if ( isset($params['browser_version']) && $params['browser_version'] ){
             ],
         ]);           
     ?>  
+
+    </dir>
+    <dir class="col-md-4">
 
     <?=
         '<label class="control-label">OS</label>';
