@@ -165,12 +165,12 @@ foreach ( $byCountry as $data )
                               ],
                               [
                                   'label' => "Profit",
-                                  'backgroundColor' => "rgba(18,113,35,0.2)",
-                                  'borderColor' => "rgba(18,113,35,1)",
-                                  'pointBackgroundColor' => "rgba(18,113,35,1)",
+                                  'backgroundColor' => "rgba(0,160,0,0.2)",
+                                  'borderColor' => "rgba(0,160,0,1)",
+                                  'pointBackgroundColor' => "rgba(0,160,0,1)",
                                   'pointBorderColor' => "#fff",
                                   'pointHoverBackgroundColor' => "#fff",
-                                  'pointHoverBorderColor' => "rgba(18,113,35,1)",
+                                  'pointHoverBorderColor' => "rgba(0,160,0,1)",
                                   'data' => $profitByDate
                               ]                            
                           ]
