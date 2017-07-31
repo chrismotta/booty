@@ -71,6 +71,7 @@ class CampaignLogsSearch extends CampaignLogs
         $fields = [];
         $group  = [];
 
+
         if ( isset($params['CampaignLogsSearch']['fields_group1']) && !empty( $params['CampaignLogsSearch']['fields_group1'] ) )
         {
             $filterFields = $params['CampaignLogsSearch']['fields_group1'];
@@ -78,6 +79,7 @@ class CampaignLogsSearch extends CampaignLogs
             if ( isset($params['CampaignLogsSearch']['fields_group2']) && !empty( $params['CampaignLogsSearch']['fields_group2'] ) )            
                 $filterFields = array_merge( $filterFields, $params['CampaignLogsSearch']['fields_group2'] );
 
+            var_export($filterFields);
             foreach ( $filterFields as $field )
             {
                 switch ( $field )
@@ -123,6 +125,7 @@ class CampaignLogsSearch extends CampaignLogs
                     break;                                         
                     default:
                         $fields[] = 'F_ClusterLogs.'.$field.' AS '.$field;
+                        $group[]  = 'F_ClusterLogs.'.$field;
                     break;
                 }
             }
