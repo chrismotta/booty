@@ -193,7 +193,7 @@ if ( isset($params['browser_version']) && $params['browser_version'] ){
     ]); ?>
 
     <div class="box box-info">
-    <div class="box-header">
+    <div class="box-header with-border">
         <h3 class="box-title">Date Range</h3>
         <div class="box-tools">
           <!-- This will cause the box to collapse when clicked -->
