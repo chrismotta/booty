@@ -192,6 +192,8 @@ if ( isset($params['browser_version']) && $params['browser_version'] ){
         'method' => 'GET'
     ]); ?>
 
+    <dir class="col-md-12">
+        
     <?=
         '<label class="control-label">Date Range</label>';
         '<div class="input-group drp-container">';
@@ -211,8 +213,10 @@ if ( isset($params['browser_version']) && $params['browser_version'] ){
         ]);
         echo '</div>';
     ?>
-
     
+    </dir>
+    <dir class="col-md-6">
+
     <?= 
         '<label class="control-label">Publisher</label>';
         echo Select2::widget( [
@@ -256,7 +260,6 @@ if ( isset($params['browser_version']) && $params['browser_version'] ){
         ]);           
     ?>
 
-
     <?=
         '<label class="control-label">Campaign</label>';
         echo Select2::widget( [
@@ -283,7 +286,6 @@ if ( isset($params['browser_version']) && $params['browser_version'] ){
         ]);           
     ?>
 
-
     <?=
         '<label class="control-label">Cluster</label>';
         echo Select2::widget( [
@@ -299,7 +301,6 @@ if ( isset($params['browser_version']) && $params['browser_version'] ){
             ],
         ]);           
     ?>
-
 
     <?=
         '<label class="control-label">Placement</label>';
@@ -352,6 +353,9 @@ if ( isset($params['browser_version']) && $params['browser_version'] ){
             ],
         ]);           
     ?>    
+
+    </dir>
+    <dir class="col-md-6">
 
     <?=
         '<label class="control-label">Device</label>';
@@ -465,7 +469,9 @@ if ( isset($params['browser_version']) && $params['browser_version'] ){
         ]);           
     ?>
 
-    <br>
+    </dir>
+
+    <br><br>
  
     <?= 
         $form->field($searchModel, 'fields_group1')->checkboxList(
