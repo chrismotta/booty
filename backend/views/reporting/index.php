@@ -73,9 +73,6 @@ $this->registerJs(
 );
 ?>
 
-<div class="box box-default">
-<div class="box-body">
-
 <div class="campaign-logs-index">
 
     <?= $this->render('_form', [
@@ -157,8 +154,5 @@ $this->registerJs(
 <?php Pjax::end(); ?>
     
 </div>
-
-</div><!-- box body -->
-</div><!-- box -->
 
 </div>

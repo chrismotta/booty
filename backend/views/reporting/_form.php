@@ -192,11 +192,18 @@ if ( isset($params['browser_version']) && $params['browser_version'] ){
         'method' => 'GET'
     ]); ?>
 
+    <div class="box box-info">
+    <div class="box-header">
+        <h3 class="box-title">Date Range</h3>
+        <div class="box-tools">
+          <!-- This will cause the box to collapse when clicked -->
+          <button class="btn btn-box-tool" data-widget="collapse" data-toggle="tooltip" title="Collapse"><i class="fa fa-minus"></i></button>
+        </div>
+      </div>
+    <div class="box-body">
+
     <dir class="col-md-12">
-        
-    <?=
-        '<label class="control-label">Date Range</label>';
-        '<div class="input-group drp-container">';
+    <?php
         echo DateRangePicker::widget([
             'model'=>$searchModel,    
             'attribute' => 'date_range',
@@ -211,10 +218,97 @@ if ( isset($params['browser_version']) && $params['browser_version'] ){
                 ],
             ]
         ]);
-        echo '</div>';
     ?>
     
     </dir>
+
+    </div><!-- box body end -->
+    </div><!-- box end -->
+
+    <div class="box box-info">
+    <div class="box-header with-border">
+        <h3 class="box-title">Data Columns</h3>
+        <div class="box-tools">
+          <!-- This will cause the box to collapse when clicked -->
+          <button class="btn btn-box-tool" data-widget="collapse" data-toggle="tooltip" title="Collapse"><i class="fa fa-minus"></i></button>
+        </div>
+      </div>
+    <div class="box-body">
+ 
+    <?= 
+        $form->field($searchModel, 'fields_group1')->checkboxList(
+            [
+                'campaign'  => 'Campaign',
+                'affiliate' => 'Affiliate',
+                'placement' => 'Placement',
+                'publisher' => 'Publisher',
+                'cluster'   => 'Cluster',
+                'model'     => 'Model',
+                'status'    => 'Status',
+                'imps'      => 'Imps',
+                'clicks'    => 'Clicks',
+                'convs'     => 'Convs',
+                'cost'      => 'Cost',
+                'revenue'   => 'Revenue'           
+            ],
+            [
+                'item' => function ($index, $label, $name, $checked, $value) {
+                    $class_btn = 'btn-default'; // Style for disable
+                                   
+                    if ( $checked )
+                        $class_btn = 'btn-success'; // Style for checked button
+    
+                    return
+                        '<label class="btn '. $class_btn.'" id="chkbut_'.$value.'">' . Html::checkbox($name, $checked, ['value' => $value, 'id'=>'chkinp_'.$value]) . $label . '</label>';
+                },
+                'class' => 'btn-group', "data-toggle"=>"buttons", // Bootstrap class for Button Group
+            ]
+        )->label('');
+    ?>
+
+    <?= 
+        $form->field($searchModel, 'fields_group2')->checkboxList(
+            [
+                'country'         => 'Country',
+                'connection_type' => 'Connection Type',
+                'carrier'         => 'Carrier',
+                'device'          => 'Device',
+                'device_brand'    => 'Device Brand',
+                'device_model'    => 'Device Model',
+                'os'              => 'OS',
+                'os_version'      => 'OS Version',
+                'browser'         => 'Browser',
+                'browser_version' => 'Browser Version'
+            ],
+            [
+                'item' => function ($index, $label, $name, $checked, $value) {
+                    if ( $checked )
+                        $class_btn = 'btn-success'; // Style for checked button
+                    else
+                        $class_btn = 'btn-default'; // Style for disable
+    
+                    return
+                        '<label class="btn '. $class_btn.'" id="chkbut_'.$value.'">' . Html::checkbox($name, $checked, ['value' => $value, 'id'=>'chkinp_'.$value]) . $label . '</label>';
+                },
+                'class' => 'btn-group', "data-toggle"=>"buttons", // Bootstrap class for Button Group
+            ]
+        )->label('');
+    ?>
+
+    </div><!-- box body end -->
+    </div><!-- box end -->
+
+
+    <div class="box box-info collapsed-box">
+    <div class="box-header with-border">
+        <h3 class="box-title">Data Filters</h3>
+        <div class="box-tools">
+          <!-- This will cause the box to collapse when clicked -->
+          <button class="btn btn-box-tool" data-widget="collapse" data-toggle="tooltip" title="Collapse"><i class="fa fa-minus"></i></button>
+        </div>
+      </div>
+    <div class="box-body">
+
     <dir class="col-md-6">
 
     <?= 
@@ -471,69 +565,11 @@ if ( isset($params['browser_version']) && $params['browser_version'] ){
 
     </dir>
 
-    <br><br>
- 
-    <?= 
-        $form->field($searchModel, 'fields_group1')->checkboxList(
-            [
-                'campaign'  => 'Campaign',
-                'affiliate' => 'Affiliate',
-                'placement' => 'Placement',
-                'publisher' => 'Publisher',
-                'cluster'   => 'Cluster',
-                'model'     => 'Model',
-                'status'    => 'Status',
-                'imps'      => 'Imps',
-                'clicks'    => 'Clicks',
-                'convs'     => 'Convs',
-                'cost'      => 'Cost',
-                'revenue'   => 'Revenue'           
-            ],
-            [
-                'item' => function ($index, $label, $name, $checked, $value) {
-                    $class_btn = 'btn-default'; // Style for disable
-                                   
-                    if ( $checked )
-                        $class_btn = 'btn-success'; // Style for checked button
-    
-                    return
-                        '<label class="btn '. $class_btn.'" id="chkbut_'.$value.'">' . Html::checkbox($name, $checked, ['value' => $value, 'id'=>'chkinp_'.$value]) . $label . '</label>';
-                },
-                'class' => 'btn-group', "data-toggle"=>"buttons", // Bootstrap class for Button Group
-            ]
-        )->label('');
-    ?>
+    </div><!-- box body end -->
+    </div><!-- box end -->
 
-    <?= 
-        $form->field($searchModel, 'fields_group2')->checkboxList(
-            [
-                'country'         => 'Country',
-                'connection_type' => 'Connection Type',
-                'carrier'         => 'Carrier',
-                'device'          => 'Device',
-                'device_brand'    => 'Device Brand',
-                'device_model'    => 'Device Model',
-                'os'              => 'OS',
-                'os_version'      => 'OS Version',
-                'browser'         => 'Browser',
-                'browser_version' => 'Browser Version'
-            ],
-            [
-                'item' => function ($index, $label, $name, $checked, $value) {
-                    if ( $checked )
-                        $class_btn = 'btn-success'; // Style for checked button
-                    else
-                        $class_btn = 'btn-default'; // Style for disable
-    
-                    return
-                        '<label class="btn '. $class_btn.'" id="chkbut_'.$value.'">' . Html::checkbox($name, $checked, ['value' => $value, 'id'=>'chkinp_'.$value]) . $label . '</label>';
-                },
-                'class' => 'btn-group', "data-toggle"=>"buttons", // Bootstrap class for Button Group
-            ]
-        )->label('');
-    ?>
     <div class="form-group">
-        <?= Html::submitButton('Search', ['class' => 'btn btn-primary']) ?>
+        <?= Html::submitButton('Search', ['class' => 'btn btn-info']) ?>
         <?= Html::resetInput('Reset', ['class' => 'btn btn-default']) ?>
     </div>
 
