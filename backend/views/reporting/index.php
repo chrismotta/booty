@@ -24,8 +24,6 @@ $this->params['breadcrumbs'][] = $this->title;
 $searchModel->date_start = isset($_GET['CampaignLogsSearch']['date_start']) ? $_GET['CampaignLogsSearch']['date_start'] : date( 'd-m-Y' );
 $searchModel->date_end = isset($_GET['CampaignLogsSearch']['date_end']) ? $_GET['CampaignLogsSearch']['date_end'] : date( 'd-m-Y' );
 
-$totals = $totalsProvider->getModels();
-
 $DPlacement       = models\DPlacement::find()->asArray()->all();
 $DCampaign        = models\DCampaign::find()->asArray()->all();
 
@@ -94,65 +92,72 @@ $this->registerJs(
     ]) ?>
 
 
-<div>
-
-<?=
-    ExportMenu::widget([
-        'dataProvider' => $dataProvider,
-        'columns' => $columns,
-        'fontAwesome' => true,
-        'exportConfig'  => [
-            ExportMenu::FORMAT_EXCEL     => false,
-        ]
-    ]);
+<?php
+// only after submit
+if(isset($dataProvider)){
+    $totals = $totalsProvider->getModels();
 ?>
-</div>
-
-
-<div style="overflow-x:scroll;">
-<?php 
-    Pjax::begin( ['id' => 'results'] );
-
-    foreach ( $columns as $p => $column )
-    {
-        switch ($column)
-        {
-            case 'imps':
-            case 'convs':
-            case 'clicks':
-                $columns[$p] = [
-                    'attribute' => $column,
-                    'footer'    => isset($totals[0]) ? $totals[0][$column] : null,
-                ];
-            break;                   
-            case 'revenue':
-                $columns[$p] = [
-                    'attribute' => $column,
-                    'footer'    => isset($totals[0]) ? '$ '.number_format($totals[0][$column],6) : null,
-                    'value' => function($model, $key, $index, $widget) {
-                      return '$ '.number_format($model->revenue,6);
-                    },
-                ];
-            break;            
-            case 'cost':
-                $columns[$p] = [
-                    'attribute' => $column,
-                    'footer'    => isset($totals[0]) ? '$ '.number_format($totals[0][$column],6) : null,
-                    'value' => function($model, $key, $index, $widget) {
-                      return '$ '.number_format($model->cost,6);
-                    },
-                ];
-            break;
-        }
-    }
-?>    
-    <?= GridView::widget([
-        'dataProvider' => $dataProvider,
-        'columns' => $columns,
-        'showFooter' => true,
-    ]); ?>
-<?php Pjax::end(); ?>
     
-</div>
+    <div>
+    <?=
+        ExportMenu::widget([
+            'dataProvider' => $dataProvider,
+            'columns' => $columns,
+            'fontAwesome' => true,
+            'exportConfig'  => [
+                ExportMenu::FORMAT_EXCEL     => false,
+            ]
+        ]);
+    ?>
+    </div>
+
+
+    <div style="overflow-x:scroll;">
+    <?php 
+        Pjax::begin( ['id' => 'results'] );
+
+        foreach ( $columns as $p => $column )
+        {
+            switch ($column)
+            {
+                case 'imps':
+                case 'convs':
+                case 'clicks':
+                    $columns[$p] = [
+                        'attribute' => $column,
+                        'footer'    => isset($totals[0]) ? $totals[0][$column] : null,
+                    ];
+                break;                   
+                case 'revenue':
+                    $columns[$p] = [
+                        'attribute' => $column,
+                        'footer'    => isset($totals[0]) ? '$ '.number_format($totals[0][$column],6) : null,
+                        'value' => function($model, $key, $index, $widget) {
+                          return '$ '.number_format($model->revenue,6);
+                        },
+                    ];
+                break;            
+                case 'cost':
+                    $columns[$p] = [
+                        'attribute' => $column,
+                        'footer'    => isset($totals[0]) ? '$ '.number_format($totals[0][$column],6) : null,
+                        'value' => function($model, $key, $index, $widget) {
+                          return '$ '.number_format($model->cost,6);
+                        },
+                    ];
+                break;
+            }
+        }
+    ?>    
+        <?= GridView::widget([
+            'dataProvider' => $dataProvider,
+            'columns' => $columns,
+            'showFooter' => true,
+        ]); ?>
+    <?php Pjax::end(); ?>
+        
+    </div>
+
+<?php } //end if ?>
 
 </div>

@@ -37,15 +37,22 @@ class ReportingController extends Controller
     {
         $model        = new CampaignLogs();
         $searchModel  = new CampaignLogsSearch();
-        $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
 
-        $totalsProvider = $searchModel->searchTotals(Yii::$app->request->queryParams);        
+        $queryParams = Yii::$app->request->queryParams;
+
+        if (isset($queryParams['CampaignLogsSearch'])) {
+            $dataProvider = $searchModel->search($queryParams);
+            $totalsProvider = $searchModel->searchTotals($queryParams);
+        } else {
+            $dataProvider = null;
+            $totalsProvider = null;
+        }
 
         return $this->render('index', [
+            'model'        => $model,
             'searchModel'  => $searchModel,
             'dataProvider' => $dataProvider,
             'totalsProvider' => $totalsProvider,
-            'model'        => $model
         ]);
     }
 
