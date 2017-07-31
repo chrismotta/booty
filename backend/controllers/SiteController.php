@@ -62,9 +62,25 @@ class SiteController extends Controller
     public function actionIndex()
     {
         $model             = new models\Dashboard;
-        $totalsProvider    = $model->loadData();
-        $byDateProvider    = $model->loadData( ['date'], ['date' => 'ASC'] );
-        $byCountryProvider = $model->loadData( ['country'] );
+
+        $totalsProvider    = $model->loadData( 
+            null, 
+            null, 
+            [[ '=', 'date(date)','CURDATE()' ]]
+        );
+
+        $byDateProvider    = $model->loadData( 
+            ['date(date)'], 
+            ['date(date)' => 'ASC'], 
+            [['>=', 'date(date)', new \yii\db\Expression('date(NOW() - INTERVAL 7 DAY)')]],
+            [ 'date(date) as date', 'imps', 'unique_users']
+        );
+
+        $byCountryProvider = $model->loadData( 
+            ['country'],
+            null, 
+            [[ '=', 'date(date)','CURDATE()' ]]
+        );
 
         return $this->render('index', [
             'model'             => $model,
