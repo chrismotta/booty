@@ -145,32 +145,32 @@ foreach ( $byCountry as $data )
                           'datasets' => [
                               [
                                   'label' => "Spend",
-                                  'backgroundColor' => "rgba(179,181,198,0.2)",
-                                  'borderColor' => "rgba(179,181,198,1)",
-                                  'pointBackgroundColor' => "rgba(179,181,198,1)",
-                                  'pointBorderColor' => "#fff",
-                                  'pointHoverBackgroundColor' => "#fff",
-                                  'pointHoverBorderColor' => "rgba(179,181,198,1)",
-                                  'data' => $spendByDate
-                              ],
-                              [
-                                  'label' => "Revenue",
                                   'backgroundColor' => "rgba(255,99,132,0.2)",
                                   'borderColor' => "rgba(255,99,132,1)",
                                   'pointBackgroundColor' => "rgba(255,99,132,1)",
                                   'pointBorderColor' => "#fff",
                                   'pointHoverBackgroundColor' => "#fff",
                                   'pointHoverBorderColor' => "rgba(255,99,132,1)",
+                                  'data' => $spendByDate
+                              ],
+                              [
+                                  'label' => "Revenue",
+                                  'backgroundColor' => "rgba(0,108,212,0.2)",
+                                  'borderColor' => "rgba(0,108,212,1)",
+                                  'pointBackgroundColor' => "rgba(0,108,212,1)",
+                                  'pointBorderColor' => "#fff",
+                                  'pointHoverBackgroundColor' => "#fff",
+                                  'pointHoverBorderColor' => "rgba(0,108,212,1)",
                                   'data' => $revByDate
                               ],
                               [
                                   'label' => "Profit",
-                                  'backgroundColor' => "rgba(99,255,132,0.2)",
-                                  'borderColor' => "rgba(99,160,100,1)",
-                                  'pointBackgroundColor' => "rgba(99,160,100,1)",
+                                  'backgroundColor' => "rgba(18,113,35,0.2)",
+                                  'borderColor' => "rgba(18,113,35,1)",
+                                  'pointBackgroundColor' => "rgba(18,113,35,1)",
                                   'pointBorderColor' => "#fff",
                                   'pointHoverBackgroundColor' => "#fff",
-                                  'pointHoverBorderColor' => "rgba(99,255,132,1)",
+                                  'pointHoverBorderColor' => "rgba(18,113,35,1)",
                                   'data' => $profitByDate
                               ]                            
                           ]
