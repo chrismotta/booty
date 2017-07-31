@@ -220,7 +220,7 @@ foreach ( $byCountry as $data )
 
           <!-- Map box -->
           <div class="box box-solid bg-gray">
-            <div class="box-header">
+            <div class="box-header" style="color: #444">
               <!-- tools box -->
               <div class="pull-right box-tools">
                 <button type="button" class="btn btn-primary btn-sm daterange pull-right" data-toggle="tooltip" title="Date range">
