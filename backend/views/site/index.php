@@ -85,7 +85,7 @@ foreach ( $byCountry as $data )
               <span class="info-box-number"><?php echo $totalUsers ?></span>
               <!-- The progress section is optional -->
               <div class="progress">
-                <div class="progress-bar" style="width: 70%"></div>
+                <div class="progress-bar" style="width: 0%"></div>
               </div>
               <span class="progress-description">
                 Yesterday %
@@ -156,7 +156,7 @@ foreach ( $byCountry as $data )
               <!--
               <li><a href="#sales-chart" data-toggle="tab">Donut</a></li>
               -->
-              <li class="pull-left header"><i class="fa fa-inbox"></i>Weekly</li>
+              <li class="pull-left header"><i class="fa fa-signal"></i>Weekly</li>
             </ul>
             <div class="tab-content no-padding">
               <!-- Morris chart - Sales -->            
@@ -225,8 +225,6 @@ foreach ( $byCountry as $data )
               <div class="pull-right box-tools">
                 <button type="button" class="btn btn-primary btn-sm daterange pull-right" data-toggle="tooltip" title="Date range">
                   <i class="fa fa-calendar"></i></button>
-                <button type="button" class="btn btn-primary btn-sm pull-right" data-widget="collapse" data-toggle="tooltip" title="Collapse" style="margin-right: 5px;">
-                  <i class="fa fa-minus"></i></button>
               </div>
               <!-- /. tools -->
 
