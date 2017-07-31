@@ -13,6 +13,8 @@ $publishers       = models\Publishers::find()->asArray()->all();
 $clusters         = models\Clusters::find()->asArray()->all();
 ?>
 
+<div class="box box-info">
+    <div class="box-body">
 <div class="placements-form">
 
     <?php $form = ActiveForm::begin(); ?>
@@ -85,4 +87,5 @@ $clusters         = models\Clusters::find()->asArray()->all();
 
     <?php ActiveForm::end(); ?>
 
+</div>
 </div>

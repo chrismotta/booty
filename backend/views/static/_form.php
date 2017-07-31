@@ -8,6 +8,8 @@ use yii\widgets\ActiveForm;
 /* @var $form yii\widgets\ActiveForm */
 ?>
 
+<div class="box box-info">
+    <div class="box-body">
 <div class="static-campaigns-form">
 
     <?php $form = ActiveForm::begin(); ?>
@@ -26,4 +28,5 @@ use yii\widgets\ActiveForm;
 
     <?php ActiveForm::end(); ?>
 
+</div>
 </div>

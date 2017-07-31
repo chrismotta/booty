@@ -10,7 +10,8 @@ use yii\helpers\ArrayHelper;
 /* @var $form yii\widgets\ActiveForm */
 $users = models\User::find()->asArray()->all();
 ?>
-
+<div class="box box-info">
+    <div class="box-body">
 <div class="affiliates-form">
 
     <?php $form = ActiveForm::begin(); ?>
@@ -52,4 +53,5 @@ $users = models\User::find()->asArray()->all();
 
     <?php ActiveForm::end(); ?>
 
+</div>
 </div>

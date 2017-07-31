@@ -12,6 +12,8 @@ use yii\helpers\ArrayHelper;
 $staticCampaigns = models\StaticCampaigns::find()->asArray()->all();
 ?>
 
+<div class="box box-info">
+    <div class="box-body">
 <div class="clusters-form">
 
     <?php $form = ActiveForm::begin([
@@ -60,4 +62,5 @@ $staticCampaigns = models\StaticCampaigns::find()->asArray()->all();
 
     <?php ActiveForm::end(); ?>
 
+</div>
 </div>

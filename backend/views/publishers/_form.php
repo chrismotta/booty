@@ -13,6 +13,8 @@ use yii\helpers\ArrayHelper;
 $users = models\User::find()->asArray()->all();
 ?>
 
+<div class="box box-info">
+    <div class="box-body">
 <div class="publishers-form">
 
     <?php $form = ActiveForm::begin(); ?>
@@ -43,6 +45,7 @@ $users = models\User::find()->asArray()->all();
             ],
         ]);            
     ?>
+</div>
 
     <div class="form-group">
 
