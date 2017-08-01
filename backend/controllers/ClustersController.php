@@ -7,6 +7,7 @@ use app\models\Clusters;
 use app\models\ClustersSearch;
 use app\models\Campaigns;
 use app\models\CampaignsSearch;
+use app\models\Countries;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
@@ -65,6 +66,7 @@ class ClustersController extends Controller
      */
     public function actionCreate()
     {
+
         $model = new Clusters();
         $p = $model->load(Yii::$app->request->post());
 
@@ -88,13 +90,14 @@ class ClustersController extends Controller
                 'connection_type'   => strtolower($model->connection_type), 
                 'static_cp_land'    => $model->staticCampaigns->landing_url,
                 'static_cp_300x250' => $model->staticCampaigns->creative_300x250,
-                'static_cp_320x50'  => $model->staticCampaigns->creative_320x50 
+                'static_cp_320x50'  => $model->staticCampaigns->creative_320x50,
             ]);
 
             return $this->redirect(['view', 'id' => $model->id]);
         } else {
             return $this->render('create', [
                 'model' => $model,
+                'country_list' => Countries::getList(), 
             ]);
         }
     }
@@ -136,6 +139,7 @@ class ClustersController extends Controller
         } else {
             return $this->render('update', [
                 'model' => $model,
+                'country_list' => Countries::getList(), 
             ]);
         }
     }

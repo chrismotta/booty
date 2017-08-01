@@ -5,6 +5,7 @@ namespace backend\controllers;
 use Yii;
 use app\models\Campaigns;
 use app\models\CampaignsSearch;
+use app\models\Countries;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
@@ -78,6 +79,7 @@ class CampaignsController extends Controller
         } else {
             return $this->render('create', [
                 'model' => $model,
+                'country_list' => Countries::getList(), 
             ]);
         }
     }
@@ -105,6 +107,7 @@ class CampaignsController extends Controller
         } else {
             return $this->render('update', [
                 'model' => $model,
+                'country_list' => Countries::getList(), 
             ]);
         }
     }

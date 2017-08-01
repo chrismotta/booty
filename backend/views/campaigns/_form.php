@@ -47,7 +47,7 @@ $affiliates = models\Affiliates::find()->asArray()->all();
 
     <?= $form->field($model, 'payout')->textInput(['maxlength' => true]) ?>
 
-    <?= $form->field($model, 'country')->textInput(['maxlength' => true]) ?>
+    <?= $form->field($model, 'country')->dropDownList($country_list, ['prompt' => '']) ?>
     
     <?= $form->field($model, 'os')->dropDownList([ 'Android' => 'Android', 'iOS' => 'iOS', 'Windows' => 'Windows', 'BlackBerry' => 'BlackBerry' ], ['prompt' => '']) ?>
 

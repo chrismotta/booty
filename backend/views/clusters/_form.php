@@ -24,7 +24,7 @@ $staticCampaigns = models\StaticCampaigns::find()->asArray()->all();
 
     <?= $form->field($model, 'name')->textInput(['maxlength' => true]) ?>
 
-    <?= $form->field($model, 'country')->textInput(['maxlength' => true]) ?>
+    <?= $form->field($model, 'country')->dropDownList($country_list, ['prompt' => '']) ?>
 
     <?= $form->field($model, 'connection_type')->dropDownList([ '3g' => '3g', 'wifi' => 'Wifi', ], ['prompt' => '']) ?>
 
