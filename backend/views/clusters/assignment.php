@@ -8,7 +8,7 @@ use yii\widgets\Pjax;
 /* @var $dataProvider yii\data\ActiveDataProvider */
 
 $clusterID = $clustersModel->id;
-$this->title = 'Cluster #'.$clusterID.' "'.$clustersModel->name.'": Assaignment';
+$this->title = 'Cluster #'.$clusterID.' "'.$clustersModel->name.'": Assignment';
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 
