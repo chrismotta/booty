@@ -42,7 +42,15 @@ $this->params['breadcrumbs'][] = $this->title;
                     'assignment' => function ($url, $model, $key) {
                         return Html::a(
                             '<span class="glyphicon glyphicon-th-list"></span>', 
-                            $url,
+                            [
+                            'clusters/assignment',
+                            'id'=>$key,
+                            'CampaignsSearch'=>[
+                                'country'=>$model->country,
+                                'os'=>$model->os,
+                                'connection_type'=>$model->connection_type,
+                                ],
+                            ],
                             []
                             );
                     },

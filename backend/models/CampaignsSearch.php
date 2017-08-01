@@ -92,7 +92,10 @@ class CampaignsSearch extends Campaigns
             ->andFilterWhere(['like', 'landing_url', $this->landing_url])
             ->andFilterWhere(['like', 'creative_320x50', $this->creative_320x50])
             ->andFilterWhere(['like', 'creative_300x250', $this->creative_300x250])
-            ->andFilterWhere(['like', 'Affiliates.name', $this->affiliateName]);
+            ->andFilterWhere(['like', 'Affiliates.name', $this->affiliateName])
+            ->andFilterWhere(['like', 'country', $this->country])
+            ->andFilterWhere(['like', 'os', $this->os])
+            ->andFilterWhere(['like', 'connection_type', $this->connection_type]);
 
         return $dataProvider;
     }
@@ -138,7 +141,10 @@ class CampaignsSearch extends Campaigns
             ->andFilterWhere(['like', 'landing_url', $this->landing_url])
             ->andFilterWhere(['like', 'creative_320x50', $this->creative_320x50])
             ->andFilterWhere(['like', 'creative_300x250', $this->creative_300x250])
-            ->andFilterWhere(['like', 'Affiliates.name', $this->affiliateName]);
+            ->andFilterWhere(['like', 'Affiliates.name', $this->affiliateName])
+            ->andFilterWhere(['like', 'country', $this->country])
+            ->andFilterWhere(['like', 'os', $this->os])
+            ->andFilterWhere(['like', 'connection_type', $this->connection_type]);
 
         $query->andWhere(['cc.Clusters_id' => null]);
 

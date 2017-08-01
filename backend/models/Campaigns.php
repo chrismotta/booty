@@ -41,6 +41,7 @@ class Campaigns extends \yii\db\ActiveRecord
             [['payout'], 'number'],
             [['name', 'landing_url', 'creative_320x50', 'creative_300x250', 'os', 'connection_type'], 'string', 'max' => 255],
             [['country'], 'string', 'max' => 2],
+            [['os', 'connection_type', 'country'], 'default', 'value' => NULL],
             [['Affiliates_id'], 'exist', 'skipOnError' => true, 'targetClass' => Affiliates::className(), 'targetAttribute' => ['Affiliates_id' => 'id']],
         ];
     }
