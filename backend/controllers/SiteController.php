@@ -64,28 +64,31 @@ class SiteController extends Controller
         $model             = new models\Dashboard;
 
         $totalsProvider    = $model->loadData( 
+            ['date(date)'], 
             null, 
-            null, 
-            [[ '=', 'date(date)',new \yii\db\Expression( 'CURDATE()' ) ]]
+            [[ '=', 'date(date)',new \yii\db\Expression( 'CURDATE()' ) ]],
+            [ 'sum(imps) AS imps', 'sum(unique_users) AS unique_users', 'sum(installs) AS installs']
         );
 
         $yesterdayProvider = $model->loadData( 
+            ['date(date)'], 
             null, 
-            null, 
-            [[ '=', 'date(date)',new \yii\db\Expression( 'DATE(NOW()- INTERVAL 1 DAY)' ) ]]
+            [[ '=', 'date(date)',new \yii\db\Expression( 'DATE(NOW()- INTERVAL 1 DAY)' ) ]],
+            [ 'sum(imps) AS imps', 'sum(unique_users) AS unique_users', 'sum(installs) AS installs']
         );        
 
         $byDateProvider    = $model->loadData( 
             ['date(date)'], 
             ['date(date)' => 'ASC'], 
             [['>=', 'date(date)', new \yii\db\Expression('date(NOW() - INTERVAL 7 DAY)')]],
-            [ 'date(date) as date', 'imps', 'unique_users', 'cost']
+            [ 'date(date) AS date', 'sum(imps) AS imps', 'sum(unique_users) AS unique_users', 'sum(cost) AS cost', 'sum(revenue) AS revenue']
         );
 
         $byCountryProvider = $model->loadData( 
             ['country'],
             null, 
-            [[ '=', 'date(date)',new \yii\db\Expression( 'CURDATE()' ) ]]
+            [[ '=', 'date(date)',new \yii\db\Expression( 'CURDATE()' ) ]],
+            ['country AS country', 'sum(imps) AS imps']
         );
 
         return $this->render('index', [
