@@ -83,6 +83,7 @@ class Dashboard extends \yii\db\ActiveRecord
         if ( $fields )
             $query->select($fields);
 
+        //var_export( $query->createCommand()->getRawSql() );die();
         return $dataProvider;
     }
 }
