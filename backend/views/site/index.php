@@ -121,7 +121,7 @@ else
                 <div class="progress-bar" style="width: <?php echo $todayYesterdayImps ?>%"></div>
               </div>
               <span class="progress-description">
-                Yesterday <?php if ( $yesterdayImps <= 0 ) echo '-'; else echo $todayYesterdayImps; ?>%
+                Yesterday <?php if ( $yesterdayImps <= 0 ) echo '-'; else echo $todayYesterdayImps.'%'; ?>
               </span>
             </div>
             <!-- /.info-box-content -->
@@ -143,7 +143,7 @@ else
                 <div class="progress-bar" style="width: <?php echo $todayYesterdayUsers ?>%"></div>
               </div>
               <span class="progress-description">
-                Yesterday <?php if ( $yesterdayUsers <= 0 ) echo '-'; else echo $todayYesterdayUsers ?>%
+                Yesterday <?php if ( $yesterdayUsers <= 0 ) echo '-'; else echo $todayYesterdayUsers.'%'; ?>
               </span>
             </div>
             <!-- /.info-box-content -->
@@ -158,14 +158,14 @@ else
           <div class="info-box bg-aqua">
             <span class="info-box-icon"><i class="fa fa-download"></i></span>
             <div class="info-box-content">
-              <span class="info-box-text">Instals</span>
+              <span class="info-box-text">Installs</span>
               <span class="info-box-number"><?php echo $totalConvs ?></span>
               <!-- The progress section is optional -->
               <div class="progress">
                 <div class="progress-bar" style="width: <?php echo $todayYesterdayConvs ?>%"></div>
               </div>
               <span class="progress-description">
-                Yesterday <?php if ( $yesterdayConvs <= 0 ) echo '-'; else echo $todayYesterdayConvs ?>%
+                Yesterday <?php if ( $yesterdayConvs <= 0 ) echo '-'; else echo $todayYesterdayConvs.'%'; ?>
               </span>
             </div>
             <!-- /.info-box-content -->
@@ -187,7 +187,7 @@ else
                 <div class="progress-bar" style="width: <?php echo $todayYesterdayRate ?>%"></div>
               </div>
               <span class="progress-description">
-                Yesterday <?php if ( $yesterdayConvRate <= 0 ) echo '-'; else echo $todayYesterdayRate ?>%
+                Yesterday <?php if ( $yesterdayConvRate <= 0 ) echo '-'; else echo $todayYesterdayRate.'%'; ?>
               </span>
             </div>
             <!-- /.info-box-content -->
