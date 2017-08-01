@@ -57,19 +57,26 @@ class CampaignLogsSearch extends CampaignLogs
             'query' => $query,
         ]);
 
-        //$this->load($params);
 
-        // validation
-        /*
-        if (!$this->validate()) {
-            $query->where('0=1');
-            return $dataProvider;
-        }
-        */
+        // relations
+
+        $query->joinWith([
+            'campaign',
+        ]);
+
+        $query->rightJoin([
+            'F_ClusterLogs ON (F_ClusterLogs.session_hash=F_CampaignLogs.session_hash)',
+        ]);
+
+        $query->leftJoin([
+            'D_Placement ON ( F_ClusterLogs.D_Placement_id=D_Placement.id )',
+        ]);
+
 
         // fields
         $fields = [];
         $group  = [];
+
 
         if ( isset($params['CampaignLogsSearch']['fields_group1']) && !empty( $params['CampaignLogsSearch']['fields_group1'] ) )
         {
@@ -78,21 +85,22 @@ class CampaignLogsSearch extends CampaignLogs
             if ( isset($params['CampaignLogsSearch']['fields_group2']) && !empty( $params['CampaignLogsSearch']['fields_group2'] ) )            
                 $filterFields = array_merge( $filterFields, $params['CampaignLogsSearch']['fields_group2'] );
 
+
             foreach ( $filterFields as $field )
             {
                 switch ( $field )
                 {
                     case 'campaign':
                         $fields[] = 'D_Campaign.name AS campaign';
-                        $group[]  = 'D_Campaign.name';
+                        $group[]  = 'D_Campaign.id';
                     break;
                     case 'affiliate':
                         $fields[] = 'D_Campaign.Affiliates_name AS affiliate';
-                        $group[]  = 'D_Campaign.Affiliates_name';
+                        $group[]  = 'D_Campaign.Affiliates_id';
                     break;
                     case 'publisher':
                         $fields[] = 'D_Placement.Publishers_name AS publisher';
-                        $group[]  = 'D_Placement.Publishers_name'; 
+                        $group[]  = 'D_Placement.Publishers_id'; 
                     break;
                     case 'model':
                         $fields[] = 'D_Placement.model AS model';
@@ -117,47 +125,34 @@ class CampaignLogsSearch extends CampaignLogs
                     break;                                                   
                     case 'cluster':
                         $fields[] = 'F_ClusterLogs.cluster_name AS '.$field;
+                        $group[]  = 'F_ClusterLogs.cluster_id';
                     break;    
                     case 'placement':
                         $fields[] = 'D_Placement.name AS '.$field;
+                        $group[]  = 'D_Placement.id';
                     break;                                         
                     default:
                         $fields[] = 'F_ClusterLogs.'.$field.' AS '.$field;
+                        $group[]  = 'F_ClusterLogs.'.$field;
                     break;
                 }
-            }
-
-            $query->groupBy( $group );           
+            } 
         }
-        
-        if  ( !isset($fields) || empty($fields) )
-        {
+
+        if  ( empty($fields) )
             $fields = [
                 'D_Campaign.name AS campaign',
                 'sum(F_ClusterLogs.imps) AS imps'
             ];
 
-            $group[]  = 'D_Campaign.name';           
+        if ( empty($group) )
+            $group[]  = 'D_Campaign.id';                       
 
-            $query->groupBy( 'D_Campaign.name' );
-        }
-
+        
+        $query->groupBy( $group );
         $query->select( $fields );
 
-
-        // relations
-        $query->rightJoin([
-            'F_ClusterLogs ON (F_ClusterLogs.session_hash=F_CampaignLogs.session_hash)',
-        ]);
-
-        $query->leftJoin([
-            'D_Placement ON ( F_ClusterLogs.D_Placement_id=D_Placement.id )',
-        ]);
-        
-        $query->joinWith([
-            'campaign',
-        ]);
-        
+  
  
         // sorting
         $dataProvider->sort->attributes['campaign'] = [
