@@ -84,7 +84,7 @@ foreach ( $byCountry as $data )
               <span class="info-box-number"><?php echo $totalImps ?></span>
               <!-- The progress section is optional -->
               <div class="progress">
-                <div class="progress-bar" style="width: <?php echo $totalImps*$yesterdayImps/100 ?>%"></div>
+                <div class="progress-bar" style="width: <?php if ( $yesterdayImps > 0 ) echo $totalImps*100/$yesterdayImps; else echo 100; ?>%"></div>
               </div>
               <span class="progress-description">
                 Yesterday %
@@ -106,7 +106,7 @@ foreach ( $byCountry as $data )
               <span class="info-box-number"><?php echo $totalUsers ?></span>
               <!-- The progress section is optional -->
               <div class="progress">
-                <div class="progress-bar" style="width: <?php echo $totalUsers*$yesterdayUsers/100 ?>%"></div>
+                <div class="progress-bar" style="width: <?php if ( $yesterdayUsers > 0 ) echo $totalUsers*100/$yesterdayUsers; else echo 100; ?>%"></div>
               </div>
               <span class="progress-description">
                 Yesterday %
@@ -128,7 +128,7 @@ foreach ( $byCountry as $data )
               <span class="info-box-number"><?php echo $totalConvs ?></span>
               <!-- The progress section is optional -->
               <div class="progress">
-                <div class="progress-bar" style="width: <?php echo $totalConvs*$yesterdayConvs/100 ?>%"></div>
+                <div class="progress-bar" style="width: <?php if ( $yesterdayConvs > 0 ) echo $totalConvs*100/$yesterdayConvs; else echo 100; ?>%"></div>
               </div>
               <span class="progress-description">
                 Yesterday %
@@ -147,10 +147,10 @@ foreach ( $byCountry as $data )
             <span class="info-box-icon"><i class="fa fa-database"></i></span>
             <div class="info-box-content">
               <span class="info-box-text">Conversion Rate</span>
-              <span class="info-box-number"><?php echo $totalImps*$totalConvs/100 ?><sup style="font-size: 10px">%</sup></span>
+              <span class="info-box-number"><?php if ( $totalConvs>0 ) echo $totalImps*100/$totalConvs; else echo 0; ?><sup style="font-size: 10px">%</sup></span>
               <!-- The progress section is optional -->
               <div class="progress">
-                <div class="progress-bar" style="width: <?php echo ($totalImps*$totalConvs/100)*($yesterdayImps*$yesterdayConvs/100)/100 ?>%"></div>
+                <div class="progress-bar" style="width: <?php if( ($yesterdayImps*$yesterdayConvs/100) > 100 ) echo ($totalImps*$totalConvs/100)*100/($yesterdayImps*$yesterdayConvs/100); else echo 0; ?>%"></div>
               </div>
               <span class="progress-description">
                 Yesterday %

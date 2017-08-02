@@ -832,6 +832,7 @@ class EtlController extends \yii\web\Controller
                 unique_users = r.unique_users, 
                 installs = r.installs, 
                 cost = r.cost, 
+                country = r.country,
                 revenue = r.revenue;
         ';
 

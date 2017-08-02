@@ -66,13 +66,13 @@ class SiteController extends Controller
         $totalsProvider    = $model->loadData( 
             null, 
             null, 
-            [[ '=', 'date(date)','CURDATE()' ]]
+            [[ '=', 'date(date)',new \yii\db\Expression( 'CURDATE()' ) ]]
         );
 
         $yesterdayProvider = $model->loadData( 
             null, 
             null, 
-            [[ '=', 'date(date)','DATE(NOW()- INTERVAL 1 DAY)' ]]
+            [[ '=', 'date(date)',new \yii\db\Expression( 'DATE(NOW()- INTERVAL 1 DAY)' ) ]]
         );        
 
         $byDateProvider    = $model->loadData( 
@@ -85,7 +85,7 @@ class SiteController extends Controller
         $byCountryProvider = $model->loadData( 
             ['country'],
             null, 
-            [[ '=', 'date(date)','CURDATE()' ]]
+            [[ '=', 'date(date)',new \yii\db\Expression( 'CURDATE()' ) ]]
         );
 
         return $this->render('index', [
