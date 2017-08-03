@@ -41,6 +41,7 @@ class Clusters extends \yii\db\ActiveRecord
             [['name', 'StaticCampaigns_id'], 'required'],
             [['StaticCampaigns_id', 'Carriers_id'], 'integer'],
             [['connection_type', 'os', 'device_type'], 'string', 'skipOnEmpty'=>true ],
+            [['os', 'connection_type', 'country', 'device_type'], 'default', 'value' => NULL],            
             [['name'], 'string', 'max' => 255],
             [['country'], 'string', 'max' => 2, 'skipOnEmpty'=>true ],
             [['StaticCampaigns_id'], 'exist', 'skipOnError' => true, 'targetClass' => StaticCampaigns::className(), 'targetAttribute' => ['StaticCampaigns_id' => 'id']],
