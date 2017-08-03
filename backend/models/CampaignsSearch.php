@@ -160,13 +160,17 @@ class CampaignsSearch extends Campaigns
             // ->andFilterWhere(['like', 'os', $this->os])
             ->andFilterWhere(['>=', 'os_version', $this->os_version])
             ->andFilterWhere(['like', 'device_type', $this->device_type])
-            ->andFilterWhere(['like', 'connection_type', $this->connection_type]);
+            //->andFilterWhere(['like', 'connection_type', $this->connection_type])
+            ->andWhere(['or', ['connection_type' => null], ['like', 'connection_type', $this->connection_type]])
+            ->andWhere(['or', ['country' => null], ['=', 'country', $this->country]])
+            ->andWhere(['or', ['os' => null], ['like', 'os', $this->os]])
+            ;
 
-        $query->andWhere(['country' => null])->orWhere(['=', 'country', $this->country]);
-        $query->andWhere(['os' => null])->orWhere(['like', 'os', $this->os]);
+        //$query->where(['country' => null])->orWhere(['=', 'country', $this->country]);
+        //$query->andWhere(['os' => null])->orWhere(['like', 'os', $this->os]);
         $query->andWhere(['cc.Clusters_id' => null]);
 
-        // var_export( $query->createCommand()->getRawSql() );die();
+        //var_export( $query->createCommand()->getRawSql() );die();
 
         return $dataProvider;
     }
