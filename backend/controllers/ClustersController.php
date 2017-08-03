@@ -79,6 +79,8 @@ class ClustersController extends Controller
         if ( !$model->country || $model->country=='' )
             $model->country = null;
 
+        $carrierName = $model->carriers ? $model->carriers->carrier_name : null;
+
 
         if ( $p  && $model->save()) {
             $cache = new \Predis\Client( \Yii::$app->params['predisConString'] );
@@ -89,7 +91,7 @@ class ClustersController extends Controller
                 'os'                => $model->os,
                 'device_type'       => strtolower($model->device_type), 
                 'connection_type'   => strtolower($model->connection_type), 
-                'carrier'           => strtolower($model->carrier->name), 
+                'carrier'           => strtolower($carrierName), 
                 'static_cp_land'    => $model->staticCampaigns->landing_url,
                 'static_cp_300x250' => $model->staticCampaigns->creative_300x250,
                 'static_cp_320x50'  => $model->staticCampaigns->creative_320x50,
@@ -125,6 +127,8 @@ class ClustersController extends Controller
         if ( !$model->country || $model->country=='' )
             $model->country = null;
 
+        $carrierName = $model->carriers ? $model->carriers->carrier_name : null;
+
         if ( $p && $model->save()) {
 
             $cache = new \Predis\Client( \Yii::$app->params['predisConString'] );
@@ -133,6 +137,7 @@ class ClustersController extends Controller
             $cache->hset( 'cluster:'.$model->id, 'country', strtolower($model->country) );
             $cache->hset( 'cluster:'.$model->id, 'os', $model->os );
             $cache->hset( 'cluster:'.$model->id, 'connection_type', strtolower($model->connection_type) );
+            $cache->hset( 'cluster:'.$model->id, 'carrier', strtolower($carrierName) );
             $cache->hset( 'cluster:'.$model->id, 'device_type', strtolower($model->device_type) );
             //$cache->hset( 'cluster:'.$model->id, 'carrier', strtolower($model->carriers->carrier_name) );
             $cache->hset( 'cluster:'.$model->id, 'static_cp_land', $model->staticCampaigns->landing_url );

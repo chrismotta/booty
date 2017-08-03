@@ -42,7 +42,6 @@ $this->params['breadcrumbs'][] = $this->title;
                 'label'     => 'Static Campaign',
                 'attribute' => 'staticCampaigns.name'
             ],
-
         ],
     ]) ?>
 
