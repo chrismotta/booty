@@ -19,6 +19,7 @@ class CampaignLogsSearch extends CampaignLogs
     public $date_range;
     public $fields_group1;
     public $fields_group2;
+    public $fields_group3;
 
 
     /**
@@ -76,16 +77,19 @@ class CampaignLogsSearch extends CampaignLogs
         // fields
         $fields = [];
         $group  = [];
-
+        $filterFields = [];
 
         if ( isset($params['CampaignLogsSearch']['fields_group1']) && !empty( $params['CampaignLogsSearch']['fields_group1'] ) )
+            $filterFields = array_merge( $filterFields, $params['CampaignLogsSearch']['fields_group1'] );
+
+        if ( isset($params['CampaignLogsSearch']['fields_group2']) && !empty( $params['CampaignLogsSearch']['fields_group2'] ) )            
+            $filterFields = array_merge( $filterFields, $params['CampaignLogsSearch']['fields_group2'] );
+
+        if ( isset($params['CampaignLogsSearch']['fields_group3']) && !empty( $params['CampaignLogsSearch']['fields_group3'] ) )            
+            $filterFields = array_merge( $filterFields, $params['CampaignLogsSearch']['fields_group3'] );
+
+        if ( !empty($filterFields) )
         {
-            $filterFields = $params['CampaignLogsSearch']['fields_group1'];
-
-            if ( isset($params['CampaignLogsSearch']['fields_group2']) && !empty( $params['CampaignLogsSearch']['fields_group2'] ) )            
-                $filterFields = array_merge( $filterFields, $params['CampaignLogsSearch']['fields_group2'] );
-
-
             foreach ( $filterFields as $field )
             {
                 switch ( $field )
@@ -239,7 +243,22 @@ class CampaignLogsSearch extends CampaignLogs
             'asc' => ['count(F_CampaignLogs.conv_time)' => SORT_ASC],
             'desc' => ['count(F_CampaignLogs.conv_time)' => SORT_DESC],
         ];                     
-
+        $dataProvider->sort->attributes['pub_id'] = [
+            'asc' => ['F_ClusterLogs.pub_id' => SORT_ASC],
+            'desc' => ['F_ClusterLogs.pub_id' => SORT_DESC],
+        ];
+        $dataProvider->sort->attributes['subpub_id'] = [
+            'asc' => ['F_ClusterLogs.subpub_id' => SORT_ASC],
+            'desc' => ['F_ClusterLogs.subpub_id' => SORT_DESC],
+        ];
+        $dataProvider->sort->attributes['exchange_id'] = [
+            'asc' => ['F_ClusterLogs.exchange_id' => SORT_ASC],
+            'desc' => ['F_ClusterLogs.exchange_id' => SORT_DESC],
+        ];
+        $dataProvider->sort->attributes['device_id'] = [
+            'asc' => ['F_ClusterLogs.device_id' => SORT_ASC],
+            'desc' => ['F_ClusterLogs.device_id' => SORT_DESC],
+        ];                        
 
         // filters
         if ( isset($params['CampaignLogsSearch']['date_start']) )

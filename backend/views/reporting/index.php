@@ -54,13 +54,17 @@ $onloadJs = '
 if ( isset($params['CampaignLogsSearch']['fields_group1']) && !empty($params['CampaignLogsSearch']['fields_group1']) )
     $columns = $params['CampaignLogsSearch']['fields_group1'];
 else
-    $columns = ['campaign', 'imps'];
+    $columns = ['campaign'];
 
 
 if ( isset($params['CampaignLogsSearch']['fields_group2']) && !empty($params['CampaignLogsSearch']['fields_group2']) )
     $columns = array_merge( $columns, $params['CampaignLogsSearch']['fields_group2'] );
 
 
+if ( isset($params['CampaignLogsSearch']['fields_group3']) && !empty($params['CampaignLogsSearch']['fields_group3']) )
+    $columns =  array_merge( $columns, $params['CampaignLogsSearch']['fields_group3'] );
+else
+    $columns = array_merge( $columns, ['imps'] );
 
 foreach ( $columns as $column )
 {
