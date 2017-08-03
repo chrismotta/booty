@@ -36,6 +36,11 @@ $this->params['breadcrumbs'][] = $this->title;
             'country',
             'os',
             'connection_type',
+            'device_type',
+            [
+                'label'     => 'Carrier',
+                'attribute' => 'carriers.name'
+            ],            
             'landing_url:url',
             'creative_320x50',
             'creative_300x250',

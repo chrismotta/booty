@@ -133,6 +133,8 @@ class ClustersController extends Controller
             $cache->hset( 'cluster:'.$model->id, 'country', strtolower($model->country) );
             $cache->hset( 'cluster:'.$model->id, 'os', $model->os );
             $cache->hset( 'cluster:'.$model->id, 'connection_type', strtolower($model->connection_type) );
+            $cache->hset( 'cluster:'.$model->id, 'device_type', strtolower($model->device_type) );
+            //$cache->hset( 'cluster:'.$model->id, 'carrier', strtolower($model->carriers->carrier_name) );
             $cache->hset( 'cluster:'.$model->id, 'static_cp_land', $model->staticCampaigns->landing_url );
             $cache->hset( 'cluster:'.$model->id, 'static_cp_300x250', $model->staticCampaigns->creative_300x250 );
             $cache->hset( 'cluster:'.$model->id, 'static_cp_320x50', $model->staticCampaigns->creative_320x50 );

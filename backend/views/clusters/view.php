@@ -32,11 +32,17 @@ $this->params['breadcrumbs'][] = $this->title;
             'name',
             'country',
             'connection_type',
+            'device_type',
             'os',
+            [
+                'label'     => 'Carrier',
+                'attribute' => 'carriers.name'
+            ],
             [
                 'label'     => 'Static Campaign',
                 'attribute' => 'staticCampaigns.name'
-            ]
+            ],
+
         ],
     ]) ?>
 
