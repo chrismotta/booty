@@ -48,40 +48,18 @@ $carriers        = models\Carriers::find()->asArray()->all();
 
     <?= $form->field($model, 'payout')->textInput(['maxlength' => true]) ?>
 
-    <?= $form->field($model, 'country')->dropDownList($country_list, ['prompt' => '']) ?>
-    
-    <?= $form->field($model, 'os')->dropDownList([ 'Android' => 'Android', 'iOS' => 'iOS', 'Windows' => 'Windows', 'BlackBerry' => 'BlackBerry' ], ['prompt' => '']) ?>
+    <?= $form->field($model, 'country')->dropDownList($country_list, ['prompt' => '', 'id' => 'countryList']) ?>
 
+    <?= $form->field($model, 'carrier')->dropDownList($carrier_list, ['prompt' => '', 'id' => 'carrierList']) ?>
+    
     <?= $form->field($model, 'connection_type')->dropDownList([ '3g' => '3g', 'wifi' => 'Wifi', ], ['prompt' => '']) ?>    
 
     </div>
     <div class="col-md-6">
 
+    <?= $form->field($model, 'os')->dropDownList([ 'Android' => 'Android', 'iOS' => 'iOS', 'Windows' => 'Windows', 'BlackBerry' => 'BlackBerry' ], ['prompt' => '']) ?>
 
     <?= $form->field($model, 'device_type')->dropDownList([ 'Desktop' => 'Desktop', 'Smartphone' => 'Smartphone', 'Tablet' => 'Tablet', 'Other' => 'Other' ], ['prompt' => '']) ?>
-
-    <?= 
-        '<label class="control-label">Carrier</label>';
-        echo Select2::widget( [
-            'model' => $model,
-            'attribute' => 'Carriers_id',
-            'data' => ArrayHelper::map( 
-                $carriers, 
-                'id', 
-                'carrier_name' 
-            ),
-            'addon' => [
-                'contentAfter' => '<div style="height:25px;">&nbsp;</div>',
-            ],
-            'language' => 'us',
-            'options' => [
-                'placeholder' => 'Select a carrier...', 
-            ],
-            'pluginOptions' => [
-                'maximumInputLength' => 50
-            ],
-        ]);            
-    ?>
 
     <?= $form->field($model, 'landing_url')->textInput(['maxlength' => true]) ?>
 

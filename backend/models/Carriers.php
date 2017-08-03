@@ -27,7 +27,7 @@ class Carriers extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['country_alpha2_code'], 'string', 'max' => 2],
+            [['Countries_country_alpha2_code'], 'string', 'max' => 2],
             [['carrier_name'], 'string', 'max' => 200],
         ];
     }
@@ -38,16 +38,35 @@ class Carriers extends \yii\db\ActiveRecord
     public function attributeLabels()
     {
         return [
-            'country_alpha2_code' => 'Country Alpha2 Code',
+            'id' => 'ID',
+            'Countries_country_alpha2_code' => 'Country Alpha2 Code',
             'carrier_name' => 'Carrier Name',
         ];
     }
 
-    public static function getListByCountry($countryCode){
+    /**
+    * @return \yii\db\ActiveQuery
+    */
+   public function getCampaigns()
+   {
+       return $this->hasMany(Campaigns::className(), ['Carriers_id' => 'id']);
+   }
+
+   /**
+    * @return \yii\db\ActiveQuery
+    */
+   public function getClusters()
+   {
+       return $this->hasMany(Clusters::className(), ['Carriers_id' => 'id']);
+   }
+
+    public static function getListByCountry($countryCode=null){
         $carriers = self::find();
-        $carriers->select(['country_alpha2_code', 'country_name']);
-        $carriers->orderBy(['country_name' => SORT_ASC]);
+        $carriers->select(['id', 'carrier_name']);
+        if(isset($countryCode))
+            $carriers->filterWhere(['Countries_country_alpha2_code'=>$countryCode]);
+        $carriers->orderBy(['carrier_name' => SORT_ASC]);
         $result = $carriers->asArray()->all();
-        return ArrayHelper::map($result, 'country_alpha2_code', 'country_name');
+        return ArrayHelper::map($result, 'id', 'carrier_name');
     }
 }

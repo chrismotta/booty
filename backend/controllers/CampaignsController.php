@@ -6,6 +6,7 @@ use Yii;
 use app\models\Campaigns;
 use app\models\CampaignsSearch;
 use app\models\Countries;
+use app\models\Carriers;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
@@ -74,12 +75,13 @@ class CampaignsController extends Controller
                 'payout'     => $model->payout
             ]);
  
-
             return $this->redirect(['view', 'id' => $model->id]);
+
         } else {
             return $this->render('create', [
                 'model' => $model,
                 'country_list' => Countries::getList(), 
+                'carrier_list' => Carriers::getListByCountry(), 
             ]);
         }
     }
@@ -102,14 +104,19 @@ class CampaignsController extends Controller
                 'payout'     => $model->payout
             ]);
    
-
             return $this->redirect(['view', 'id' => $model->id]);
+
         } else {
             return $this->render('update', [
                 'model' => $model,
                 'country_list' => Countries::getList(), 
+                'carrier_list' => Carriers::getListByCountry(), 
             ]);
         }
+    }
+
+    public function actionGetcarrierlist($country=null){
+        return json_encode(Carriers::getListByCountry($country));
     }
 
     /**

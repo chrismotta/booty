@@ -27,7 +27,7 @@ $(document).ready(function(){
 	sidebarClose();
 	sidebarActive=true;
 	deepLink();
-
+	carrierUpdate();
 });
 
 function deepLink(){
@@ -80,4 +80,35 @@ function openOnSidebar(e){
 	$("iframe#control-sidebar").attr('src', $(e).attr('data-href'));
 	// e.preventDefault();
 	// return false;
+}
+
+function carrierUpdate(){
+	$( "#countryList" ).change(function() {
+
+		console.log('change');
+		var countryCode = $(this).val();
+
+		$.ajax({
+	        method: "GET",
+	        url: "getcarrierlist",
+	        data: { country: countryCode },
+	        dataType: "JSON"
+	    })
+	    .done(function( data ) {
+
+	        console.log( "Data: " + data );
+
+		    var $el = $("#carrierList");
+		    $el.empty(); // remove old options
+		    $el.append($("<option></option>")
+		    	.attr("value", "").text(""));
+
+		    $.each(data, function(key,value) {
+			    $el.append($("<option></option>")
+			        .attr("value", key).text(value));
+		    });
+
+	    });
+
+	});
 }
