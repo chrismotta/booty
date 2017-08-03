@@ -37,6 +37,10 @@ $browsers         = \Yii::$app->redis->smembers( 'browsers' );
 $browserVersions  = \Yii::$app->redis->smembers( 'browser_versions' );
 $countries        = \Yii::$app->redis->smembers( 'countries' );
 $carriers         = \Yii::$app->redis->smembers( 'carriers' );
+$pubIds           = \Yii::$app->redis->smembers( 'pub_ids' );
+$exchangeIds      = \Yii::$app->redis->smembers( 'exchange_ids' );
+$subpubIds        = \Yii::$app->redis->smembers( 'subpub_ids' );
+$deviceIds        = \Yii::$app->redis->smembers( 'device_ids' );
 
 $params = Yii::$app->request->get();
 $onloadJs = '
@@ -88,6 +92,10 @@ $this->registerJs(
         'osVersions'  => $osVersions,
         'browsers'    => $browsers,
         'browserVersions' => $browserVersions,
+        'pubIds'      => $pubIds,
+        'exchangeIds' => $exchangeIds,
+        'subpubIds'   => $subpubIds,
+        'deviceIds'   => $deviceIds,
         'params'      => $params
     ]) ?>
 

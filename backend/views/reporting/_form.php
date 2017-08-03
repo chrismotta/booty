@@ -178,6 +178,48 @@ if ( isset($params['browser_version']) && $params['browser_version'] ){
 }
 
 
+$r_pubids = [];
+if ( isset($params['pub_id']) && $params['pub_id'] ){
+
+    foreach ( $params['pub_id'] as $id )
+    {
+        if ( !in_array($id, $r_pubids) )
+            $r_pubids[] = $id;
+    }
+}
+
+$r_subpubids = [];
+if ( isset($params['subpub_id']) && $params['subpub_id'] ){
+
+    foreach ( $params['subpub_id'] as $id )
+    {
+        if ( !in_array($id, $r_subpubids) )
+            $r_subpubids[] = $id;
+    }
+}
+
+
+$r_deviceids = [];
+if ( isset($params['device_id']) && $params['device_id'] ){
+
+    foreach ( $params['device_id'] as $id )
+    {
+        if ( !in_array($id, $r_deviceids) )
+            $r_deviceids[] = $id;
+    }
+}
+
+$r_exchangeids = [];
+if ( isset($params['exchange_id']) && $params['exchange_id'] ){
+
+    foreach ( $params['exchange_id'] as $id )
+    {
+        if ( !in_array($id, $r_exchangeids) )
+            $r_exchangeids[] = $id;
+    }
+}
+
+
 ?>
 
 
@@ -416,8 +458,6 @@ if ( isset($params['browser_version']) && $params['browser_version'] ){
         ]);           
     ?>
 
-    </dir>
-    <dir class="col-md-4">
 
     <?=
         '<label class="control-label">Country</label>';
@@ -434,6 +474,10 @@ if ( isset($params['browser_version']) && $params['browser_version'] ){
             ],
         ]);           
     ?>
+
+
+    </dir>
+    <dir class="col-md-4">
 
     <?=
         '<label class="control-label">Carrier</label>';
@@ -499,9 +543,6 @@ if ( isset($params['browser_version']) && $params['browser_version'] ){
         ]);           
     ?>  
 
-    </dir>
-    <dir class="col-md-4">
-
     <?=
         '<label class="control-label">OS</label>';
         echo Select2::widget( [
@@ -534,6 +575,10 @@ if ( isset($params['browser_version']) && $params['browser_version'] ){
         ]);           
     ?>  
 
+    </dir>
+    <dir class="col-md-4">
+
+
     <?=
         '<label class="control-label">Browser</label>';
         echo Select2::widget( [
@@ -565,6 +610,70 @@ if ( isset($params['browser_version']) && $params['browser_version'] ){
             ],
         ]);           
     ?>
+
+    <?=
+        '<label class="control-label">Pub ID</label>';
+        echo Select2::widget( [
+            'name' => 'pub_id',
+            'data' => components\MapHelper::arrayToMap( $pubIds ),
+            'value' => $r_pubids,      
+            'language' => 'us',
+            'options' => ['placeholder' => 'Select a pub id ...', 'multiple' => true],
+            'pluginOptions' => [
+                //'tags' => true,
+                'tokenSeparators' => [',', ' '],
+                'maximumInputLength' => 10
+            ],
+        ]);           
+    ?>    
+
+    <?=
+        '<label class="control-label">Subpub ID</label>';
+        echo Select2::widget( [
+            'name' => 'subpub_id',
+            'data' => components\MapHelper::arrayToMap( $subpubIds ),
+            'value' => $r_subpubids,      
+            'language' => 'us',
+            'options' => ['placeholder' => 'Select a subpub id ...', 'multiple' => true],
+            'pluginOptions' => [
+                //'tags' => true,
+                'tokenSeparators' => [',', ' '],
+                'maximumInputLength' => 10
+            ],
+        ]);           
+    ?>        
+
+    <?=
+        '<label class="control-label">Exchange ID</label>';
+        echo Select2::widget( [
+            'name' => 'exchange_id',
+            'data' => components\MapHelper::arrayToMap( $exchangeIds ),
+            'value' => $r_exchangeids,      
+            'language' => 'us',
+            'options' => ['placeholder' => 'Select an exchange id ...', 'multiple' => true],
+            'pluginOptions' => [
+                //'tags' => true,
+                'tokenSeparators' => [',', ' '],
+                'maximumInputLength' => 10
+            ],
+        ]);           
+    ?> 
+
+    <?=
+        '<label class="control-label">Device ID</label>';
+        echo Select2::widget( [
+            'name' => 'device_id',
+            'data' => components\MapHelper::arrayToMap( $deviceIds ),
+            'value' => $r_deviceids,      
+            'language' => 'us',
+            'options' => ['placeholder' => 'Select a device id ...', 'multiple' => true],
+            'pluginOptions' => [
+                //'tags' => true,
+                'tokenSeparators' => [',', ' '],
+                'maximumInputLength' => 10
+            ],
+        ]);           
+    ?>          
 
     </dir>
 

@@ -38,6 +38,10 @@ class CampaignLogs extends \yii\db\ActiveRecord
     public $connection_type;
     public $convs;
     public $clicks;
+    public $pub_id;
+    public $subpub_id;
+    public $exchange_id;
+    public $device_id;
 
     /**
      * @inheritdoc
