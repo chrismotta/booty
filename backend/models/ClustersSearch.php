@@ -20,7 +20,7 @@ class ClustersSearch extends Clusters
     {
         return [
             [['id', 'StaticCampaigns_id'], 'integer'],
-            [['name', 'country', 'connection_type', 'os', 'placement', 'static_campaign', 'carrier', 'device_type'], 'safe'],
+            [['name', 'country', 'connection_type', 'os', 'os_version', 'placement', 'static_campaign', 'carrier', 'device_type'], 'safe'],
         ];
     }
 
@@ -55,6 +55,7 @@ class ClustersSearch extends Clusters
             'Clusters.id',
             'Clusters.name',
             'Clusters.os',
+            'Clusters.os_version',
             'Clusters.connection_type',
             'Clusters.country',
             'Clusters.device_type',
@@ -87,6 +88,7 @@ class ClustersSearch extends Clusters
             ->andFilterWhere(['like', 'country', $this->country])
             ->andFilterWhere(['like', 'connection_type', $this->connection_type])
             ->andFilterWhere(['like', 'device_type', $this->device_type])
+            ->andFilterWhere(['like', 'os_version', $this->os_version])
             ->andFilterWhere(['like', 'os', $this->os]);
 
         return $dataProvider;

@@ -280,13 +280,41 @@ if ( isset($params['exchange_id']) && $params['exchange_id'] ){
     <?= 
         $form->field($searchModel, 'fields_group1')->checkboxList(
             [
-                'campaign'  => 'Campaign',
-                'affiliate' => 'Affiliate',
-                'placement' => 'Placement',
-                'publisher' => 'Publisher',
                 'cluster'   => 'Cluster',
+                'affiliate' => 'Affiliate',
+                'campaign'  => 'Campaign',
+                'publisher' => 'Publisher',
+                'placement' => 'Placement',
                 'model'     => 'Model',
                 'status'    => 'Status',
+                'exchange_id' => 'Exchange ID',
+                'pub_id' => 'Pub ID',
+                'subpub_id' => 'Subpub ID',
+                'device_id' => 'Device ID',
+                'imps'      => 'Imps',
+                'clicks'    => 'Clicks',
+                'convs'     => 'Convs',
+                'cost'      => 'Cost',
+                'revenue'   => 'Revenue'           
+            ],
+            [
+                'item' => function ($index, $label, $name, $checked, $value) {
+                    $class_btn = 'btn-default'; // Style for disable
+                                   
+                    if ( $checked )
+                        $class_btn = 'btn-success'; // Style for checked button
+    
+                    return
+                        '<label class="btn '. $class_btn.'" id="chkbut_'.$value.'">' . Html::checkbox($name, $checked, ['value' => $value, 'id'=>'chkinp_'.$value]) . $label . '</label>';
+                },
+                'class' => 'btn-group', "data-toggle"=>"buttons", // Bootstrap class for Button Group
+            ]
+        )->label('');
+    ?>
+
+    <?= 
+        $form->field($searchModel, 'fields_group3')->checkboxList(
+            [
                 'imps'      => 'Imps',
                 'clicks'    => 'Clicks',
                 'convs'     => 'Convs',

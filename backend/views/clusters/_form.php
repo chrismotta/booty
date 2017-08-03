@@ -36,6 +36,9 @@ $carriers        = models\Carriers::find()->asArray()->all();
 
     <?= $form->field($model, 'os')->dropDownList([ 'Android' => 'Android', 'iOS' => 'iOS', 'Windows' => 'Windows', 'BlackBerry' => 'BlackBerry' ], ['prompt' => '']) ?>
 
+    <?= $form->field($model, 'os_version')->textInput(['type' => 'number']) ?>
+
+    
     <?= 
         '<label class="control-label">Carrier</label>';
         echo Select2::widget( [

@@ -39,10 +39,10 @@ class Campaigns extends \yii\db\ActiveRecord
         return [
             [['Affiliates_id', 'name', 'payout', 'landing_url'], 'required'],
             [['id', 'Affiliates_id', 'Carriers_id'], 'integer'],
-            [['payout'], 'number'],
+            [['payout', 'os_version'], 'number'],
             [['name', 'landing_url', 'creative_320x50', 'creative_300x250', 'os', 'connection_type'], 'string', 'max' => 255],
             [['country'], 'string', 'max' => 2],
-            [['os', 'connection_type', 'country', 'device_type'], 'default', 'value' => NULL],
+            [['os', 'connection_type', 'country', 'device_type', 'os_version'], 'default', 'value' => NULL],
             [['Affiliates_id'], 'exist', 'skipOnError' => true, 'targetClass' => Affiliates::className(), 'targetAttribute' => ['Affiliates_id' => 'id']],
             [['Carriers_id'], 'exist', 'skipOnError' => true, 'targetClass' => Carriers::className(), 'targetAttribute' => ['Carriers_id' => 'id']],             
         ];
@@ -54,19 +54,20 @@ class Campaigns extends \yii\db\ActiveRecord
     public function attributeLabels()
     {
         return [
-            'id' => 'ID',
-            'Affiliates_id' => 'Affiliates ID',
-            'name' => 'Name',
-            'payout' => 'Payout',
-            'landing_url' => 'Landing Url',
-            'creative_320x50' => 'Creative 320x50',
+            'id'               => 'ID',
+            'Affiliates_id'    => 'Affiliates ID',
+            'name'             => 'Name',
+            'payout'           => 'Payout',
+            'landing_url'      => 'Landing Url',
+            'creative_320x50'  => 'Creative 320x50',
             'creative_300x250' => 'Creative 300x250',
-            'affiliateName' => 'Affiliate',
-            'connection_type' => 'Connection Type',
-            'os' => 'OS',
-            'country' => 'Country',
-            'Carriers_id' => 'Carriers ID',
-            'device_type' => 'Device Type'
+            'affiliateName'    => 'Affiliate',
+            'connection_type'  => 'Connection Type',
+            'os'               => 'OS',
+            'os_version'       => 'OS Version',
+            'country'          => 'Country',
+            'Carriers_id'      => 'Carriers ID',
+            'device_type'      => 'Device Type'
         ];
     }
 
