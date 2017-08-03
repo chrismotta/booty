@@ -12,10 +12,50 @@ $this->title = 'Cluster #'.$clusterID.' "'.$clustersModel->name.'": Assignment';
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 
-<div class="row">
+<div class="box box-info">
+    <div class="box-header with-border">
+        <h3 class="box-title">Assigned Campaigns</h3>
+    </div>
+    <div class="box-body">
+<?php // Pjax::begin(); ?>    
+<?= GridView::widget([
+        'id' => 'assigned',
+        'dataProvider' => $assignedProvider,
+        // 'filterModel' => $assignedModel,
+        'layout' => '{items}',
+        'columns' => [
+            'id',
+            [
+                'attribute'=>'affiliateName',
+                'value'=>'affiliates.name',
+            ],
+            'name',
 
-<div class="clusters-index col-sm-12 col-md-8">
-<h4>Available</h4>
+            [
+                'class' => 'yii\grid\ActionColumn',
+                'template' => '{unassigncampaign}',
+
+                'buttons' => [
+                    'unassigncampaign' => function ($url, $model, $key) use ($clusterID) {
+                        return Html::a(
+                            '<span class="glyphicon glyphicon-minus"></span>', 
+                            ['unassigncampaign', 'cid'=>$key, 'id'=>$clusterID]
+                            );
+                    }
+                ]
+            ]
+        ],
+    ]); ?>
+<?php // Pjax::end(); ?>
+
+</div></div>
+
+<div class="box box-danger">
+    <div class="box-header with-border">
+        <h3 class="box-title">Available Campaigns</h3>
+    </div>
+    <div class="box-body">
+
 <?php // Pjax::begin(); ?>    
 <?= GridView::widget([
         'id' => 'available',
@@ -65,41 +105,18 @@ $this->params['breadcrumbs'][] = $this->title;
         ],
     ]); ?>
 <?php // Pjax::end(); ?>
+
+</div></div>
+
+
+<div class="row">
+
+<div class="clusters-index col-sm-12 col-md-8">
+
 </div>
 
-
 <div class="clusters-index col-sm-12 col-md-4">
-<h4>Assigned</h4>
-<?php // Pjax::begin(); ?>    
-<?= GridView::widget([
-        'id' => 'assigned',
-        'dataProvider' => $assignedProvider,
-        // 'filterModel' => $assignedModel,
-        'layout' => '{items}',
-        'columns' => [
-            'id',
-            [
-                'attribute'=>'affiliateName',
-                'value'=>'affiliates.name',
-            ],
-            'name',
 
-            [
-                'class' => 'yii\grid\ActionColumn',
-                'template' => '{unassigncampaign}',
-
-                'buttons' => [
-                    'unassigncampaign' => function ($url, $model, $key) use ($clusterID) {
-                        return Html::a(
-                            '<span class="glyphicon glyphicon-minus"></span>', 
-                            ['unassigncampaign', 'cid'=>$key, 'id'=>$clusterID]
-                            );
-                    }
-                ]
-            ]
-        ],
-    ]); ?>
-<?php // Pjax::end(); ?>
 </div>
 
 </div>
