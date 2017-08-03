@@ -13,7 +13,9 @@ $this->params['breadcrumbs'][] = $this->title;
 <div class="clusters-view">
 
     <p>
+        <?= Html::a('Admin', ['clusters/'], ['class' => 'btn btn-success']) ?>
         <?= Html::a('Update', ['update', 'id' => $model->id], ['class' => 'btn btn-primary']) ?>
+        <?= Html::a('Assign', ['assignment', 'id' => $model->id], ['class' => 'btn btn-info']) ?>
         <?= Html::a('Delete', ['delete', 'id' => $model->id], [
             'class' => 'btn btn-danger',
             'data' => [

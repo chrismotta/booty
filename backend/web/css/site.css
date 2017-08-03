@@ -151,3 +151,8 @@ a.desc:after {
 .img-column-300x250 img {
     width: 100%;
 }
+
+.filter-disabled input {
+    pointer-events: none;
+    background-color: #eee;
+}

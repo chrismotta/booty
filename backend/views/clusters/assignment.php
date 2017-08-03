@@ -29,11 +29,24 @@ $this->params['breadcrumbs'][] = $this->title;
                 'value'=>'affiliates.name',
             ],
             'name',
-            'country',
-            'os',
+            [
+                'attribute' => 'country',
+                'filterOptions' => [
+                    'class' => isset($clustersModel->country) ? 'filter-disabled' : '',
+                ]
+            ],
+            [
+                'attribute' => 'os',
+                'filterOptions' => [
+                    'class' => isset($clustersModel->os) ? 'filter-disabled' : '',
+                ]
+            ],
             [
                 'attribute' => 'connection_type',
                 'label' => 'Conn. Type',
+                'filterOptions' => [
+                    'class' => isset($clustersModel->connection_type) ? 'filter-disabled' : '',
+                ]
             ],
 
             [
