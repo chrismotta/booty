@@ -418,6 +418,8 @@ class EtlController extends \yii\web\Controller
     		INSERT INTO F_ClusterLogs (
                 session_hash,
     			D_Placement_id,
+                pub_id,
+                subpub_id,
     			cluster_id,
                 cluster_name,
     			imps,
@@ -426,6 +428,7 @@ class EtlController extends \yii\web\Controller
     			country,
     			connection_type,
     			carrier,
+                device_id,
     			device,
     			device_model,
     			device_brand,
@@ -479,6 +482,17 @@ class EtlController extends \yii\web\Controller
                     if ( !$clusterLog['placement_id'] || $clusterLog['placement_id']=='' || !preg_match( '/^[0-9]+$/',$clusterLog['placement_id'] ) )
                         $clusterLog['placement_id'] = 'NULL';
 
+                    if ( $clusterLog['pub_id'] && $clusterLog['pub_id']!='' )
+                        $clusterLog['pub_id'] = '"'.$this->_escapeSql( $clusterLog['pub_id'] ).'"';
+                    else
+                        $clusterLog['pub_id'] = 'NULL';
+
+
+                    if ( $clusterLog['subpub_id'] && $clusterLog['subpub_id']!='' )
+                        $clusterLog['subpub_id'] = '"'.$this->_escapeSql( $clusterLog['subpub_id'] ).'"';
+                    else
+                        $clusterLog['subpub_id'] = 'NULL';
+
 
                     if ( $clusterLog['country'] && $clusterLog['country']!='' )
                         $clusterLog['country'] = '"'.strtoupper($clusterLog['country']).'"';
@@ -501,6 +515,12 @@ class EtlController extends \yii\web\Controller
                     }
                     else
                         $clusterLog['connection_type'] = 'NULL';
+
+
+                    if ( $clusterLog['device_id'] && $clusterLog['device_id']!='' )
+                        $clusterLog['device_id'] = '"'.$this->_escapeSql( $clusterLog['device_id'] ).'"';
+                    else
+                        $clusterLog['device_id'] = 'NULL';
 
 
                     if ( !isset($clusterLog['device']) || !$clusterLog['device'] || $clusterLog['device']=='' )
@@ -550,6 +570,8 @@ class EtlController extends \yii\web\Controller
                     $values .= '( 
                         "'.$sessionHash.'",
                         '.$clusterLog['placement_id'].',
+                        '.$clusterLog['pub_id'].',
+                        '.$clusterLog['subpub_id'].',
                         '.$clusterLog['cluster_id'].',
                         "'.$clusterLog['cluster_name'].'",
                         '.$clusterLog['imps'].',
@@ -558,6 +580,7 @@ class EtlController extends \yii\web\Controller
                         '.$clusterLog['country'].',
                         '.$clusterLog['connection_type'].',
                         '.$clusterLog['carrier'].',
+                        '.$clusterLog['device_id'].',
                         '.$clusterLog['device'].',
                         '.$clusterLog['device_model'].',
                         '.$clusterLog['device_brand'].',
