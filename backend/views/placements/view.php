@@ -12,7 +12,8 @@ $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="placements-view">
 
-    <p>
+        
+        <?= Html::a('Admin', ['placements/'], ['class' => 'btn btn-success']) ?>
         <?= Html::a('Update', ['update', 'id' => $model->id], ['class' => 'btn btn-primary']) ?>
         <?= Html::a('Delete', ['delete', 'id' => $model->id], [
             'class' => 'btn btn-danger',
@@ -21,35 +22,70 @@ $this->params['breadcrumbs'][] = $this->title;
                 'method' => 'post',
             ],
         ]) ?>
-    </p>
-    <p>
-        <hr/>
-        <h4>Iframe Tag</h4>
-        <?php
-        $adDomain = "//ad.spdx.co/";
-        $iframeSrc = $adDomain . $model->id . '/';
-        $scriptSrc = $adDomain . 'js/' . $model->id . '/';
-        switch ($model->size) {
-            case '300x250':
-                $width = "300";
-                $height = "250";
-                break;
-            case '320x50':
-                $width = "320";
-                $height = "50";
-                break;
-            default:
-                $width = "";
-                $height = "";
-                break;
-        }
-        ?>
-        <?= Html::textarea('iframeTag', '<iframe src="'.$iframeSrc.'" frameborder="0" scrolling="no" width="'.$width.'" height="'.$height.'"></iframe>', ['class' => 'form-control']) ?>
-        <h4>Javascript Tag</h4>
-        <?= Html::textarea('javascriptTag', '<script type="text/javascript" src="'.$scriptSrc.'"></script>', ['class' => 'form-control']) ?>
-        <hr/>
-    </p>
 
+    <br/><br/>
+
+    <?php
+
+    $adDomain = "//ad.spdx.co/";
+    $iframeSrc = $adDomain . $model->id . '/';
+    $scriptSrc = $adDomain . 'js/' . $model->id . '/';
+    switch ($model->size) {
+        case '300x250':
+            $width = "300";
+            $height = "250";
+            break;
+        case '320x50':
+            $width = "320";
+            $height = "50";
+            break;
+        default:
+            $width = "";
+            $height = "";
+            break;
+    }
+
+    $macros = [
+        'exchange_id' => '<YOUR_EXCHANGE_ID_MACRO_HERE>',
+        'pub_id'      => '<YOUR_PUB_ID_MACRO_HERE>',
+        'subpub_id'   => '<YOUR_SUBPUB_ID_MACRO_HERE>',
+        'device_id'   => '<YOUR_DEVICE_ID_MACRO_HERE>',
+    ];
+    $qs_macros = urldecode(http_build_query($macros));
+
+    $labels = 'MACROS: ';
+    foreach ($macros as $key => $value) {
+        $labels .= '<span class="label label-info">'.$key.'</span> ';
+    }
+
+    ?>
+
+    <div class="box box-info">
+        <div class="box-header with-border">
+            <h3 class="box-title">Iframe Tag</h3>
+        </div>
+        <div class="box-body">
+        <?= Html::textarea('iframeTag', '<iframe src="'.$iframeSrc.'?'.$qs_macros.'" frameborder="0" scrolling="no" width="'.$width.'" height="'.$height.'"></iframe>', ['class' => 'form-control', 'disabled'=>'disabled', 'style'=>'cursor: text']) ?>
+        </div>
+        <div class="box-footer">
+            <?= $labels ?>
+        </div>
+    </div>
+    <div class="box box-info">
+        <div class="box-header with-border">
+            <h3 class="box-title">Javascript Tag</h3>
+        </div>
+        <div class="box-body">
+        <?= Html::textarea('javascriptTag', '<script type="text/javascript" src="'.$scriptSrc.'?'.$qs_macros.'"></script>', ['class' => 'form-control', 'disabled'=>'disabled', 'style'=>'cursor: text']) ?>
+        </div>
+        <div class="box-footer">
+            <?= $labels ?>
+        </div>
+    </div>
+
+
+    <div class="box box-info">
+        <div class="box-body">
     <?= DetailView::widget([
         'model' => $model,
         'attributes' => [
@@ -71,5 +107,7 @@ $this->params['breadcrumbs'][] = $this->title;
             'health_check_imps',
         ],
     ]) ?>
+        </div>
+    </div>
 
 </div>

@@ -152,7 +152,7 @@ a.desc:after {
     width: 100%;
 }
 
-.filter-disabled input {
+.filter-disabled input, .area-disabled {
     pointer-events: none;
     background-color: #eee;
 }

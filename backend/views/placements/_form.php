@@ -14,8 +14,8 @@ $clusters         = models\Clusters::find()->asArray()->all();
 ?>
 
 <div class="box box-info">
-    <div class="box-body">
-<div class="placements-form">
+<div class="box-body">
+    <div class="placements-form">
 
     <?php $form = ActiveForm::begin(); ?>
 
