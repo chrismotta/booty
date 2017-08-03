@@ -34,6 +34,7 @@ $this->params['breadcrumbs'][] = $this->title;
             'connection_type',
             'device_type',
             'os',
+            'os_version',
             [
                 'label'     => 'Carrier',
                 'attribute' => 'carriers.name'

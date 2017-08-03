@@ -81,7 +81,7 @@ class CampaignsController extends Controller
             return $this->render('create', [
                 'model' => $model,
                 'country_list' => Countries::getList(), 
-                'carrier_list' => Carriers::getListByCountry(), 
+                'carrier_list' => [], 
             ]);
         }
     }
@@ -110,7 +110,7 @@ class CampaignsController extends Controller
             return $this->render('update', [
                 'model' => $model,
                 'country_list' => Countries::getList(), 
-                'carrier_list' => Carriers::getListByCountry(), 
+                'carrier_list' => Carriers::getListByCountry($model->country), 
             ]);
         }
     }

@@ -21,7 +21,7 @@ class CampaignsSearch extends Campaigns
     {
         return [
             [['id', 'Affiliates_id'], 'integer'],
-            [['name', 'landing_url', 'creative_320x50', 'creative_300x250', 'affiliateName', 'affiliate', 'country', 'os', 'connection_type', 'carrier', 'device_type'], 'safe'],
+            [['name', 'landing_url', 'creative_320x50', 'creative_300x250', 'affiliateName', 'affiliate', 'country', 'os', 'connection_type', 'os_version', 'carrier', 'device_type'], 'safe'],
             [['payout'], 'number'],
         ];
     }
@@ -51,7 +51,7 @@ class CampaignsSearch extends Campaigns
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
-            'sort' => ['attributes' => [ 'id','name', 'landing_url','payout', 'affiliate', 'country', 'os', 'carrier', 'device_type', 'connection_type']]            
+            'sort' => ['attributes' => [ 'id','name', 'landing_url','payout', 'affiliate', 'country', 'os', 'carrier', 'device_type', 'os_version', 'connection_type']]            
         ]);
 
         $query->select([
@@ -61,6 +61,7 @@ class CampaignsSearch extends Campaigns
             'payout',
             'Affiliates.name AS affiliate',
             'Campaigns.os',
+            'Campaigns.os_version',
             'Campaigns.connection_type',
             'Campaigns.country',
             'Campaigns.device_type',
@@ -104,6 +105,7 @@ class CampaignsSearch extends Campaigns
             ->andFilterWhere(['like', 'creative_300x250', $this->creative_300x250])
             ->andFilterWhere(['like', 'country', $this->country])
             ->andFilterWhere(['like', 'os', $this->os])
+            ->andFilterWhere(['like', 'os_version', $this->os_version])
             ->andFilterWhere(['like', 'device_type', $this->device_type])
             ->andFilterWhere(['like', 'connection_type', $this->connection_type]);
 
@@ -114,7 +116,7 @@ class CampaignsSearch extends Campaigns
     public function searchAvailable($params, $clusterID)
     {
         $query = Campaigns::find();
-        $query->joinWith(['affiliates']);
+        $query->joinWith(['affiliates', 'carriers']);
 
         $subQuery = ClustersHasCampaigns::find()->where(['Clusters_id'=>$clusterID]);
         $query->leftJoin(['cc' => $subQuery], 'Campaigns.id = cc.Campaigns_id');
@@ -145,6 +147,7 @@ class CampaignsSearch extends Campaigns
         $query->andFilterWhere([
             'Campaigns.id' => $this->id,
             'Affiliates_id' => $this->Affiliates_id,
+            'Carriers_id' => $this->Carriers_id,
             'payout' => $this->payout,
         ]);
 
@@ -155,12 +158,15 @@ class CampaignsSearch extends Campaigns
             ->andFilterWhere(['like', 'Affiliates.name', $this->affiliateName])
             ->andFilterWhere(['like', 'country', $this->country])
             ->andFilterWhere(['like', 'os', $this->os])
+            ->andFilterWhere(['like', 'os_version', $this->os_version])
+            ->andFilterWhere(['like', 'device_type', $this->device_type])
             ->andFilterWhere(['like', 'connection_type', $this->connection_type]);
 
         $query->andWhere(['cc.Clusters_id' => null]);
 
         return $dataProvider;
     }
+
 
     public function searchAssigned($clusterID){
 
@@ -176,8 +182,8 @@ class CampaignsSearch extends Campaigns
         $dataProvider->sort = false;
 
         return $dataProvider;
-
     }
+
 
     public function assignToCluster($clusterID){
         $cluster = Clusters::findOne($clusterID);
@@ -189,7 +195,7 @@ class CampaignsSearch extends Campaigns
     public function unassignToCluster($clusterID){
         $cluster = Clusters::findOne($clusterID);
         $return = $this->unlink('clusters', $cluster, true);
-        
+
         return  $return;
     }
 

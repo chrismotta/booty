@@ -37,9 +37,10 @@ $filterByCarrier = ArrayHelper::map(
             'id',
             'name',
             'country',
-            'os',
             'connection_type',
             'device_type',
+            'os',
+            'os_version',            
             // 'StaticCampaigns_id',
             [
                 'attribute' => 'carrier',

@@ -51,15 +51,17 @@ $carriers        = models\Carriers::find()->asArray()->all();
     <?= $form->field($model, 'country')->dropDownList($country_list, ['prompt' => '', 'id' => 'countryList']) ?>
 
     <?= $form->field($model, 'carrier')->dropDownList($carrier_list, ['prompt' => '', 'id' => 'carrierList']) ?>
-    
+
     <?= $form->field($model, 'connection_type')->dropDownList([ '3g' => '3g', 'wifi' => 'Wifi', ], ['prompt' => '']) ?>    
 
     </div>
     <div class="col-md-6">
+    
+    <?= $form->field($model, 'device_type')->dropDownList([ 'Desktop' => 'Desktop', 'Smartphone' => 'Smartphone', 'Tablet' => 'Tablet', 'Other' => 'Other' ], ['prompt' => '']) ?>
 
     <?= $form->field($model, 'os')->dropDownList([ 'Android' => 'Android', 'iOS' => 'iOS', 'Windows' => 'Windows', 'BlackBerry' => 'BlackBerry' ], ['prompt' => '']) ?>
 
-    <?= $form->field($model, 'device_type')->dropDownList([ 'Desktop' => 'Desktop', 'Smartphone' => 'Smartphone', 'Tablet' => 'Tablet', 'Other' => 'Other' ], ['prompt' => '']) ?>
+    <?= $form->field($model, 'os_version')->textInput(['type' => 'number']) ?>
 
     <?= $form->field($model, 'landing_url')->textInput(['maxlength' => true]) ?>
 
