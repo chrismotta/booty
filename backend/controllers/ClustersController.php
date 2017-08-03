@@ -8,6 +8,7 @@ use app\models\ClustersSearch;
 use app\models\Campaigns;
 use app\models\CampaignsSearch;
 use app\models\Countries;
+use app\models\Carriers;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
@@ -103,6 +104,7 @@ class ClustersController extends Controller
             return $this->render('create', [
                 'model' => $model,
                 'country_list' => Countries::getList(), 
+                'carrier_list' => [], 
             ]);
         }
     }
@@ -151,6 +153,7 @@ class ClustersController extends Controller
             return $this->render('update', [
                 'model' => $model,
                 'country_list' => Countries::getList(), 
+                'carrier_list' => Carriers::getListByCountry($model->country), 
             ]);
         }
     }
