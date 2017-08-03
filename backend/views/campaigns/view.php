@@ -40,7 +40,7 @@ $this->params['breadcrumbs'][] = $this->title;
             'os_version',            
             [
                 'label'     => 'Carrier',
-                'attribute' => 'carriers.name'
+                'attribute' => 'carriers.carrier_name'
             ],            
             'landing_url:url',
             'creative_320x50',

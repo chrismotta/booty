@@ -37,7 +37,7 @@ $this->params['breadcrumbs'][] = $this->title;
             'os_version',
             [
                 'label'     => 'Carrier',
-                'attribute' => 'carriers.name'
+                'attribute' => 'carriers.carrier_name'
             ],
             [
                 'label'     => 'Static Campaign',
