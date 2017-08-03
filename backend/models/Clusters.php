@@ -23,6 +23,7 @@ use Yii;
 class Clusters extends \yii\db\ActiveRecord
 {
     public $static_campaign;
+    public $carrier;
     /**
      * @inheritdoc
      */
@@ -59,6 +60,9 @@ class Clusters extends \yii\db\ActiveRecord
             'connection_type' => 'Connection Type',
             'os' => 'Os',
             'StaticCampaigns_id' => 'Static Campaigns ID',
+            'Carriers_id' => 'Carriers ID',
+            'device_type' => 'Device Type',
+            'carrier'   => 'Carrier'
         ];
     }
 
@@ -70,6 +74,14 @@ class Clusters extends \yii\db\ActiveRecord
     {
         return $this->hasOne(StaticCampaigns::className(), ['id' => 'StaticCampaigns_id']);
     }
+
+    /**
+     * @return \yii\db\ActiveQuery
+     */
+    public function getCarriers()
+    {
+        return $this->hasOne(Carriers::className(), ['id' => 'Carriers_id']);
+    }    
 
     /**
      * @return \yii\db\ActiveQuery

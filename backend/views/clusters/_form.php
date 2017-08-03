@@ -10,6 +10,7 @@ use yii\helpers\ArrayHelper;
 /* @var $form yii\widgets\ActiveForm */
 
 $staticCampaigns = models\StaticCampaigns::find()->asArray()->all();
+$carriers        = models\Carriers::find()->asArray()->all();
 ?>
 
 <div class="box box-info">
@@ -28,10 +29,35 @@ $staticCampaigns = models\StaticCampaigns::find()->asArray()->all();
 
     <?= $form->field($model, 'connection_type')->dropDownList([ '3g' => '3g', 'wifi' => 'Wifi', ], ['prompt' => '']) ?>
 
+    <?= $form->field($model, 'device_type')->dropDownList([ 'Desktop' => 'Desktop', 'Smartphone' => 'Smartphone', 'Tablet' => 'Tablet', 'Other' => 'Other' ], ['prompt' => '']) ?>
+
     </div>
     <div class="col-md-6">
 
     <?= $form->field($model, 'os')->dropDownList([ 'Android' => 'Android', 'iOS' => 'iOS', 'Windows' => 'Windows', 'BlackBerry' => 'BlackBerry' ], ['prompt' => '']) ?>
+
+    <?= 
+        '<label class="control-label">Carrier</label>';
+        echo Select2::widget( [
+            'model' => $model,
+            'attribute' => 'Carriers_id',
+            'data' => ArrayHelper::map( 
+                $carriers, 
+                'id', 
+                'carrier_name' 
+            ),
+            'addon' => [
+                'contentAfter' => '<div style="height:25px;">&nbsp;</div>',
+            ],
+            'language' => 'us',
+            'options' => [
+                'placeholder' => 'Select a carrier...', 
+            ],
+            'pluginOptions' => [
+                'maximumInputLength' => 50
+            ],
+        ]);            
+    ?>
 
     <?= 
         '<label class="control-label">Static Campaign</label>';

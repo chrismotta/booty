@@ -13,6 +13,12 @@ use yii\helpers\ArrayHelper;
 $this->title = 'Clusters';
 $this->params['breadcrumbs'][] = $this->title;
 
+$carriers   = models\Carriers::find()->asArray()->all();
+$filterByCarrier = ArrayHelper::map( 
+    $carriers, 
+    'id', 
+    'carrier_name' 
+);
 
 ?>
 <div class="clusters-index">
@@ -33,8 +39,24 @@ $this->params['breadcrumbs'][] = $this->title;
             'country',
             'os',
             'connection_type',
+            'device_type',
             // 'StaticCampaigns_id',
-
+            [
+                'attribute' => 'carrier',
+                'label'     => 'Carrier',
+                'filter' => Select2::widget([
+                    'model' => $searchModel,
+                    'attribute' => 'Carriers_id',
+                    'data' => $filterByCarrier,
+                    'theme' => Select2::THEME_BOOTSTRAP,
+                    'pluginOptions' => [
+                        'allowClear' => true
+                    ],
+                    'options' => [
+                        'placeholder' => 'Select a carrier...',
+                    ]
+                ]),                
+            ],
             [
                 'class' => 'yii\grid\ActionColumn',
                 'template' => '{view} {update} {assignment} {delete}',

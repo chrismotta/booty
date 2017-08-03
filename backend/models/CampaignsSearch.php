@@ -13,7 +13,7 @@ use app\models\Campaigns;
 class CampaignsSearch extends Campaigns
 {
     public $affiliateName;
-
+    public $carrierName;
     /**
      * @inheritdoc
      */
@@ -21,7 +21,7 @@ class CampaignsSearch extends Campaigns
     {
         return [
             [['id', 'Affiliates_id'], 'integer'],
-            [['name', 'landing_url', 'creative_320x50', 'creative_300x250', 'affiliateName', 'affiliate', 'country', 'os', 'connection_type'], 'safe'],
+            [['name', 'landing_url', 'creative_320x50', 'creative_300x250', 'affiliateName', 'affiliate', 'country', 'os', 'connection_type', 'carrier', 'device_type'], 'safe'],
             [['payout'], 'number'],
         ];
     }
@@ -45,13 +45,13 @@ class CampaignsSearch extends Campaigns
     public function search($params)
     {
         $query = Campaigns::find();
-        $query->joinWith(['affiliates']);
+        $query->joinWith(['affiliates', 'carriers']);
         
         // add conditions that should always apply here
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
-            'sort' => ['attributes' => [ 'id','name', 'landing_url','payout', 'affiliate', 'country', 'os', 'connection_type']]            
+            'sort' => ['attributes' => [ 'id','name', 'landing_url','payout', 'affiliate', 'country', 'os', 'carrier', 'device_type', 'connection_type']]            
         ]);
 
         $query->select([
@@ -59,10 +59,12 @@ class CampaignsSearch extends Campaigns
             'landing_url',
             'Campaigns.name',
             'payout',
-            'Affiliates.name as affiliate',
+            'Affiliates.name AS affiliate',
             'Campaigns.os',
             'Campaigns.connection_type',
-            'Campaigns.country'
+            'Campaigns.country',
+            'Campaigns.device_type',
+            'Carriers.carrier_name AS carrier'
         ]);
 
         $this->load($params);
@@ -75,6 +77,13 @@ class CampaignsSearch extends Campaigns
             'desc' => ['Affiliates.name' => SORT_DESC],
         ];
 
+        $dataProvider->sort->attributes['carrierName'] = [
+            // The tables are the ones our relation are configured to
+            // in my case they are prefixed with "tbl_"
+            'asc' => ['Carriers.carrier_name' => SORT_ASC],
+            'desc' => ['Carriers.carrier_name' => SORT_DESC],
+        ];        
+
         if (!$this->validate()) {
             // uncomment the following line if you do not want to return any records when validation fails
             // $query->where('0=1');
@@ -85,6 +94,7 @@ class CampaignsSearch extends Campaigns
         $query->andFilterWhere([
             'Campaigns.id' => $this->id,
             'Affiliates_id' => $this->Affiliates_id,
+            'Carriers_id' => $this->Carriers_id,
             'payout' => $this->payout,
         ]);
 
@@ -92,10 +102,11 @@ class CampaignsSearch extends Campaigns
             ->andFilterWhere(['like', 'landing_url', $this->landing_url])
             ->andFilterWhere(['like', 'creative_320x50', $this->creative_320x50])
             ->andFilterWhere(['like', 'creative_300x250', $this->creative_300x250])
-            ->andFilterWhere(['like', 'Affiliates.name', $this->affiliateName])
             ->andFilterWhere(['like', 'country', $this->country])
             ->andFilterWhere(['like', 'os', $this->os])
+            ->andFilterWhere(['like', 'device_type', $this->device_type])
             ->andFilterWhere(['like', 'connection_type', $this->connection_type]);
+
 
         return $dataProvider;
     }
