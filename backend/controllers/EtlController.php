@@ -425,6 +425,7 @@ class EtlController extends \yii\web\Controller
     			imps,
     			imp_time,
     			cost,
+                exchange_id,
     			country,
     			connection_type,
     			carrier,
@@ -492,6 +493,12 @@ class EtlController extends \yii\web\Controller
                         $clusterLog['subpub_id'] = '"'.$this->_escapeSql( $clusterLog['subpub_id'] ).'"';
                     else
                         $clusterLog['subpub_id'] = 'NULL';
+
+
+                    if ( $clusterLog['exchange_id'] && $clusterLog['exchange_id']!='' )
+                        $clusterLog['exchange_id'] = '"'.$this->_escapeSql( $clusterLog['exchange_id'] ).'"';
+                    else
+                        $clusterLog['exchange_id'] = 'NULL';
 
 
                     if ( $clusterLog['country'] && $clusterLog['country']!='' )
@@ -577,6 +584,7 @@ class EtlController extends \yii\web\Controller
                         '.$clusterLog['imps'].',
                         "'.\date( 'Y-m-d H:i:s', $clusterLog['imp_time'] ).'",
                         '.$clusterLog['cost'].',
+                        '.$clusterLog['exchange_id'].',
                         '.$clusterLog['country'].',
                         '.$clusterLog['connection_type'].',
                         '.$clusterLog['carrier'].',
