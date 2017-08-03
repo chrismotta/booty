@@ -77,6 +77,10 @@ class CampaignLogs extends \yii\db\ActiveRecord
             'click_time' => 'Click Time',
             'conv_time' => 'Conv Time',
             'revenue' => 'Revenue',
+            'pub_id' => 'Pub ID',
+            'subpub_id' => 'Subpub ID',
+            'exchange_id' => 'Exchange ID',
+            'device_id' => 'Device ID',
         ];
     }
 

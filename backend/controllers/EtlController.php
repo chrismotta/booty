@@ -612,6 +612,10 @@ class EtlController extends \yii\web\Controller
                     // save reporting multiselect data
                     \Yii::$app->redis->sadd( 'carriers', $clusterLog['carrier']  );
                     \Yii::$app->redis->sadd( 'countries', $clusterLog['country']  );
+                    \Yii::$app->redis->sadd( 'exchange_ids', $clusterLog['exchange_id']  );
+                    \Yii::$app->redis->sadd( 'pub_ids', $clusterLog['pub_id']  );
+                    \Yii::$app->redis->sadd( 'subpub_ids', $clusterLog['subpub_id']  );
+                    \Yii::$app->redis->sadd( 'device_ids', $clusterLog['device_id']  );                    
 
                     // save cluster name to be used in reporting multiselect
                     if ( !\in_array( $clusterLog['cluster_id'], $clusters ) )
