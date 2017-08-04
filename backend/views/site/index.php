@@ -34,8 +34,12 @@ foreach( $daterange as $date )
 {
     $formattedDate = $date->format("Y-m-d");
 
+
     foreach ( $byDate as $data )
     {
+        if ( in_array($formattedDate, $dates) )
+          continue;
+
         if ( $data['date'] == $formattedDate )
         {
           $revByDate[]    = $data['revenue'];
@@ -56,9 +60,11 @@ foreach( $daterange as $date )
             $spendByDate[]  = 0;
             $profitByDate[] = 0;
         }
+
+        $dates[] = $formattedDate;
     }
 
-    $dates[] = $formattedDate;
+
 }
 
 foreach ( $byCountry as $data )
