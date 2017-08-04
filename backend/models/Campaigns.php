@@ -22,7 +22,6 @@ use Yii;
 class Campaigns extends \yii\db\ActiveRecord
 {
     public $affiliate;
-    public $carrier;
     /**
      * @inheritdoc
      */
@@ -38,13 +37,12 @@ class Campaigns extends \yii\db\ActiveRecord
     {
         return [
             [['Affiliates_id', 'name', 'payout', 'landing_url'], 'required'],
-            [['id', 'Affiliates_id', 'Carriers_id'], 'integer'],
+            [['id', 'Affiliates_id'], 'integer'],
             [['payout', 'os_version'], 'number'],
-            [['name', 'landing_url', 'creative_320x50', 'creative_300x250', 'os', 'connection_type'], 'string', 'max' => 255],
+            [['name', 'landing_url', 'creative_320x50', 'creative_300x250', 'carrier', 'os', 'connection_type'], 'string', 'max' => 255],
             [['country'], 'string', 'max' => 2],
-            [['os', 'connection_type', 'country', 'device_type', 'os_version'], 'default', 'value' => NULL],
+            [['os', 'connection_type', 'carrier', 'country', 'device_type', 'os_version'], 'default', 'value' => NULL],
             [['Affiliates_id'], 'exist', 'skipOnError' => true, 'targetClass' => Affiliates::className(), 'targetAttribute' => ['Affiliates_id' => 'id']],
-            [['Carriers_id'], 'exist', 'skipOnError' => true, 'targetClass' => Carriers::className(), 'targetAttribute' => ['Carriers_id' => 'id']],             
         ];
     }
 
@@ -66,7 +64,7 @@ class Campaigns extends \yii\db\ActiveRecord
             'os'               => 'OS',
             'os_version'       => 'OS Version',
             'country'          => 'Country',
-            'Carriers_id'      => 'Carriers ID',
+            'carrier'          => 'Carrier',
             'device_type'      => 'Device Type'
         ];
     }
@@ -85,15 +83,7 @@ class Campaigns extends \yii\db\ActiveRecord
     public function getClustersHasCampaigns()
     {
         return $this->hasMany(ClustersHasCampaigns::className(), ['Campaigns_id' => 'id']);
-    }
-
-    /**
-     * @return \yii\db\ActiveQuery
-     */
-    public function getCarriers()
-    {
-        return $this->hasOne(Carriers::className(), ['id' => 'Carriers_id']);
-    }    
+    }   
 
     /**
      * @return \yii\db\ActiveQuery

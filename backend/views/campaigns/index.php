@@ -14,7 +14,7 @@ $this->title = 'Campaigns';
 $this->params['breadcrumbs'][] = $this->title;
 
 $affiliates = models\Affiliates::find()->asArray()->all();
-$carriers   = models\Carriers::find()->asArray()->all();
+// $carriers   = models\Carriers::find()->asArray()->all();
 
 $filterByAffiliate = ArrayHelper::map( 
     $affiliates, 
@@ -22,11 +22,11 @@ $filterByAffiliate = ArrayHelper::map(
     'name' 
 );
 
-$filterByCarrier = ArrayHelper::map( 
-    $carriers, 
-    'id', 
-    'carrier_name' 
-);
+// $filterByCarrier = ArrayHelper::map( 
+//     $carriers, 
+//     'id', 
+//     'carrier_name' 
+// );
 
 ?>
 <div class="campaigns-index">
@@ -65,26 +65,11 @@ $filterByCarrier = ArrayHelper::map(
             'connection_type',
             'device_type',
             'os',
-            'os_version',            
+            'os_version',
+            'carrier',    
             // 'landing_url:url',
             // 'creative_320x50',
             // 'creative_300x250',
-            [
-                'attribute' => 'carrier',
-                'label'     => 'Carrier',
-                'filter' => Select2::widget([
-                    'model' => $searchModel,
-                    'attribute' => 'Carriers_id',
-                    'data' => $filterByCarrier,
-                    'theme' => Select2::THEME_BOOTSTRAP,
-                    'pluginOptions' => [
-                        'allowClear' => true
-                    ],
-                    'options' => [
-                        'placeholder' => 'Select a carrier...',
-                    ]
-                ]),                
-            ],
             [
                 'class' => 'yii\grid\ActionColumn',
                 'template' => '{view}',

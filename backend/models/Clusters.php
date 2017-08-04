@@ -62,7 +62,7 @@ class Clusters extends \yii\db\ActiveRecord
             'connection_type' => 'Connection Type',
             'os' => 'OS',
             'StaticCampaigns_id' => 'Static Campaigns ID',
-            'Carriers_id' => 'Carriers ID',
+            'Carriers_id' => 'Carrier',
             'device_type' => 'Device Type',
             'carrier'   => 'Carrier',
             'os_version'    => 'OS Version'

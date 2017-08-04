@@ -30,6 +30,12 @@ $this->params['breadcrumbs'][] = $this->title;
                 'value'=>'affiliates.name',
             ],
             'name',
+            'country',
+            'connection_type',
+            'device_type',
+            'os',
+            'os_version',
+            'carrier',
 
             [
                 'class' => 'yii\grid\ActionColumn',
@@ -76,16 +82,34 @@ $this->params['breadcrumbs'][] = $this->title;
                 ]
             ],
             [
+                'attribute' => 'connection_type',
+                'label' => 'Conn. Type',
+                'filterOptions' => [
+                    'class' => isset($clustersModel->connection_type) ? 'filter-disabled' : '',
+                ]
+            ],
+            [
+                'attribute' => 'device_type',
+                'filterOptions' => [
+                    'class' => isset($clustersModel->device_type) ? 'filter-disabled' : '',
+                ]
+            ],
+            [
                 'attribute' => 'os',
                 'filterOptions' => [
                     'class' => isset($clustersModel->os) ? 'filter-disabled' : '',
                 ]
             ],
             [
-                'attribute' => 'connection_type',
-                'label' => 'Conn. Type',
+                'attribute' => 'os_version',
                 'filterOptions' => [
-                    'class' => isset($clustersModel->connection_type) ? 'filter-disabled' : '',
+                    'class' => isset($clustersModel->os_version) ? 'filter-disabled' : '',
+                ]
+            ],
+            [
+                'attribute' => 'carrier',
+                'filterOptions' => [
+                    'class' => isset($clustersModel->carriers->carrier_name) ? 'filter-disabled' : '',
                 ]
             ],
 

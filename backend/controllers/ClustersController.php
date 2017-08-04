@@ -176,6 +176,10 @@ class ClustersController extends Controller
         $availableModel->country = $clustersModel->country;
         $availableModel->os = $clustersModel->os;
         $availableModel->connection_type = $clustersModel->connection_type;
+        $availableModel->os_version = $clustersModel->os_version;
+        $availableModel->device_type = $clustersModel->device_type;
+        if(isset($clustersModel->Carriers_id))
+            $availableModel->carrier = $clustersModel->carriers->carrier_name;
 
         $availableProvider = $availableModel->searchAvailable(Yii::$app->request->queryParams, $id);
 

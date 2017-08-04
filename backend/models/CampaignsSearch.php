@@ -13,7 +13,6 @@ use app\models\Campaigns;
 class CampaignsSearch extends Campaigns
 {
     public $affiliateName;
-    public $carrierName;
     /**
      * @inheritdoc
      */
@@ -45,7 +44,7 @@ class CampaignsSearch extends Campaigns
     public function search($params)
     {
         $query = Campaigns::find();
-        $query->joinWith(['affiliates', 'carriers']);
+        $query->joinWith(['affiliates']);
         
         // add conditions that should always apply here
 
@@ -58,6 +57,7 @@ class CampaignsSearch extends Campaigns
             'Campaigns.id',
             'landing_url',
             'Campaigns.name',
+            'Campaigns.carrier',
             'payout',
             'Affiliates.name AS affiliate',
             'Campaigns.os',
@@ -65,7 +65,6 @@ class CampaignsSearch extends Campaigns
             'Campaigns.connection_type',
             'Campaigns.country',
             'Campaigns.device_type',
-            'Carriers.carrier_name AS carrier'
         ]);
 
         $this->load($params);
@@ -76,14 +75,7 @@ class CampaignsSearch extends Campaigns
             // in my case they are prefixed with "tbl_"
             'asc' => ['Affiliates.name' => SORT_ASC],
             'desc' => ['Affiliates.name' => SORT_DESC],
-        ];
-
-        $dataProvider->sort->attributes['carrierName'] = [
-            // The tables are the ones our relation are configured to
-            // in my case they are prefixed with "tbl_"
-            'asc' => ['Carriers.carrier_name' => SORT_ASC],
-            'desc' => ['Carriers.carrier_name' => SORT_DESC],
-        ];        
+        ];      
 
         if (!$this->validate()) {
             // uncomment the following line if you do not want to return any records when validation fails
@@ -95,7 +87,6 @@ class CampaignsSearch extends Campaigns
         $query->andFilterWhere([
             'Campaigns.id' => $this->id,
             'Affiliates_id' => $this->Affiliates_id,
-            'Carriers_id' => $this->Carriers_id,
             'payout' => $this->payout,
         ]);
 
@@ -104,6 +95,7 @@ class CampaignsSearch extends Campaigns
             ->andFilterWhere(['like', 'creative_320x50', $this->creative_320x50])
             ->andFilterWhere(['like', 'creative_300x250', $this->creative_300x250])
             ->andFilterWhere(['like', 'country', $this->country])
+            ->andFilterWhere(['like', 'carrier', $this->carrier])
             ->andFilterWhere(['like', 'os', $this->os])
             ->andFilterWhere(['like', 'os_version', $this->os_version])
             ->andFilterWhere(['like', 'device_type', $this->device_type])
@@ -116,7 +108,7 @@ class CampaignsSearch extends Campaigns
     public function searchAvailable($params, $clusterID)
     {
         $query = Campaigns::find();
-        $query->joinWith(['affiliates', 'carriers']);
+        $query->joinWith(['affiliates']);
 
         $subQuery = ClustersHasCampaigns::find()->where(['Clusters_id'=>$clusterID]);
         $query->leftJoin(['cc' => $subQuery], 'Campaigns.id = cc.Campaigns_id');
@@ -145,10 +137,9 @@ class CampaignsSearch extends Campaigns
 
         // grid filtering conditions
         $query->andFilterWhere([
-            'Campaigns.id' => $this->id,
+            'Campaigns.id'  => $this->id,
             'Affiliates_id' => $this->Affiliates_id,
-            'Carriers_id' => $this->Carriers_id,
-            'payout' => $this->payout,
+            'payout'        => $this->payout,
         ]);
 
         $query->andFilterWhere(['like', 'Campaigns.name', $this->name])
@@ -158,10 +149,12 @@ class CampaignsSearch extends Campaigns
             ->andFilterWhere(['like', 'Affiliates.name', $this->affiliateName])
             // ->andFilterWhere(['like', 'country', $this->country])
             // ->andFilterWhere(['like', 'os', $this->os])
-            ->andFilterWhere(['>=', 'os_version', $this->os_version])
-            ->andFilterWhere(['like', 'device_type', $this->device_type])
+            // ->andFilterWhere(['>=', 'os_version', $this->os_version])
+            // ->andFilterWhere(['like', 'device_type', $this->device_type])
             //->andFilterWhere(['like', 'connection_type', $this->connection_type])
             ;
+
+        // NOTE: '=> null' doesn't work with andFilterWhere(), use filterWhere()
 
         if(isset($this->country))
             $query->andWhere([
@@ -176,12 +169,33 @@ class CampaignsSearch extends Campaigns
                 ['os' => null], 
                 ['like', 'os', $this->os]
                 ]);
+
+        if(isset($this->os_version))
+            $query->andWhere([
+                'or', 
+                ['os_version' => null], 
+                ['>=', 'os_version', $this->os_version]
+                ]);
         
         if(isset($this->connection_type))
-            $query->andFilterWhere([
+            $query->andWhere([
                 'or', 
                 ['connection_type' => null], 
                 ['like', 'connection_type', $this->connection_type]
+                ]);
+
+        if(isset($this->device_type))
+            $query->andWhere([
+                'or', 
+                ['device_type' => null], 
+                ['like', 'device_type', $this->device_type]
+                ]);
+
+        if(isset($this->carrier))
+            $query->andWhere([
+                'or', 
+                ['carrier' => null], 
+                ['sounds like', 'carrier', $this->carrier]
                 ]);
 
         //$query->where(['country' => null])->orWhere(['=', 'country', $this->country]);

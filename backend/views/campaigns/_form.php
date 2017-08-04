@@ -10,7 +10,6 @@ use yii\helpers\ArrayHelper;
 /* @var $form yii\widgets\ActiveForm */
 
 $affiliates = models\Affiliates::find()->asArray()->all();
-$carriers        = models\Carriers::find()->asArray()->all();
 ?>
 
 <div class="box box-info">
@@ -50,18 +49,18 @@ $carriers        = models\Carriers::find()->asArray()->all();
 
     <?= $form->field($model, 'country')->dropDownList($country_list, ['prompt' => '', 'id' => 'countryList']) ?>
 
-    <?= $form->field($model, 'Carriers_id')->dropDownList($carrier_list, ['prompt' => '', 'id' => 'carrierList']) ?>
-
     <?= $form->field($model, 'connection_type')->dropDownList([ '3g' => '3g', 'wifi' => 'Wifi', ], ['prompt' => '']) ?>    
+
+    <?= $form->field($model, 'device_type')->dropDownList([ 'Desktop' => 'Desktop', 'Smartphone' => 'Smartphone', 'Tablet' => 'Tablet', 'Other' => 'Other' ], ['prompt' => '']) ?>
 
     </div>
     <div class="col-md-6">
     
-    <?= $form->field($model, 'device_type')->dropDownList([ 'Desktop' => 'Desktop', 'Smartphone' => 'Smartphone', 'Tablet' => 'Tablet', 'Other' => 'Other' ], ['prompt' => '']) ?>
-
     <?= $form->field($model, 'os')->dropDownList([ 'Android' => 'Android', 'iOS' => 'iOS', 'Windows' => 'Windows', 'BlackBerry' => 'BlackBerry' ], ['prompt' => '']) ?>
 
     <?= $form->field($model, 'os_version')->textInput(['type' => 'number']) ?>
+
+    <?= $form->field($model, 'carrier')->textInput(['maxlength' => true]) ?>
 
     <?= $form->field($model, 'landing_url')->textInput(['maxlength' => true]) ?>
 

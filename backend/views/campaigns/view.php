@@ -38,10 +38,7 @@ $this->params['breadcrumbs'][] = $this->title;
             'device_type',
             'os',
             'os_version',            
-            [
-                'label'     => 'Carrier',
-                'attribute' => 'carriers.carrier_name'
-            ],            
+            'carrier',           
             'landing_url:url',
             'creative_320x50',
             'creative_300x250',
