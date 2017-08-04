@@ -161,10 +161,28 @@ class CampaignsSearch extends Campaigns
             ->andFilterWhere(['>=', 'os_version', $this->os_version])
             ->andFilterWhere(['like', 'device_type', $this->device_type])
             //->andFilterWhere(['like', 'connection_type', $this->connection_type])
-            ->andWhere(['or', ['connection_type' => null], ['like', 'connection_type', $this->connection_type]])
-            ->andWhere(['or', ['country' => null], ['=', 'country', $this->country]])
-            ->andWhere(['or', ['os' => null], ['like', 'os', $this->os]])
             ;
+
+        if(isset($this->country))
+            $query->andWhere([
+                'or', 
+                ['country' => null], 
+                ['=', 'country', $this->country]
+                ]);
+        
+        if(isset($this->os))
+            $query->andWhere([
+                'or', 
+                ['os' => null], 
+                ['like', 'os', $this->os]
+                ]);
+        
+        if(isset($this->connection_type))
+            $query->andFilterWhere([
+                'or', 
+                ['connection_type' => null], 
+                ['like', 'connection_type', $this->connection_type]
+                ]);
 
         //$query->where(['country' => null])->orWhere(['=', 'country', $this->country]);
         //$query->andWhere(['os' => null])->orWhere(['like', 'os', $this->os]);
