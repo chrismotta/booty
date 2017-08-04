@@ -134,12 +134,25 @@ if(isset($dataProvider)){
             {
                 case 'imps':
                 case 'convs':
+                case 'revenue_ecpm':
+                case 'cost_ecpm':
+                case 'profit':
+                case 'profit_ecpm':
                 case 'clicks':
                     $columns[$p] = [
                         'attribute' => $column,
                         'footer'    => isset($totals[0]) ? $totals[0][$column] : null,
                     ];
                 break;                   
+                case 'conv_rate':
+                    $columns[$p] = [
+                        'attribute' => $column,
+                        'footer'    => isset($totals[0]) ? '% '.number_format($totals[0][$column],2) : null,
+                        'value' => function($model, $key, $index, $widget) {
+                          return '% '.number_format($model->conv_rate,2);
+                        },
+                    ];
+                break; 
                 case 'revenue':
                     $columns[$p] = [
                         'attribute' => $column,
@@ -148,7 +161,7 @@ if(isset($dataProvider)){
                           return '$ '.number_format($model->revenue,6);
                         },
                     ];
-                break;            
+                break;                             
                 case 'cost':
                     $columns[$p] = [
                         'attribute' => $column,

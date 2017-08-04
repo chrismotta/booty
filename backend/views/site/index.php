@@ -68,7 +68,7 @@ foreach ( $byCountry as $data )
 }
 
 if ( $yesterdayImps > 0 && $totalImps > 0 )
-  $todayYesterdayImps = number_format(floor($totalImps*100/$yesterdayImps),0);
+  $todayYesterdayImps = number_format(floor($yesterdayImps*100/$totalImps),0);
 else if ( $totalImps > 0 )
   $todayYesterdayImps = 100;
 else
@@ -76,7 +76,7 @@ else
 
 
 if ( $yesterdayUsers > 0 && $totalUsers > 0 )
-  $todayYesterdayUsers = number_format(floor($totalUsers*100/$yesterdayUsers),0);
+  $todayYesterdayUsers = number_format(floor($yesterdayUsers*100/$totalUsers),0);
 else if ( $totalUsers > 0 )
   $todayYesterdayUsers = 100;
 else
@@ -84,18 +84,18 @@ else
 
 
 if ( $yesterdayConvs > 0 && $totalConvs > 0 )
-  $todayYesterdayConvs = number_format(floor($totalConvs*100/$yesterdayConvs),0);
+  $todayYesterdayConvs = number_format(floor($yesterdayConvs*100/$totalConvs),0);
 else if ( $totalConvs > 0 )
   $todayYesterdayConvs = 100;
 else
   $todayYesterdayConvs = 0;
 
 
-$convRate = $totalConvs>0 ? $totalImps*100/$totalConvs : 0;
-$yesterdayConvRate = $totalConvs>0 ? $totalImps*100/$totalConvs : 0;
+$convRate = $totalConvs>0 ? $totalConvs*100/$totalImps : 0;
+$yesterdayConvRate = $totalConvs>0 ? $totalConvs*100/$totalImps : 0;
 
 if( $yesterdayConvRate > 0 && $convRate > 0 ) 
-  $todayYesterdayRate = $convRate*100/$yesterdayConvRate;
+  $todayYesterdayRate = $yesterdayConvRate*100/$convRate;
 else if ( $convRate > 0 )
   $todayYesterdayRate = 100;
 else

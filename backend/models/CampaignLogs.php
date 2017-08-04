@@ -42,6 +42,11 @@ class CampaignLogs extends \yii\db\ActiveRecord
     public $subpub_id;
     public $exchange_id;
     public $device_id;
+    public $revenue_ecpm;
+    public $cost_ecpm;
+    public $profit_ecpm;
+    public $profit;
+    public $conv_rate;
 
     /**
      * @inheritdoc
@@ -71,16 +76,20 @@ class CampaignLogs extends \yii\db\ActiveRecord
     public function attributeLabels()
     {
         return [
-            'click_id' => 'Click ID',
+            'click_id'      => 'Click ID',
             'D_Campaign_id' => 'Campaign ID',
-            'session_hash' => 'Session Hash',
-            'click_time' => 'Click Time',
-            'conv_time' => 'Conv Time',
-            'revenue' => 'Revenue',
-            'pub_id' => 'Pub ID',
-            'subpub_id' => 'Subpub ID',
-            'exchange_id' => 'Exchange ID',
-            'device_id' => 'Device ID',
+            'session_hash'  => 'Session Hash',
+            'click_time'    => 'Click Time',
+            'conv_time'     => 'Conv Time',
+            'revenue'       => 'Revenue',
+            'pub_id'        => 'Pub ID',
+            'subpub_id'     => 'Subpub ID',
+            'exchange_id'   => 'Exchange ID',
+            'device_id'     => 'Device ID',
+            'profit'        => 'Profit',
+            'revenue_ecpm'  => 'Revenue eCPM',
+            'cost_ecpm'     => 'Cost eCPM',
+            'profit_ecpm'   => 'Profit eCPM'
         ];
     }
 

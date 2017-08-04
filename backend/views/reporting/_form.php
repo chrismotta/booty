@@ -344,8 +344,13 @@ if ( isset($params['exchange_id']) && $params['exchange_id'] ){
                 'imps'      => 'Imps',
                 'clicks'    => 'Clicks',
                 'convs'     => 'Convs',
+                'conv_rate' => 'Conv. Rate',
                 'cost'      => 'Cost',
-                'revenue'   => 'Revenue'           
+                'revenue'   => 'Revenue',
+                'profit'    => 'Profit',
+                'revenue_ecpm' => 'Revenue eCPM',
+                'cost_ecpm'    => 'Cost eCPM',
+                'profit_ecpm'  => 'Profit eCPM'          
             ],
             [
                 'item' => function ($index, $label, $name, $checked, $value) {
