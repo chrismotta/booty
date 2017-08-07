@@ -138,7 +138,9 @@ class PlacementsController extends Controller
      */
     public function actionDelete($id)
     {
-        $this->findModel($id)->delete();
+        $model = $this->findModel($id);
+        $model->status = 'archived';
+        $model->save();
 
         $cache = new \Predis\Client( \Yii::$app->params['predisConString'] );
         $cache->del( 'placement:'.$id );

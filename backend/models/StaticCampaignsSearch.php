@@ -67,6 +67,8 @@ class StaticCampaignsSearch extends StaticCampaigns
             ->andFilterWhere(['like', 'creative_300x250', $this->creative_300x250])
             ->andFilterWhere(['like', 'creative_320x50', $this->creative_320x50]);
 
+        $query->andWhere(['!=', 'StaticCampaigns.status', 'archived']);
+
         return $dataProvider;
     }
 }

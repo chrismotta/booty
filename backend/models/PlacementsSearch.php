@@ -69,7 +69,7 @@ class PlacementsSearch extends Placements
             'Clusters.name as cluster',
             'model',
             'size',
-            'status',
+            'Placements.status',
         ]);
 
         $this->load($params);
@@ -92,8 +92,10 @@ class PlacementsSearch extends Placements
 
         $query->andFilterWhere(['like', 'Placements.name', $this->name])
             ->andFilterWhere(['like', 'model', $this->model])
-            ->andFilterWhere(['like', 'status', $this->status])
+            ->andFilterWhere(['like', 'Placements.status', $this->status])
             ->andFilterWhere(['like', 'size', $this->size]);
+
+        $query->andWhere(['!=', 'Placements.status', 'archived']);
 
         return $dataProvider;
     }

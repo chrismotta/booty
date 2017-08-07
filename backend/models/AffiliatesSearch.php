@@ -82,6 +82,8 @@ class AffiliatesSearch extends Affiliates
             ->andFilterWhere(['like', 'user_id', $this->user_id])
             ->andFilterWhere(['like', 'api_key', $this->api_key]);
 
+        $query->andWhere(['!=', 'Affiliates.status', 'archived']);
+
         return $dataProvider;
     }
 }

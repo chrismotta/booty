@@ -91,6 +91,8 @@ class ClustersSearch extends Clusters
             ->andFilterWhere(['like', 'os_version', $this->os_version])
             ->andFilterWhere(['like', 'os', $this->os]);
 
+        $query->andWhere(['!=', 'Clusters.status', 'archived']);
+        
         return $dataProvider;
     }
 }

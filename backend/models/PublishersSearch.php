@@ -79,6 +79,8 @@ class PublishersSearch extends Publishers
         $query->andFilterWhere(['like', 'name', $this->name])
             ->andFilterWhere(['like', 'short_name', $this->short_name]);
 
+        $query->andWhere(['!=', 'Publishers.status', 'archived']);
+
         return $dataProvider;
     }
 }

@@ -101,6 +101,7 @@ class CampaignsSearch extends Campaigns
             ->andFilterWhere(['like', 'device_type', $this->device_type])
             ->andFilterWhere(['like', 'connection_type', $this->connection_type]);
 
+        $query->andWhere(['!=', 'Campaigns.status', 'archived']);
 
         return $dataProvider;
     }
@@ -201,6 +202,7 @@ class CampaignsSearch extends Campaigns
         //$query->where(['country' => null])->orWhere(['=', 'country', $this->country]);
         //$query->andWhere(['os' => null])->orWhere(['like', 'os', $this->os]);
         $query->andWhere(['cc.Clusters_id' => null]);
+        $query->andWhere(['!=', 'Campaigns.status', 'archived']);
 
         //var_export( $query->createCommand()->getRawSql() );die();
 
