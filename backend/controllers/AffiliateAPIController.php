@@ -7,6 +7,9 @@ use Predis;
 class AffiliateAPIController extends \yii\web\Controller
 {
 
+	const NOTIFY_INBOX = '';
+	const ALERTS_INBOX = '';
+
 	protected $_notifications = [];
 	protected $_redis;
 
@@ -85,52 +88,55 @@ class AffiliateAPIController extends \yii\web\Controller
 
     protected function _checkChanges ( $api_class, Campaigns $campaign, array $campaignData )
     {
-    	$id = $campaign->id;
-
-    	$this->_notifications[$api_class][$id] = [
-    		'changes' 	=> [],
-    		'clusters'	=> []
-    	];
+    	$id 	 = $campaign->id;
+    	$changes = [];
 
     	if ( $campaign->payout != $campaignData['payout'] )
-    		$this->_notifications[$api_class][$id]['changes'][] = 'payout';
+    		$changes[] = 'payout';
 
 
 		$countryList = json_encode($campaign->countries);
-		if ( empty( array_diff( $countryList['countries'], $campaignData['countries'] ) ) )
-    		$this->_notifications[$api_class][$id]['changes'][] = 'countries';	
+		if ( empty( array_diff( $countryList, $campaignData['countries'] ) ) )
+    		$changes[] = 'countries';	
 
 
 		$deviceList  = json_encode($campaign->device_types);
-		if ( empty( array_diff( $deviceList['devices_types'], $campaignData['device_types'] ) ) ) 
-    		$this->_notifications[$api_class][$id]['changes'][] = 'devices';   	
+		if ( empty( array_diff( $deviceList, $campaignData['device_types'] ) ) ) 
+    		$changes[] = 'devices';   	
 
 
-    	if ( !empty($this->_notifications[$api_class][$id]['changes']) )
+    	if ( !empty($changes) )
     	{
+    		$clusters 			  = [];
 			$clustersHasCampaigns = models\ClustersHasCampaigns::findAll( ['Campaigns_id' => $campaign->id] );
+
+			switch ( $campaignData['status'] )
+			{
+				case 'active':
+					$status = 1;
+				break;
+				default:
+					$status = 0;
+				break;
+			}
 
 			foreach ( $clusterHasCampaigns as $assign )
 			{
-				$this->_notifications[$api_class]['clusters'][] = $clusterHasCampaigns['Clusters_id'];
+				$clusters[] = $clusterHasCampaigns['Clusters_id'];
 
 				if ( $campaign->status != $campaignData['status'] )
 				{
-					switch ( $campaignData['status'] )
-					{
-						case 'active':
-							$status = 1;
-						break;
-						default:
-							$status = 0;
-						break;
-					}
-
 					$this->_redis->zadd( 'clusterlist:'.$clusterHasCampaigns['Clusters_id'], $status, $campaign->id );
-
-    				$this->_notifications[$api_class]['changes'][] = 'status';
 				}
 			}
+
+			if ( $campaign->status != $campaignData['status'] )
+				$changes[] = 'status';
+
+	    	$this->_notifications[$api_class][$id] = [
+	    		'changes' 	=> $changes,
+	    		'clusters'	=> $clusters
+	    	];  			
     	}
     }
 
