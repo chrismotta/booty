@@ -1,0 +1,91 @@
+<?php
+
+	namespace backend\components;
+
+	use Yii;
+	use yii\base\Component;
+	use yii\base\InvalidConfigException;
+	 
+	class RegamingAPI extends Component
+	{
+
+		const URL = 'http://api.regaming.com/affiliate/offer/findAll/?approved=1';
+
+		protected $_msg;
+		protected $_status;
+
+		public function request ( $api_key, $user_id = null  )
+		{
+			$url    = self::URL + '&token='.$api_key;
+			$curl   = curl_init($apiurl);
+
+			curl_setopt($curl, CURLOPT_HEADER, false);
+			curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+
+			$json_response = curl_exec($curl);
+
+			$response = json_decode($json_response);
+
+			$this->_status = curl_getinfo( $curl, CURLINFO_HTTP_CODE );
+
+			if ( !$response )
+			{
+				return false;
+			}
+			else if ( isset($response['error_messages']) && $response['error_messages'] )
+			{
+				$this->_msg = $response['error_messages'];
+			}
+
+			$result = [];
+
+			foreach ( $response['offers'] AS $ext_id => $campaign )
+			{
+				if ( isset($campaign['Countries']) && $campaign['Countries'] && is_array($campaign['Countries']) )
+				{
+					$countries = $campaign['Countries'];
+				}
+				else
+				{
+					$countries = explode( ',' , $campaign['Countries'] );
+				}
+
+				if ( isset($campaign['Platforms']) && $campaign['Platforms'] && is_array($campaign['Platforms']) )
+				{
+					$deviceTypes = $campaign['Platforms'];
+				}
+				else
+				{
+					$deviceTypes = explode( ',' , $campaign['Platforms'] );
+				}				
+
+				switch ( strtolower($campaign['Status']) )
+				{
+					case 'active':
+						$status = 'active';
+					break;
+					default:
+						$status = 'paused';
+					break;
+				}
+
+				$result[] = [
+					'ext_id' 			=> $ext_id,
+					'name'				=> $campaign['Name'],
+					'payout' 			=> $campaign['Payout'],
+					'landing_url'		=> $campaign['Tracking_url'],
+					'countries'			=> $countries,
+					'device_types'		=> $deviceTypes,
+					'connection_types'	=> null,
+					'carriers'			=> null,
+					'status'			=> $status,
+					'currency'			=> $campaign['currency']
+				];
+			}
+
+			return $result;
+		}
+
+	}
+
+?>

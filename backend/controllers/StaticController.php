@@ -85,8 +85,8 @@ class StaticController extends Controller
     {
         $model = $this->findModel($id);
 
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
-
+        if ($model->load(Yii::$app->request->post()) && $model->save()) 
+        {
             $cache = new \Predis\Client( \Yii::$app->params['predisConString'] );
             $clusters = models\Clusters::findAll( ['StaticCampaigns_id' => $model->id] );
 
@@ -98,6 +98,7 @@ class StaticController extends Controller
                     'static_cp_320x50'  => $model->creative_320x50 
                 ]);
             }
+
             return $this->redirect(['view', 'id' => $model->id]);
         } else {
             return $this->render('update', [
