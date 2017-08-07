@@ -156,3 +156,13 @@ a.desc:after {
     pointer-events: none;
     background-color: #eee;
 }
+
+.deep-link:hover {
+    cursor: pointer;
+}
+.deep-link:hover td {
+    color: #3c8dbc;
+}
+.prevent-deep-link {
+    cursor: default;
+}

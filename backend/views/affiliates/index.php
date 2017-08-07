@@ -1,11 +1,12 @@
 <?php
 
 use yii\helpers\Html;
+use yii\helpers\Url;
+use yii\helpers\ArrayHelper;
 use yii\grid\GridView;
 use yii\widgets\Pjax;
 use app\models;
 use kartik\select2\Select2;
-use yii\helpers\ArrayHelper;
 /* @var $this yii\web\View */
 /* @var $searchModel app\models\AffiliatesSearch */
 /* @var $dataProvider yii\data\ActiveDataProvider */
@@ -32,9 +33,16 @@ $filterByUser = ArrayHelper::map(
 <?php Pjax::begin(); ?>    <?= GridView::widget([
         'dataProvider' => $dataProvider,
         'filterModel' => $searchModel,
+        'rowOptions' => function ($model, $key, $index, $grid) {
+                return [
+                'class' => 'deep-link',
+                'data-child' => Url::to([
+                    '/campaigns', 
+                    'CampaignsSearch[Affiliates_id]'=>$key
+                    ]),
+                ];
+            },
         'columns' => [
-
-
             'id',
             'name',
             'short_name',
@@ -57,7 +65,10 @@ $filterByUser = ArrayHelper::map(
                 ]),                
             ],
 
-            ['class' => 'yii\grid\ActionColumn'],
+            [
+            'class' => 'yii\grid\ActionColumn',
+            'contentOptions' => ['class'=>'prevent-deep-link'],
+            ],
         ],
     ]); ?>
 <?php Pjax::end(); ?></div>

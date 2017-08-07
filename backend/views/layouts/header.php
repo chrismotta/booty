@@ -77,7 +77,7 @@ $username = isset( Yii::$app->user->identity->username ) ? Yii::$app->user->iden
                         <!-- User image -->
 
                         <li class="user-header">
-                            <img src="img/generic_user.png" class="img-circle"
+                            <img src="<?php echo Yii::$app->homeUrl?>img/generic_user.png" class="img-circle"
                                  alt="User Image"/>
 
                             <p>

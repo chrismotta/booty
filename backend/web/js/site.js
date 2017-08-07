@@ -31,10 +31,9 @@ $(document).ready(function(){
 });
 
 function deepLink(){
-	$('.deep-link').click(function(event){
-		console.log( 'Key: '+$(this).attr('data-key') );
-		console.log( 'Child: '+$(this).attr('data-child') );
-		window.location.href = $(this).attr('data-child');
+	$('.deep-link td:not(.prevent-deep-link)').click(function(event){
+		// console.log( 'URL: ' + $(this).attr('data-child') );
+		window.location.href = $(this).parent().attr('data-child');
 	});
 }
 
