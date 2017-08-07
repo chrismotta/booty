@@ -164,7 +164,7 @@ else
           <div class="info-box bg-aqua">
             <span class="info-box-icon"><i class="fa fa-download"></i></span>
             <div class="info-box-content">
-              <span class="info-box-text">Installs</span>
+              <span class="info-box-text">Conversions</span>
               <span class="info-box-number"><?php echo $totalConvs ?></span>
               <!-- The progress section is optional -->
               <div class="progress">
