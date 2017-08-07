@@ -79,7 +79,6 @@ class CampaignsController extends Controller
         } else {
             return $this->render('create', [
                 'model' => $model,
-                'country_list' => Countries::getList(), 
             ]);
         }
     }
@@ -107,7 +106,6 @@ class CampaignsController extends Controller
         } else {
             return $this->render('update', [
                 'model' => $model,
-                'country_list' => Countries::getList(), 
             ]);
         }
     }

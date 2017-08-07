@@ -29,7 +29,7 @@ $carriers        = models\Carriers::find()->asArray()->all();
 
     <?= $form->field($model, 'Carriers_id')->dropDownList($carrier_list, ['prompt' => '', 'id' => 'carrierList']) ?>
 
-    <?= $form->field($model, 'connection_type')->dropDownList([ '3g' => '3g', 'wifi' => 'Wifi', ], ['prompt' => '']) ?>
+    <?= $form->field($model, 'connection_type')->dropDownList([ 'Carrier' => 'Carrier', 'wifi' => 'Wifi', ], ['prompt' => '']) ?>
 
     </div>
     <div class="col-md-6">
