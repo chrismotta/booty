@@ -2,10 +2,13 @@
 
 namespace backend\controllers;
 
+use Predis;
+
 class AffiliateAPIController extends \yii\web\Controller
 {
 
 	protected $_notifications = [];
+	protected $_redis;
 
 
 	protected function _apiRules ( )
@@ -20,7 +23,9 @@ class AffiliateAPIController extends \yii\web\Controller
 
 
     public function actionIndex()
-    {
+    {	
+    	$this->_redis = new \Predis\Client( \Yii::$app->params['predisConString'] );
+
     	foreach ( $this->_enabledAPIs() AS $rule )
     	{
     		$api 		= new $rule['class'];
@@ -37,18 +42,21 @@ class AffiliateAPIController extends \yii\web\Controller
     					$campaign = Campaigns::find([ 'ext_id' => $campaignData['ext_id'] ]);
 
     					if  ( $campaign )
-    						$this->_checkChanges( $campaign, $campaignData );
+    						$this->_checkChanges( $rule['class'], $campaign, $campaignData );
     					else
     						$campaign = new Campaigns;
 
     					$campaign->name    		= $campaignData['name'];
+    					$campaign->status  		= $campaignData['status'];
     					$campaign->ext_id  		= $campaignData['ext_id'];
     					$campaign->payout  		= $campaignData['payout'];
     					$campaign->landing_url  = $campaignData['landing_url'];
     					$campaign->countries  	= $campaignData['countries'];
     					$campaign->device_types = $campaignData['device_types'];
 
-    					$campaign->save();   					
+    					$campaign->save();
+
+    					unset( $campaign );				
     				}
     			}
     			else
@@ -75,40 +83,53 @@ class AffiliateAPIController extends \yii\web\Controller
     }
 
 
-    protected function _checkChanges ( Campaigns $campaign, array $campaignData )
+    protected function _checkChanges ( $api_class, Campaigns $campaign, array $campaignData )
     {
     	$id = $campaign->id;
 
-    	$this->_notifications[$id] = [
-    		'payout' 	=> false,
-    		'country'	=> false,
-    		'carrier'	=> false,
-    		'device'	=> false,
-    		'clusters'	=> false
+    	$this->_notifications[$api_class][$id] = [
+    		'changes' 	=> [],
+    		'clusters'	=> []
     	];
 
-
     	if ( $campaign->payout != $campaignData['payout'] )
-    		$this->_notifications[$id]['payout'] = true;
+    		$this->_notifications[$api_class][$id]['changes'][] = 'payout';
 
 
 		$countryList = json_encode($campaign->countries);
 		if ( empty( array_diff( $countryList['countries'], $campaignData['countries'] ) ) )
-    		$this->_notifications[$id]['country'] = true;    	
+    		$this->_notifications[$api_class][$id]['changes'][] = 'countries';	
 
 
-		$deviceList = json_encode($campaign->device_types);
-		if ( empty( array_diff( $deviceList['devices_types'], $campaignData['device_types'] ) ) )			
-    		$this->_notifications[$id]['device'] = true;    	
+		$deviceList  = json_encode($campaign->device_types);
+		if ( empty( array_diff( $deviceList['devices_types'], $campaignData['device_types'] ) ) ) 
+    		$this->_notifications[$api_class][$id]['changes'][] = 'devices';   	
 
 
-    	if ( isset($this->_notifications[$id]) && !empty($this->_notifications[$id]) )
+    	if ( !empty($this->_notifications[$api_class][$id]['changes']) )
     	{
 			$clustersHasCampaigns = models\ClustersHasCampaigns::findAll( ['Campaigns_id' => $campaign->id] );
 
 			foreach ( $clusterHasCampaigns as $assign )
 			{
-				$this->_notifications[$id]['clusters'][] = $clusterHasCampaigns['Clusters_id'];
+				$this->_notifications[$api_class]['clusters'][] = $clusterHasCampaigns['Clusters_id'];
+
+				if ( $campaign->status != $campaignData['status'] )
+				{
+					switch ( $campaignData['status'] )
+					{
+						case 'active':
+							$status = 1;
+						break;
+						default:
+							$status = 0;
+						break;
+					}
+
+					$this->_redis->zadd( 'clusterlist:'.$clusterHasCampaigns['Clusters_id'], $status, $campaign->id );
+
+    				$this->_notifications[$api_class]['changes'][] = 'status';
+				}
 			}
     	}
     }
@@ -131,9 +152,17 @@ class AffiliateAPIController extends \yii\web\Controller
     {
     	$content = '';
 
-    	foreach ( $this->_notifications AS $id => $data )
+    	foreach ( $this->_notifications AS $api => $notifications )
     	{
-
+    		foreach ( $notifiactions AS $cid => $data )
+    		{
+    			$content .= '
+                    <td>'.$api.'</td>
+                    <td>'.$cid.'</td>
+                    <td>'.implode( ',', $data['changes'] ).'</td>
+                   	<td>'.implode( ',', $data['clusters'] ).'</td>
+    			';
+    		}
     	}
 
 		$html = '
@@ -145,17 +174,14 @@ class AffiliateAPIController extends \yii\web\Controller
                         <thead>
                             <td>API</td>
                             <td>CAMPAIGN ID</td>
-                            <td>PAYOUT CHANGE</td>
-                            <td>COUNTRY CHANGE</td>
-                            <td>DEVICE CHANGE</td>
-                            <td>CARRIER CHANGE</td>
-                            <td>CONN. TYPE CHANGE</td>
+                            <td>CHANGES</td>
+                           	<td>AFFECTED CLUSTERS</td>
                         </thead>
                         <tbody>'.$content.'</tbody>
                     </table>
                 </body>
             </html>		
 		';    	
-    }    
+    }
 
 }
