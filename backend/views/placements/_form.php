@@ -77,11 +77,6 @@ $clusters         = models\Clusters::find()->asArray()->all();
 
     <?= $form->field($model, 'size')->dropDownList([ '300x250' => '300x250', '320x50' => '320x50', ], ['prompt' => '']) ?>
 
-    <?php 
-        $model->health_check_imps = 10000;
-        $model->status = 'health_check';
-    ?>
-
     <?= $form->field($model, 'status')->dropDownList([ 'health_check' => 'Health check', 'active' => 'Active', 'testing' => 'Testing', 'paused' => 'Paused', ], ['prompt' => '']) ?>
 
     <?= $form->field($model, 'health_check_imps')->textInput() ?>
