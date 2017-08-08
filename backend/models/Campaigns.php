@@ -94,11 +94,15 @@ class Campaigns extends \yii\db\ActiveRecord
 
     public function formatValues($property, $style){
         $list = json_decode($this[$property]);
+
         $return = '';
-        foreach ($list as $value) {
-            $return.= '<span class="label label-'.$style.'">'.$value.'</span> ';
+            
+        if(isset($list)){
+            foreach ($list as $value) {
+                $return.= '<span class="label label-'.$style.'">'.$value.'</span> ';
+            }
         }
-        $return.= '';
+
         return $return;
     }
 }
