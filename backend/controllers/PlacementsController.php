@@ -73,7 +73,6 @@ class PlacementsController extends Controller
                 'payout'          => $model->payout,
                 'model'           => $model->model,
                 'cluster_id'      => isset($model->clusters->id) ? $model->clusters->id : null,
-                // 'cluster_name'    => $model->clusters->name,
                 'status'          => $model->status,
                 'size'            => $model->size,
                 'imps'            => (int)$model->imps,

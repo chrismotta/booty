@@ -236,7 +236,18 @@ class ClustersController extends Controller
         $return = $campaign->assignToCluster($id);
 
         $cache = new \Predis\Client( \Yii::$app->params['predisConString'] );
-        $cache->sadd( 'clusterlist:'.$id, $campaign->id );
+
+        switch ( $campaign->status )
+        {
+            case 'active':
+                $status = 1;
+            break;
+            default:
+                $status = 0;
+            break;
+        }
+
+        $cache->zadd( 'clusterlist:'.$id, $status, $campaign->id );
         
         // debug
         // echo $return;
@@ -250,7 +261,7 @@ class ClustersController extends Controller
         $return = $campaign->unassignToCluster($id);
 
         $cache = new \Predis\Client( \Yii::$app->params['predisConString'] );
-        $cache->srem( 'clusterlist:'.$id, $campaign->id );
+        $cache->zrem( 'clusterlist:'.$id, $campaign->id );
 
         // debug
         // echo $return;
