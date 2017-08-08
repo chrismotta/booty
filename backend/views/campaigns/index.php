@@ -61,12 +61,48 @@ $filterByAffiliate = ArrayHelper::map(
             ],
             'name',
             'payout',
-            'country',
-            'connection_type',
-            'device_type',
-            'os',
-            'os_version',
-            'carrier',    
+            [
+                'attribute'=>'country',
+                'format'=>'html',
+                'value' => function($model, $key, $index){
+                    return $model->formatValues('country', 'success');
+                }
+            ],
+            [
+                'attribute'=>'connection_type',
+                'format'=>'html',
+                'value' => function($model, $key, $index){
+                    return $model->formatValues('connection_type', 'primary');
+                }
+            ],
+            [
+                'attribute'=>'device_type',
+                'format'=>'html',
+                'value' => function($model, $key, $index){
+                    return $model->formatValues('device_type', 'danger');
+                }
+            ],
+            [
+                'attribute'=>'os',
+                'format'=>'html',
+                'value' => function($model, $key, $index){
+                    return $model->formatValues('os', 'info');
+                }
+            ],
+            [
+                'attribute'=>'os_version',
+                'format'=>'html',
+                'value' => function($model, $key, $index){
+                    return $model->formatValues('os_version', 'default');
+                }
+            ],
+            [
+                'attribute'=>'carrier',
+                'format'=>'html',
+                'value' => function($model, $key, $index){
+                    return $model->formatValues('carrier', 'warning');
+                }
+            ],
             // 'landing_url:url',
             // 'creative_320x50',
             // 'creative_300x250',
