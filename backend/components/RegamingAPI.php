@@ -74,10 +74,10 @@
 					'name'				=> $campaign['Name'],
 					'payout' 			=> $campaign['Payout'],
 					'landing_url'		=> $campaign['Tracking_url'],
-					'countries'			=> $countries,
-					'device_types'		=> $deviceTypes,
-					'connection_types'	=> null,
-					'carriers'			=> null,
+					'country'			=> $countries,
+					'device_type'		=> $deviceTypes,
+					'connection_type'	=> null,
+					'carrier'			=> null,
 					'status'			=> $status,
 					'currency'			=> $campaign['currency']
 				];

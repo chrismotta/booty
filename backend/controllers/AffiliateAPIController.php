@@ -10,7 +10,7 @@ class AffiliateAPIController extends \yii\web\Controller
 	const NOTIFY_INBOX = '';
 	const ALERTS_INBOX = '';
 
-	protected $_notifications = [];
+	protected $_notifications;
 	protected $_redis;
 
 
@@ -27,6 +27,7 @@ class AffiliateAPIController extends \yii\web\Controller
 
     public function actionIndex()
     {	
+    	$this->_notifications = [];
     	$this->_redis = new \Predis\Client( \Yii::$app->params['predisConString'] );
 
     	foreach ( $this->_enabledAPIs() AS $rule )
@@ -54,8 +55,24 @@ class AffiliateAPIController extends \yii\web\Controller
     					$campaign->ext_id  		= $campaignData['ext_id'];
     					$campaign->payout  		= $campaignData['payout'];
     					$campaign->landing_url  = $campaignData['landing_url'];
-    					$campaign->countries  	= $campaignData['countries'];
-    					$campaign->device_types = $campaignData['device_types'];
+
+    					if ( $campaignData['country'] )
+    						$campaign->country  	= json_encode($campaignData['country']);
+
+    					if ( $campaignData['device_type'] )
+    						$campaign->device_type  = json_encode($campaignData['device_type']);
+
+    					if ( $campaignData['os'] )
+    						$campaign->os 			= json_encode($campaignData['os']);		
+
+    					if ( $campaignData['os_version'] )
+    						$campaign->os_version	= json_encode($campaignData['os_version']);		    								
+
+    					if ( $campaignData['carrier'] )
+    						$campaign->carrier 		= json_encode($campaignData['carrier']);		    					
+
+    					if ( $campaignData['connection_type'] )
+    						$campaign->connection_type = json_encode($campaignData['connection_type']);    					
 
     					$campaign->save();
 
@@ -70,7 +87,7 @@ class AffiliateAPIController extends \yii\web\Controller
     		}
     		catch ( Exception $e )
     		{
-    			$msg = '';    		
+    			$msg = '';
     			$this->_createAlert( $msg );
     			continue;
     		}
@@ -91,18 +108,27 @@ class AffiliateAPIController extends \yii\web\Controller
     	$id 	 = $campaign->id;
     	$changes = [];
 
+
     	if ( $campaign->payout != $campaignData['payout'] )
     		$changes[] = 'payout';
 
+		if ( empty( array_diff( json_decode($campaign->carrier), $campaignData['device_type'] ) ) )
+    		$changes[] = 'carrier'; 
 
-		$countryList = json_encode($campaign->countries);
-		if ( empty( array_diff( $countryList, $campaignData['countries'] ) ) )
-    		$changes[] = 'countries';	
+		if ( empty( array_diff( json_decode($campaign->connection_type), $campaignData['connection_type'] ) ) ) 
+    		$changes[] = 'connection type';   
 
+		if ( empty( array_diff( json_decode($campaign->country), $campaignData['country'] ) ) )
+    		$changes[] = 'country';	
 
-		$deviceList  = json_encode($campaign->device_types);
-		if ( empty( array_diff( $deviceList, $campaignData['device_types'] ) ) ) 
-    		$changes[] = 'devices';   	
+		if ( empty( array_diff( json_decode($campaign->device_type), $campaignData['device_type'] ) ) ) 
+    		$changes[] = 'device';   	
+
+		if ( empty( array_diff( json_decode($campaign->os), $campaignData['os'] ) ) ) 
+    		$changes[] = 'os';      	
+
+		if ( empty( array_diff( json_decode($campaign->os_version), $campaignData['os_version'] ) ) ) 
+    		$changes[] = 'os_version';   
 
 
     	if ( !empty($changes) )
@@ -165,6 +191,7 @@ class AffiliateAPIController extends \yii\web\Controller
     			$content .= '
                     <td>'.$api.'</td>
                     <td>'.$cid.'</td>
+                    <td>'.$cid.'</td>
                     <td>'.implode( ',', $data['changes'] ).'</td>
                    	<td>'.implode( ',', $data['clusters'] ).'</td>
     			';
@@ -180,7 +207,12 @@ class AffiliateAPIController extends \yii\web\Controller
                         <thead>
                             <td>API</td>
                             <td>CAMPAIGN ID</td>
-                            <td>CHANGES</td>
+                            <td>COUNTRY</td>
+                            <td>CARRIER</td>
+                            <td>CONNECTION</td>
+                            <td>DEVICE</td>
+                            <td>OS</td>
+                            <td>OS VERSION</td>
                            	<td>AFFECTED CLUSTERS</td>
                         </thead>
                         <tbody>'.$content.'</tbody>
