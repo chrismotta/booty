@@ -944,6 +944,26 @@ class EtlController extends \yii\web\Controller
                 'static_cp_300x250' => $model->staticCampaigns->creative_300x250,
                 'static_cp_320x50'  => $model->staticCampaigns->creative_320x50,
             ]);
+
+            $campaignsModel = new models\Campaigns;
+
+            $this->_redis->del( 'clusterlist:'.$model->id );
+
+            $campaigns = $campaignsModel->getByCluster( $model->id );
+
+            foreach ( $campaigns as $campaign )
+            {
+                switch ( $campaign->status )
+                {
+                    case 'active':
+                        $status = 1;
+                    break;
+                    default:
+                        $status = 0;
+                    break;
+                }
+                $this->_redis->zadd( 'clusterlist:'.$model->id, $status, $campaign->id );
+            }
         }
 
         $elapsed = time() - $start;

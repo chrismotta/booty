@@ -53,12 +53,38 @@
 
 				if ( isset($campaign->Platforms) && $campaign->Platforms && is_array($campaign->Platforms) )
 				{
-					$deviceTypes = $campaign->Platforms;
+					$os = $campaign->Platforms;
 				}
 				else
 				{
-					$deviceTypes = explode( ',' , $campaign->Platforms );
+					$os = explode( ',' , $campaign->Platforms );
 				}				
+
+				$oss 		 = [];
+				$deviceTypes = [];
+
+				foreach ( $os as $o )
+				{
+					switch ( $o )
+					{
+						case 'iPad':
+							$oss[] 		   = 'iOS';
+							$deviceTypes[] = 'Tablet';							
+						break;
+						case 'iPhone':
+							$oss[] 		   = 'iOS';
+							$deviceTypes[] = 'Smartphone';
+						break;
+						case 'Android':
+							$oss[]		   = $o;
+							$deviceTypes[] = 'Smartphone';
+						break;
+						default:
+							$oss[] 		   = $o;
+							$deviceTypes[] = 'Other'; 
+						break;
+					}
+				}
 
 				switch ( strtolower($campaign->Status) )
 				{
@@ -79,7 +105,7 @@
 					'device_type'		=> $deviceTypes,
 					'connection_type'	=> null,
 					'carrier'			=> null,
-					'os'				=> null,
+					'os'				=> $oss,
 					'os_version'		=> null,
 					'status'			=> $status,
 					'currency'			=> $campaign->Currency

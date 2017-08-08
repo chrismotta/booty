@@ -50,7 +50,7 @@ class AffiliatesapiController extends \yii\web\Controller
     			{
     				foreach ( $campaignsData AS $campaignData )
     				{
-    					$campaign = models\Campaigns::findAll([ 'ext_id' => $campaignData['ext_id'] ]);
+    					$campaign = models\Campaigns::findOne([ 'ext_id' => $campaignData['ext_id'] ]);
 
     					if  ( $campaign )
     						$this->_checkChanges( $rule['class'], $campaign, $campaignData );
@@ -114,10 +114,10 @@ class AffiliatesapiController extends \yii\web\Controller
     }
 
 
-    protected function _checkChanges ( $api_class, models\Campaigns $campaign, array $campaignData )
+    protected function _checkChanges ( $api_class, $campaign, array $campaignData )
     {
+    	$changes = '';
     	$this->_changed = false;
-
 
     	if ( $campaign->payout != $campaignData['payout'] )
 		{
@@ -166,9 +166,9 @@ class AffiliatesapiController extends \yii\web\Controller
 				break;
 			}
 
-			foreach ( $clusterHasCampaigns as $assign )
+			foreach ( $clustersHasCampaigns as $assign )
 			{
-				$clusters[] = $clusterHasCampaigns['Clusters_id'];
+				$clusters[] = $assign['Clusters_id'];
 
 				if ( $campaign->status != $campaignData['status'] )
 				{
@@ -176,7 +176,7 @@ class AffiliatesapiController extends \yii\web\Controller
 				}
 			}
 
-			$changes .= implode( ',', $clusters );
+			$changes .= '<td>'.implode( ',', $clusters ).'</td>';
     	}
     	else
     	{
@@ -189,6 +189,7 @@ class AffiliatesapiController extends \yii\web\Controller
 	    		<tr>
 	    			<td>'.$api_class.'</td>
 	    			<td>'.$campaign->id.'</td>
+	    			<td>'.$campaign->ext_id.'</td>
 	    			'.$changes.'
 	    		</tr>
 	    	';    		
@@ -196,14 +197,23 @@ class AffiliatesapiController extends \yii\web\Controller
     }
 
 
-    protected function _listChanges ( array $list1, array $list2 )
+    protected function _listChanges ( array $list1 = null, array $list2 = null )
     {
-    	$changes .= '';
+    	$changes = '';
 
+    	if ( !$list1 )
+    		$list1 = [];
+
+    	if ( !$list2 )
+    		$list2 = [];
+
+    	$first = true;
 		foreach ( array_diff($list2,$list1) AS $added )
 		{
-			if ( $changes == '' )
+			if ( $first ){
+				$first    = false;
 				$changes .= '<b>Added: </b>';
+			}
 			else
 				$changes .= ', ';
 
@@ -213,10 +223,13 @@ class AffiliatesapiController extends \yii\web\Controller
 		if ( $changes != '' )
 			$changes .= '<br><br>';
 
+		$first = true;
 		foreach ( array_diff($list1,$list2) AS $removed )
 		{
-			if ( $changes == '' )
+			if ( $first ){
+				$first    = false;
 				$changes .= '<b>Removed: </b>';
+			}
 			else
 				$changes .= ', ';
 
@@ -328,12 +341,15 @@ class AffiliatesapiController extends \yii\web\Controller
 	                        <thead>
 	                            <td>API</td>
 	                            <td>CAMPAIGN ID</td>
+	                            <td>EXT ID</td>
+	                            <td>PAYOUT</td>
 	                            <td>COUNTRY</td>
 	                            <td>CARRIER</td>
 	                            <td>CONNECTION</td>
 	                            <td>DEVICE</td>
 	                            <td>OS</td>
 	                            <td>OS VERSION</td>
+	                            <td>STATUS</td>
 	                           	<td>AFFECTED CLUSTERS</td>
 	                        </thead>
 	                        <tbody>'.$this->_changes.'</tbody>
