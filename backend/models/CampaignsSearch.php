@@ -161,7 +161,7 @@ class CampaignsSearch extends Campaigns
             $query->andWhere([
                 'or', 
                 ['country' => null], 
-                ['=', 'country', $this->country]
+                ['like', 'country', $this->country ]
                 ]);
         
         if(isset($this->os))
@@ -171,12 +171,12 @@ class CampaignsSearch extends Campaigns
                 ['like', 'os', $this->os]
                 ]);
 
-        if(isset($this->os_version))
-            $query->andWhere([
-                'or', 
-                ['os_version' => null], 
-                ['>=', 'os_version', $this->os_version]
-                ]);
+        // if(isset($this->os_version))
+        //     $query->andWhere([
+        //         'or', 
+        //         ['os_version' => null], 
+        //         ['>=', 'os_version', $this->os_version]
+        //         ]);
         
         if(isset($this->connection_type))
             $query->andWhere([
@@ -196,7 +196,7 @@ class CampaignsSearch extends Campaigns
             $query->andWhere([
                 'or', 
                 ['carrier' => null], 
-                ['sounds like', 'carrier', $this->carrier]
+                ['like', 'carrier', $this->carrier]
                 ]);
 
         //$query->where(['country' => null])->orWhere(['=', 'country', $this->country]);
@@ -240,5 +240,7 @@ class CampaignsSearch extends Campaigns
 
         return  $return;
     }
+
+
 
 }

@@ -57,8 +57,8 @@ $affiliates = models\Affiliates::find()->asArray()->all();
     <div class="col-md-6">
     
     <?= $form->field($model, 'os')->textInput(['maxlength' => true]) ?>
-
-    <?= $form->field($model, 'os_version')->textInput(['type' => 'number']) ?>
+    
+    <?= $form->field($model, 'os_version')->textInput(['maxlength' => true]) ?>
 
     <?= $form->field($model, 'carrier')->textInput(['maxlength' => true]) ?>
 

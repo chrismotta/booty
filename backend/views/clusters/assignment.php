@@ -9,6 +9,7 @@ use yii\widgets\Pjax;
 
 $clusterID = $clustersModel->id;
 $this->title = 'Cluster #'.$clusterID.' "'.$clustersModel->name.'": Assignment';
+$this->params['breadcrumbs'][] = ['label' => 'Clusters', 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 
@@ -30,12 +31,48 @@ $this->params['breadcrumbs'][] = $this->title;
                 'value'=>'affiliates.name',
             ],
             'name',
-            'country',
-            'connection_type',
-            'device_type',
-            'os',
-            'os_version',
-            'carrier',
+            [
+                'attribute'=>'country',
+                'format'=>'html',
+                'value' => function($model, $key, $index){
+                    return $model->formatValues('country', 'success');
+                }
+            ],
+            [
+                'attribute'=>'connection_type',
+                'format'=>'html',
+                'value' => function($model, $key, $index){
+                    return $model->formatValues('connection_type', 'primary');
+                }
+            ],
+            [
+                'attribute'=>'device_type',
+                'format'=>'html',
+                'value' => function($model, $key, $index){
+                    return $model->formatValues('device_type', 'danger');
+                }
+            ],
+            [
+                'attribute'=>'os',
+                'format'=>'html',
+                'value' => function($model, $key, $index){
+                    return $model->formatValues('os', 'info');
+                }
+            ],
+            [
+                'attribute'=>'os_version',
+                'format'=>'html',
+                'value' => function($model, $key, $index){
+                    return $model->formatValues('os_version', 'default');
+                }
+            ],
+            [
+                'attribute'=>'carrier',
+                'format'=>'html',
+                'value' => function($model, $key, $index){
+                    return $model->formatValues('carrier', 'warning');
+                }
+            ],
 
             [
                 'class' => 'yii\grid\ActionColumn',
@@ -79,38 +116,62 @@ $this->params['breadcrumbs'][] = $this->title;
                 'attribute' => 'country',
                 'filterOptions' => [
                     'class' => isset($clustersModel->country) ? 'filter-disabled' : '',
-                ]
+                ],
+                'format'=>'html',
+                'value' => function($model, $key, $index){
+                    return $model->formatValues('country', 'success');
+                }
             ],
             [
                 'attribute' => 'connection_type',
                 'label' => 'Conn. Type',
                 'filterOptions' => [
                     'class' => isset($clustersModel->connection_type) ? 'filter-disabled' : '',
-                ]
+                ],
+                'format'=>'html',
+                'value' => function($model, $key, $index){
+                    return $model->formatValues('connection_type', 'primary');
+                }
             ],
             [
                 'attribute' => 'device_type',
                 'filterOptions' => [
                     'class' => isset($clustersModel->device_type) ? 'filter-disabled' : '',
-                ]
+                ],
+                'format'=>'html',
+                'value' => function($model, $key, $index){
+                    return $model->formatValues('device_type', 'danger');
+                }
             ],
             [
                 'attribute' => 'os',
                 'filterOptions' => [
                     'class' => isset($clustersModel->os) ? 'filter-disabled' : '',
-                ]
+                ],
+                'format'=>'html',
+                'value' => function($model, $key, $index){
+                    return $model->formatValues('os', 'info');
+                }
             ],
             [
                 'attribute' => 'os_version',
                 'filterOptions' => [
                     'class' => isset($clustersModel->os_version) ? 'filter-disabled' : '',
-                ]
+                ],
+                'format'=>'html',
+                'value' => function($model, $key, $index){
+                    return $model->formatValues('os_version', 'default');
+                }
             ],
             [
                 'attribute' => 'carrier',
                 'filterOptions' => [
                     'class' => isset($clustersModel->carriers->carrier_name) ? 'filter-disabled' : '',
-                ]
+                ],
+                'format'=>'html',
+                'value' => function($model, $key, $index){
+                    return $model->formatValues('carrier', 'warning');
+                }
             ],
 
             [
