@@ -24,7 +24,7 @@ class AffiliatesapiController extends \yii\web\Controller
 		return [
 			[
 				'class' 		=> 'RegamingAPI',
-				'affiliate_id'	=> 1,
+				'affiliate_id'	=> 2,
 			],			
 		];
 	}
