@@ -228,7 +228,6 @@ if ( isset($params['exchange_id']) && $params['exchange_id'] ){
     }
 }
 
-var_export($clusters);
 
 ?>
 

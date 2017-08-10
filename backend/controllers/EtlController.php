@@ -157,7 +157,21 @@ class EtlController extends \yii\web\Controller
                 $this->_sendMail ( self::ALERT_FROM, self::ALERT_TO, $this->_alertSubject, $msg );
 
             die($msg);
-        }       
+        } 
+
+        try
+        {
+            $this->actionPopulatefilters();
+        } 
+        catch (Exception $e) {
+            $msg .= "REPORTING FILTERS POPULATE ERROR: ".$e->getCode().'<hr>';
+            $msg .= $e->getMessage();
+
+            if ( !$this->_noalerts )
+                $this->_sendMail ( self::ALERT_FROM, self::ALERT_TO, $this->_alertSubject, $msg );
+
+            die($msg);
+        }               
     }
 
 
