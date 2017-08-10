@@ -50,7 +50,10 @@ class AffiliatesapiController extends \yii\web\Controller
     			{
     				foreach ( $campaignsData AS $campaignData )
     				{
-    					$campaign = models\Campaigns::findOne([ 'ext_id' => $campaignData['ext_id'] ]);
+    					$campaign = models\Campaigns::findOne([ 
+    						'ext_id' 		=> $campaignData['ext_id'],
+    						'Affiliates_id' => $affiliate->id
+    					]);
 
     					if  ( $campaign )
     						$this->_checkChanges( $rule['class'], $campaign, $campaignData );

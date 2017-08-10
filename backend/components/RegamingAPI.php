@@ -68,20 +68,32 @@
 					switch ( $o )
 					{
 						case 'iPad':
-							$oss[] 		   = 'iOS';
-							$deviceTypes[] = 'Tablet';							
+							if ( !in_array('iOS', $oss) )
+								$oss[] 		   = 'iOS';
+
+							if ( !in_array('Tablet', $deviceTypes) )
+								$deviceTypes[] = 'Tablet';							
 						break;
 						case 'iPhone':
-							$oss[] 		   = 'iOS';
-							$deviceTypes[] = 'Smartphone';
+							if ( !in_array('iOS', $oss) )
+								$oss[] 		   = 'iOS';
+
+							if ( !in_array('Smartphone', $deviceTypes) )
+								$deviceTypes[] = 'Smartphone';
 						break;
 						case 'Android':
-							$oss[]		   = $o;
-							$deviceTypes[] = 'Smartphone';
+							if ( !in_array($o, $oss) )
+								$oss[]		   = $o;
+
+							if ( !in_array('Smartphone', $deviceTypes) )
+								$deviceTypes[] = 'Smartphone';
 						break;
 						default:
-							$oss[] 		   = $o;
-							$deviceTypes[] = 'Other'; 
+							if ( !in_array($o, $oss) )
+								$oss[] 		   = $o;
+
+							if ( !in_array('Other', $deviceTypes) )
+								$deviceTypes[] = 'Other'; 
 						break;
 					}
 				}

@@ -36,9 +36,6 @@ class EtlController extends \yii\web\Controller
 	{
 		parent::__construct( $id, $module, $config );
 
-		// enable elastic search client
-		//$this->_elasticSearch = ClientBuilder::create()->setHosts(["localhost:9200"])->setSelector('\Elasticsearch\ConnectionPool\Selectors\StickyRoundRobinSelector')->build();
-
     	$this->_redis 	 	  	= new \Predis\Client( \Yii::$app->params['predisConString'] );
 
         $this->_objectLimit = isset( $_GET['objectlimit'] ) ? $_GET['objectlimit'] : 50000;
@@ -462,24 +459,6 @@ class EtlController extends \yii\web\Controller
                     if ( $values != '' )
                         $values .= ',';
 
-                    /*
-                    if ( !\filter_var($clusterLog['ip'], \FILTER_VALIDATE_IP) || !preg_match('/^[a-zA-Z]{2}$/', $clusterLog['country']) )
-                    {
-                        $ips = \explode( ',', $clusterLog['ip'] );
-                        $clusterLog['ip'] = $ips[0];
-
-                        $location = new \IP2Location(Yii::app()->params['ipDbFile'], \IP2Location::FILE_IO);
-                        $ipData      = $location->lookup($clusterLog['ip'], \IP2Location::ALL);
-
-                        $clusterLog['carrier'] = $ipData->mobileCarrierName;
-                        $clusterLog['country'] = $ipData->countryCode;
-
-                        if ( $ipData->mobileCarrierName == '-' )
-                            $clusterLog['connection_type'] = 'WIFI';
-                        else
-                            $clusterLog['connection_type'] = 'MOBILE';
-                    }
-                    */
 
                     if ( !$clusterLog['placement_id'] || $clusterLog['placement_id']=='' || !preg_match( '/^[0-9]+$/',$clusterLog['placement_id'] ) )
                         $clusterLog['placement_id'] = 'NULL';
@@ -624,8 +603,8 @@ class EtlController extends \yii\web\Controller
                         \Yii::$app->redis->hset( 'clusternames', $clusterLog['cluster_id'], $clusterLog['cluster_name']  );
                     }
 
-                    // free memory because there is no garbage collection until block ends
-                    unset ( $clusterLog );                                        
+                    // free memory 
+                    unset ( $clusterLog );
                 }
     		}
 
