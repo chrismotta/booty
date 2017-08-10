@@ -29,6 +29,9 @@ $filterByAffiliate = ArrayHelper::map(
 // );
 
 ?>
+<div class="box box-info">
+    
+
 <div class="campaigns-index">
 
     <!-- <h1><?= Html::encode($this->title) ?></h1>
@@ -40,6 +43,7 @@ $filterByAffiliate = ArrayHelper::map(
 <?php Pjax::begin(); ?>    <?= GridView::widget([
         'dataProvider' => $dataProvider,
         'filterModel' => $searchModel,
+        'layout' => '<div class="box-header">{summary}</div><div class="box-body">{items}</div><div class="box-footer">{pager}</div>',
         'columns' => [
 
             'id',
@@ -113,3 +117,5 @@ $filterByAffiliate = ArrayHelper::map(
         ],
     ]); ?>
 <?php Pjax::end(); ?></div>
+
+</div>

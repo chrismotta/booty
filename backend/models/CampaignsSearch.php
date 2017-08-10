@@ -171,12 +171,12 @@ class CampaignsSearch extends Campaigns
                 ['like', 'os', $this->os]
                 ]);
 
-        // if(isset($this->os_version))
-        //     $query->andWhere([
-        //         'or', 
-        //         ['os_version' => null], 
-        //         ['>=', 'os_version', $this->os_version]
-        //         ]);
+        if(isset($this->os_version))
+            $query->andWhere([
+                'or', 
+                ['os_version' => null], 
+                ['like', 'os_version', $this->os_version]
+                ]);
         
         if(isset($this->connection_type))
             $query->andWhere([
