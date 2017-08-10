@@ -173,7 +173,7 @@ td.active {
 td.health_check {
     color: orange;
 }
-td.test {
+td.testing {
     color: red;
 }
 td.paused {
