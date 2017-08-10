@@ -13,6 +13,7 @@ $this->params['breadcrumbs'][] = $this->title;
 <div class="static-campaigns-view">
 
     <p>
+        <?= Html::a('Admin', ['static/'], ['class' => 'btn btn-success']) ?>
         <?= Html::a('Update', ['update', 'id' => $model->id], ['class' => 'btn btn-primary']) ?>
         <?= Html::a('Delete', ['delete', 'id' => $model->id], [
             'class' => 'btn btn-danger',
