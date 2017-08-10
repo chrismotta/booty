@@ -732,8 +732,13 @@ class EtlController extends \yii\web\Controller
 
         foreach ( $clusters as $model )
         {
+            if (strlen($model->name)>31)
+                $fill = '...';
+            else
+                $fill = '';
+
             $data = [
-                'name'  => $model->name . ' ('.$model->id.')',
+                'name'  => substr($model->name,0,30) . $fill . ' ('.$model->id.')',
                 'id'    => $model->id
             ];
 
@@ -755,8 +760,13 @@ class EtlController extends \yii\web\Controller
 
         foreach ( $campaigns as $model )
         {
+            if (strlen($model->name)>31)
+                $fill = '...';
+            else
+                $fill = '';
+
             $data = [
-                'name'  => $model->name . ' ('.$model->id.')',
+                'name'  => substr($model->name,0,30) . $fill . ' ('.$model->id.')',
                 'id'    => $model->id
             ];
 
@@ -778,8 +788,13 @@ class EtlController extends \yii\web\Controller
 
         foreach ( $affiliates as $model )
         {
+            if (strlen($model->name)>31)
+                $fill = '...';
+            else
+                $fill = '';
+
             $data = [
-                'name'  => $model->name . ' ('.$model->id.')',
+                'name'  => substr($model->name,0,30) . $fill . ' ('.$model->id.')',
                 'id'    => $model->id
             ];
 
@@ -800,8 +815,13 @@ class EtlController extends \yii\web\Controller
 
         foreach ( $placements as $model )
         {
+            if (strlen($model->name)>31)
+                $fill = '...';
+            else
+                $fill = '';
+
             $data = [
-                'name'  => $model->name . ' ('.$model->id.')',
+                'name'  => substr($model->name,0,30) . $fill . ' ('.$model->id.')',
                 'id'    => $model->id
             ];
 
@@ -822,8 +842,13 @@ class EtlController extends \yii\web\Controller
 
         foreach ( $publishers as $model )
         {
+            if (strlen($model->name)>31)
+                $fill = '...';
+            else
+                $fill = '';
+                            
             $data = [
-                'name'  => $model->name . ' ('.$model->id.')',
+                'name'  => substr($model->name,0,30) . $fill . ' ('.$model->id.')',
                 'id'    => $model->id
             ];
 
