@@ -15,6 +15,10 @@ $totalImps      = isset($totals[0]) ? $totals[0]['imps'] : 0;
 $totalUsers     = isset($totals[0]) ? $totals[0]['unique_users'] : 0;
 $totalConvs     = isset($totals[0]) ? $totals[0]['installs'] : 0;
 
+$todayCost      = isset($totals[0]) ? $totals[0]['cost'] : 0;
+$todayRev       = isset($totals[0]) ? $totals[0]['revenue'] : 0;
+$todayProfit    = $todayRev-$todayCost;
+
 $yesterdayImps  = isset($yesterday[0]) ? $yesterday[0]['imps'] : 0; 
 $yesterdayUsers = isset($yesterday[0]) ? $yesterday[0]['unique_users'] : 0;
 $yesterdayConvs = isset($yesterday[0]) ? $yesterday[0]['installs'] : 0;
@@ -25,8 +29,9 @@ $profitByDate   = [];
 $dates          = [];
 $impsByCountry  = [];
 
-$from           = new DateTime(date("Y-m-d", strtotime("-7 days")));
-$to             = new DateTime(date("Y-m-d"));
+$currentDate    = date("Y-m-d");
+$from           = new DateTime(date("Y-m-d", strtotime("-6 days")));
+$to             = new DateTime($currentDate);
 $daterange      = new DatePeriod($from, new DateInterval('P1D'), $to);
 
 
@@ -63,9 +68,12 @@ foreach( $daterange as $date )
 
         $dates[] = $formattedDate;
     }
-
-
 }
+
+$dates[]        = $currentDate;
+$revByDate[]    = $todayRev;
+$spendByDate[]  = $todayCost;
+$profitByDate[] = $todayProfit;
 
 foreach ( $byCountry as $data )
 {
