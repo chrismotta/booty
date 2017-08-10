@@ -66,14 +66,7 @@ class CampaignsController extends Controller
     {
         $model = new Campaigns();
 
-        if ($model->load(Yii::$app->request->post()) && $model->save()) {
-
-            $cache = new \Predis\Client( \Yii::$app->params['predisConString'] );
-            $cache->hmset( 'campaign:'.$model->id,  [
-                'callback'   => $model->landing_url,
-                'payout'     => $model->payout
-            ]);
- 
+        if ($model->load(Yii::$app->request->post()) && $model->save()) { 
             return $this->redirect(['view', 'id' => $model->id]);
 
         } else {
@@ -96,10 +89,23 @@ class CampaignsController extends Controller
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
 
             $cache = new \Predis\Client( \Yii::$app->params['predisConString'] );
-            $cache->hmset( 'campaign:'.$model->id,  [
-                'callback'   => $model->landing_url,
-                'payout'     => $model->payout
-            ]);
+
+            $clustersHasCampaigns = models\ClustersHasCampaigns::findAll( ['Campaigns_id' => $model->id] );
+
+            switch ( $model->status )
+            {
+                case 'active':
+                    $status = 1;
+                break;
+                default:
+                    $status = 0;
+                break;
+            }
+
+            foreach ( $clusterHasCampaigns as $assign )
+            {
+                $this->_redis->zadd( 'clusterlist:'.$assign['Clusters_id'], $status, $campaign->id );
+            }
    
             return $this->redirect(['view', 'id' => $model->id]);
 

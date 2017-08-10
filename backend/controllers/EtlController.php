@@ -7,6 +7,7 @@ namespace backend\controllers;
 use DeviceDetector\DeviceDetector;
 use DeviceDetector\Parser\Device\DeviceParserAbstract;
 use DeviceDetector\Parser\Client\ClientParserAbstract;
+use app\models;
 //use IP2Location;
 use Predis;
 
@@ -34,9 +35,6 @@ class EtlController extends \yii\web\Controller
 	public function __construct ( $id, $module, $config = [] )
 	{
 		parent::__construct( $id, $module, $config );
-
-		// enable elastic search client
-		//$this->_elasticSearch = ClientBuilder::create()->setHosts(["localhost:9200"])->setSelector('\Elasticsearch\ConnectionPool\Selectors\StickyRoundRobinSelector')->build();
 
     	$this->_redis 	 	  	= new \Predis\Client( \Yii::$app->params['predisConString'] );
 
@@ -461,24 +459,6 @@ class EtlController extends \yii\web\Controller
                     if ( $values != '' )
                         $values .= ',';
 
-                    /*
-                    if ( !\filter_var($clusterLog['ip'], \FILTER_VALIDATE_IP) || !preg_match('/^[a-zA-Z]{2}$/', $clusterLog['country']) )
-                    {
-                        $ips = \explode( ',', $clusterLog['ip'] );
-                        $clusterLog['ip'] = $ips[0];
-
-                        $location = new \IP2Location(Yii::app()->params['ipDbFile'], \IP2Location::FILE_IO);
-                        $ipData      = $location->lookup($clusterLog['ip'], \IP2Location::ALL);
-
-                        $clusterLog['carrier'] = $ipData->mobileCarrierName;
-                        $clusterLog['country'] = $ipData->countryCode;
-
-                        if ( $ipData->mobileCarrierName == '-' )
-                            $clusterLog['connection_type'] = 'WIFI';
-                        else
-                            $clusterLog['connection_type'] = 'MOBILE';
-                    }
-                    */
 
                     if ( !$clusterLog['placement_id'] || $clusterLog['placement_id']=='' || !preg_match( '/^[0-9]+$/',$clusterLog['placement_id'] ) )
                         $clusterLog['placement_id'] = 'NULL';
@@ -623,8 +603,8 @@ class EtlController extends \yii\web\Controller
                         \Yii::$app->redis->hset( 'clusternames', $clusterLog['cluster_id'], $clusterLog['cluster_name']  );
                     }
 
-                    // free memory because there is no garbage collection until block ends
-                    unset ( $clusterLog );                                        
+                    // free memory 
+                    unset ( $clusterLog );
                 }
     		}
 
@@ -874,203 +854,141 @@ class EtlController extends \yii\web\Controller
         \Yii::$app->db->createCommand( $sql )->execute();
     }
 
-/*
-    public function actionDailymaintenance ( )
+
+    private function _sendmail ( $from, $to, $subject, $body )
     {
-        $etl     = isset( $_GET['etl'] ) && $_GET['etl'] ? false : true;
+        $headers = 'From:'.$from.'\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset="UTF-8"\r\n';
 
-        $showAll = isset( $_GET['showall'] ) && $_GET['showall'] ? true : false;
-
-        $flush = isset( $_GET['flush'] ) && $_GET['flush'] ? true : false;
-
-        $this->_error = false;
-
-        $this->_redis->select( $this->_getYesterdayDatabase() );
-        
-        if ( $flush || $etl )
+        if ( !mail($to, $subject, $body, $headers ) )
         {
-            $this->actionIndex();
-        }
+            $data = 'To: '.$to.'\nSubject: '.$subject.'\nFrom:'.$from.'\n'.$body;
 
-        $dates     = $this->_redis->smembers( 'dates' );
-        $html      = '';
-
-        foreach ( $dates as $date )
-        {   
-            $miniDate  = date( 'Ymd', strtotime($date) );
-            $logCount  = $this->_redis->zcard( 'tags:'.$miniDate );
-            $queries   = (int)ceil( $logCount/($this->_objectLimit/2) );
-
-            for ( $i=0; $i<$queries; $i++ )
-            {
-                $html .= $this->_maintenanceQuery( 
-                    $date,
-                    $miniDate,
-                    $showAll 
-                );
-            }
-
-            unset( $logCount );
-        }
-
-        if ( $this->_error || $html != '' )
-        {
-            $html     = '
-                <html>
-                    <head>
-                    </head>
-                    <body>
-                        <table>
-                            <thead>
-                                <td>STATUS</td>
-                                <td>DATE</td>
-                                <td>TAG ID</td>
-                                <td>REDIS IMPS</td>
-                                <td>MYSQL IMPS</td>
-                                <td>REDIS COST</td>
-                                <td>MYSQL COST</td>
-                                <td>REDIS REVENUE</td>
-                                <td>MYSQL REVENUE</td>
-                            </thead>
-                            <tbody>'.$html.'</tbody>
-                        </table>
-                    </body>
-                </html>
+            $command = 'echo -e "'.$data.'" | sendmail -bm -t -v';
+            $command = '
+                export MAILTO="'.$to.'"
+                export FROM="'.$from.'"
+                export SUBJECT="'.$subject.'"
+                export BODY="'.$body.'"
+                (
+                 echo "From: $FROM"
+                 echo "To: $MAILTO"
+                 echo "Subject: $SUBJECT"
+                 echo "MIME-Version: 1.0"
+                 echo "Content-Type: text/html; charset=UTF-8"
+                 echo $BODY
+                ) | /usr/sbin/sendmail -F $MAILTO -t -v -bm
             ';
-            
-            echo $html;
 
-            if ( !$this->_noalerts )
-                $this->_sendMail ( 
-                    self::ALERT_FROM, 
-                    self::ALERT_TO, 
-                    'AD NIGMA - TRAFFIC COMPARE ERROR ('.$date.')', 
-                    $html 
-                );
-        }
-        else
-        {
-            if (  $flush )
-            {
-                $this->_redis->flushdb();
-            }
-
-            echo ( 'todo bien piola' );
-        }
+            shell_exec( $command );             
+        }           
     }
 
 
-    private function _maintenanceQuery ( $date, $miniDate, $showAll )
+    public function actionPopulatecache ( )
     {
-        $html      = '';
-        $limit     = ceil($this->_objectLimit/2);
-        $redisTags = $this->_redis->zrange( 'tags:'.$miniDate, 0, $limit );
+        $this->actionPopulateclusters();
+        $this->actionPopulateplacements();
+    }
 
-        $sql       = 'SELECT DISTINCT D_Demand_id AS id, sum(imps) AS imps, sum(cost) AS cost, sum(revenue) AS revenue FROM F_Imp_Compact WHERE date(date_time)="'.$date.'" GROUP BY D_Demand_id LIMIT '. $limit;
 
-        $sql = '
-            SELECT 
-                DISTINCT D_Campaign AS id,
-                sum(cl.imps) AS imps,
-                sum(cl.cost) AS cost,
+    public function actionPopulateclusters ( )
+    {
+       $this->_redis->select( 0 );
 
-            FROM  F_CampaignLogs cpl
-            RIGHT JOIN F_ClusterLogs cl ON (cl.session_hash = cpl.session_hash)
-            WHERE date(date_time)="'.$date.'" GROUP BY D_Demand_id LIMIT '. $limit            
-        ';
+        $start = time();
 
-        $tmpSqlTags   = Yii::app()->db->createCommand( $sql )->queryAll();        
-        $sqlTags = [];
+        $clusters = models\Clusters::find()->all();
 
-        foreach ( $tmpSqlTags as $tmpSqlTag )
+        foreach ( $clusters as $model )
         {
-            $sqlTagId           = $tmpSqlTag['id'];
-            $sqlTags[$sqlTagId] = [
-                'imps'     => $tmpSqlTag['imps'],
-                'cost'     => $tmpSqlTag['cost'],
-                'revenue'  => $tmpSqlTag['revenue']
-            ];
+            if ( !$model->connection_type || $model->connection_type=='' )
+                $model->connection_type = null;
+
+            if ( !$model->os || $model->os=='' )
+                $model->os = null;
+
+            if ( !$model->country || $model->country=='' )
+                $model->country = null;
+
+            $carrierName = $model->carriers ? $model->carriers->carrier_name : null;            
+            $this->_redis->hmset( 'cluster:'.$model->id,  [
+                'name'              => $model->name,
+                'country'           => strtolower($model->country),
+                'os'                => $model->os,
+                'device_type'       => strtolower($model->device_type), 
+                'connection_type'   => strtolower($model->connection_type), 
+                'os_version'        => strtolower($model->os_version), 
+                'carrier'           => strtolower($carrierName), 
+                'static_cp_land'    => $model->staticCampaigns->landing_url,
+                'static_cp_300x250' => $model->staticCampaigns->creative_300x250,
+                'static_cp_320x50'  => $model->staticCampaigns->creative_320x50,
+            ]);
+
+            $campaignsModel = new models\Campaigns;
+
+            $this->_redis->del( 'clusterlist:'.$model->id );
+
+            $campaigns = $campaignsModel->getByCluster( $model->id );
+
+            foreach ( $campaigns as $campaign )
+            {
+                switch ( $campaign->status )
+                {
+                    case 'active':
+                        $status = 1;
+                    break;
+                    default:
+                        $status = 0;
+                    break;
+                }
+                $this->_redis->zadd( 'clusterlist:'.$model->id, $status, $campaign->id );
+            }
         }
 
-        unset ( $tmpSqlTags );
+        $elapsed = time() - $start;
 
-        foreach ( $redisTags as $tagId )
+        echo 'Clusters cached: '.count($clusters).' - Elapsed time: '.$elapsed.' seg.<hr/>';
+    }
+
+
+    public function actionPopulateplacements ( )
+    {
+        $this->_redis->select( 0 );
+
+        $start = time();
+
+        $placements = models\Placements::find()->all();
+
+        foreach ( $placements as $model )
         {
-            $redisTag = $this->_redis->hgetall( 'req:t:'.$tagId.':'.$miniDate );
+            $origin = $this->_redis->hgetall('placement:'.$model->id);
 
-            if ( !isset( $sqlTags[$tagId] ) )
+            if ( $origin )
             {
-                $sqlTags[$tagId] = [
-                    'imps'      => 0,
-                    'cost'      => 0.00,
-                    'revenue'   => 0.00
-                ];
+                $imps   = (int)$origin['imps'];
+                $hcimps = (int)$origin['health_check_imps'];
             }
-            if ( !$redisTag )
+            else
             {
-                $html .= '
-                    <tr>
-                        <td style="color:#FC5005;>NO DATA</td>
-                        <td>'.$date.'</td>
-                        <td>'.$tagId.'</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                        <td>-</td>
-                    </tr>
-                ';
-
-                $this->_error = true;
-                continue;
+                $imps   = (int)$model->imps;
+                $hcimps = (int)$model->health_check_imps;                
             }
 
-            if ( 
-                $redisTag['imps']       != $sqlTags[$tagId]['imps'] 
-                || $redisTag['cost']    != $sqlTags[$tagId]['cost'] 
-                || $redisTag['revenue'] != $sqlTags[$tagId]['revenue']
-            )
-            {
-                $html .= '
-                    <tr>
-                        <td style="color:#B40303;">DISCREPANCY</td>
-                        <td>'.$date.'</td>
-                        <td>'.$tagId.'</td>
-                        <td>'.$redisTag['imps'].'</td>
-                        <td>'.$sqlTags[$tagId]['imps'].'</td>
-                        <td>'.$redisTag['cost'].'</td>
-                        <td>'.$sqlTags[$tagId]['cost'].'</td>
-                        <td>'.$redisTag['revenue'].'</td>
-                        <td>'.$sqlTags[$tagId]['revenue'].'</td>
-                    </tr>
-                ';
-
-                $this->_error = true;
-            }
-
-            if ( $showAll )
-            {
-                $html .= '
-                    <tr>
-                        <td style="color:#079005;">MATCH</td>
-                        <td>'.$date.'</td>
-                        <td>'.$tagId.'</td>
-                        <td>'.$redisTag['imps'].'</td>
-                        <td>'.$sqlTags[$tagId]['imps'].'</td>
-                        <td>'.$redisTag['cost'].'</td>
-                        <td>'.$sqlTags[$tagId]['cost'].'</td>
-                        <td>'.$redisTag['revenue'].'</td>
-                        <td>'.$sqlTags[$tagId]['revenue'].'</td>
-                    </tr>
-                ';                
-            }
-
-            unset( $redisTag );
+            $this->_redis->hmset( 'placement:'.$model->id, [
+                'frequency_cap'     => $model->frequency_cap,
+                'payout'            => $model->payout,
+                'model'             => $model->model,
+                'cluster_id'        => isset($model->clusters->id) ? $model->clusters->id : null,
+                'status'            => $model->status,
+                'size'              => $model->size,
+                'imps'              => $imps,
+                'health_check_imps' => $hcimps
+            ]);
         }
 
-        return $html;
-    }  
-    */             
+        $elapsed = time() - $start;
+
+        echo 'Placements cached: '.count($placements).' - Elapsed time: '.$elapsed.' seg.<hr/>';
+    }        
 
 }

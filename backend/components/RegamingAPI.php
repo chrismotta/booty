@@ -16,8 +16,8 @@
 
 		public function request ( $api_key, $user_id = null  )
 		{
-			$url    = self::URL + '&token='.$api_key;
-			$curl   = curl_init($apiurl);
+			$url    = self::URL . '&token='.$api_key;
+			$curl   = curl_init($url);
 
 			curl_setopt($curl, CURLOPT_HEADER, false);
 			curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
@@ -32,34 +32,73 @@
 			{
 				return false;
 			}
-			else if ( isset($response['error_messages']) && $response['error_messages'] )
+			else if ( isset($response->error_messages) && $response->error_messages )
 			{
-				$this->_msg = $response['error_messages'];
+				return false;
+				$this->_msg = $response->error_messages;
 			}
 
 			$result = [];
-
-			foreach ( $response['offers'] AS $ext_id => $campaign )
+		
+			foreach ( $response->offers AS $ext_id => $campaign )
 			{
-				if ( isset($campaign['Countries']) && $campaign['Countries'] && is_array($campaign['Countries']) )
+				if ( isset($campaign->Countries) && $campaign->Countries && is_array($campaign->Countries) )
 				{
-					$countries = $campaign['Countries'];
+					$countries = $campaign->Countries;
 				}
 				else
 				{
-					$countries = explode( ',' , $campaign['Countries'] );
+					$countries = explode( ',' , $campaign->Countries );
 				}
 
-				if ( isset($campaign['Platforms']) && $campaign['Platforms'] && is_array($campaign['Platforms']) )
+				if ( isset($campaign->Platforms) && $campaign->Platforms && is_array($campaign->Platforms) )
 				{
-					$deviceTypes = $campaign['Platforms'];
+					$os = $campaign->Platforms;
 				}
 				else
 				{
-					$deviceTypes = explode( ',' , $campaign['Platforms'] );
+					$os = explode( ',' , $campaign->Platforms );
 				}				
 
-				switch ( strtolower($campaign['Status']) )
+				$oss 		 = [];
+				$deviceTypes = [];
+
+				foreach ( $os as $o )
+				{
+					switch ( $o )
+					{
+						case 'iPad':
+							if ( !in_array('iOS', $oss) )
+								$oss[] 		   = 'iOS';
+
+							if ( !in_array('Tablet', $deviceTypes) )
+								$deviceTypes[] = 'Tablet';							
+						break;
+						case 'iPhone':
+							if ( !in_array('iOS', $oss) )
+								$oss[] 		   = 'iOS';
+
+							if ( !in_array('Smartphone', $deviceTypes) )
+								$deviceTypes[] = 'Smartphone';
+						break;
+						case 'Android':
+							if ( !in_array($o, $oss) )
+								$oss[]		   = $o;
+
+							if ( !in_array('Smartphone', $deviceTypes) )
+								$deviceTypes[] = 'Smartphone';
+						break;
+						default:
+							if ( !in_array($o, $oss) )
+								$oss[] 		   = $o;
+
+							if ( !in_array('Other', $deviceTypes) )
+								$deviceTypes[] = 'Other'; 
+						break;
+					}
+				}
+
+				switch ( strtolower($campaign->Status) )
 				{
 					case 'active':
 						$status = 'active';
@@ -71,19 +110,31 @@
 
 				$result[] = [
 					'ext_id' 			=> $ext_id,
-					'name'				=> $campaign['Name'],
-					'payout' 			=> $campaign['Payout'],
-					'landing_url'		=> $campaign['Tracking_url'],
+					'name'				=> $campaign->Name,
+					'payout' 			=> $campaign->Payout,
+					'landing_url'		=> $campaign->Tracking_url,
 					'country'			=> $countries,
 					'device_type'		=> $deviceTypes,
 					'connection_type'	=> null,
 					'carrier'			=> null,
+					'os'				=> $oss,
+					'os_version'		=> null,
 					'status'			=> $status,
-					'currency'			=> $campaign['currency']
+					'currency'			=> $campaign->Currency
 				];
 			}
 
 			return $result;
+		}
+
+		public function getMessages ( )
+		{
+			return $this->_msg;
+		}
+
+		public function getStatus ( )
+		{
+			return $this->_status;
 		}
 
 	}
