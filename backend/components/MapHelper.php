@@ -16,12 +16,31 @@
 
 			foreach ( $data as $value )
 			{
-				$r[$value] = $value;
+				if ( $value && $value!='NULL' )
+					$r[$value] = $value;
 			}
 
 			return $r;
 		}
 
+		static function filtersFromRedisToSelectWidget ( array $data )
+		{
+			$r = [];
+
+			natcasesort($data);
+			
+			foreach ( $data as $value )
+			{
+				$item = json_decode($value);
+
+				if ( $item ){
+					$id 	= $item->id;
+					$r[$id] = $item->name; 
+				}
+			} 
+
+			return $r;
+		}
 
 		static function redisToMap ( array $data )
 		{
@@ -31,6 +50,7 @@
 
 			foreach ( $data as $value )
 			{
+
 				if ( $k%2 == 0 || $k==0 )
 				{
 					$kn = $value;

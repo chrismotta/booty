@@ -95,6 +95,15 @@ if ( isset($params['country']) && $params['country'] ){
     }
 }
 
+$r_models = [];
+if ( isset($params['model']) && $params['model'] ){
+
+    foreach ( $params['model'] as $id )
+    {
+        if ( !in_array($id, $r_models) )
+            $r_models[] = $id;
+    }
+}
 
 $r_devices = [];
 if ( isset($params['device']) && $params['device'] ){
@@ -219,6 +228,7 @@ if ( isset($params['exchange_id']) && $params['exchange_id'] ){
     }
 }
 
+var_export($clusters);
 
 ?>
 
@@ -286,7 +296,6 @@ if ( isset($params['exchange_id']) && $params['exchange_id'] ){
                 'publisher' => 'Publisher',
                 'placement' => 'Placement',
                 'model'     => 'Model',
-                'status'    => 'Status',
                 'exchange_id' => 'Exchange ID',
                 'pub_id' => 'Pub ID',
                 'subpub_id' => 'Subpub ID',
@@ -387,15 +396,10 @@ if ( isset($params['exchange_id']) && $params['exchange_id'] ){
         '<label class="control-label">Publisher</label>';
         echo Select2::widget( [
             'name' => 'publisher',
-            'data' => ArrayHelper::map( 
-                $DPlacement, 
-                'Publishers_id', 
-                'Publishers_name' 
-            ),
+            'data' => $publishers,
             'value' => $r_publishers,
             'language' => 'us',
             'options' => [
-                'placeholder' => 'Select a publisher ...', 
                 'multiple' => true
             ],
             'pluginOptions' => [
@@ -409,15 +413,11 @@ if ( isset($params['exchange_id']) && $params['exchange_id'] ){
         '<label class="control-label">Affiliate</label>';
         echo Select2::widget( [
             'name' => 'affiliate',
-            'data' => ArrayHelper::map( 
-                $DCampaign, 
-                'Affiliates_id', 
-                'Affiliates_name' 
-            ),
+            'data' => $affiliates,
             'value' => $r_affiliates,
             'changeOnReset' => true,
             'language' => 'us',
-            'options' => ['placeholder' => 'Select an affiliate ...', 'multiple' => true],
+            'options' => ['multiple' => true],
             'pluginOptions' => [
                 //'tags' => true,
                 'tokenSeparators' => [',', ' '],
@@ -430,18 +430,13 @@ if ( isset($params['exchange_id']) && $params['exchange_id'] ){
         '<label class="control-label">Campaign</label>';
         echo Select2::widget( [
             'name' => 'campaign',
-            'data' => ArrayHelper::map( 
-                $DCampaign, 
-                'id', 
-                'name' 
-            ),               
+            'data' => $campaigns,               
             'value' => $r_campaigns,
             'language' => 'us',
             'options' => [
                 'options' => [
                     'style' => 'width:100px;height:200px;',
                 ],
-                'placeholder' => 'Select a campaign ...', 
                 'multiple' => true
             ],
             'pluginOptions' => [
@@ -456,10 +451,10 @@ if ( isset($params['exchange_id']) && $params['exchange_id'] ){
         '<label class="control-label">Cluster</label>';
         echo Select2::widget( [
             'name' => 'cluster',
-            'data' => $clusterNames,
+            'data' => $clusters,
             'value' => $r_clusters,
             'language' => 'us',
-            'options' => ['placeholder' => 'Select a cluster ...', 'multiple' => true],
+            'options' => ['multiple' => true],
             'pluginOptions' => [
                 //'tags' => true,
                 'tokenSeparators' => [',', ' '],
@@ -472,14 +467,10 @@ if ( isset($params['exchange_id']) && $params['exchange_id'] ){
         '<label class="control-label">Placement</label>';
         echo Select2::widget( [
             'name' => 'placement',
-            'data' => ArrayHelper::map( 
-                $DPlacement, 
-                'id', 
-                'name' 
-            ),         
+            'data' => $placements,         
             'value' => $r_placements,
             'language' => 'us',
-            'options' => ['placeholder' => 'Select a placement ...', 'multiple' => true],
+            'options' => ['multiple' => true],
             'pluginOptions' => [
                 //'tags' => true,
                 'tokenSeparators' => [',', ' '],
@@ -487,7 +478,6 @@ if ( isset($params['exchange_id']) && $params['exchange_id'] ){
             ],
         ]);           
     ?>
-
 
     <?=
         '<label class="control-label">Country</label>';
@@ -496,7 +486,7 @@ if ( isset($params['exchange_id']) && $params['exchange_id'] ){
             'data' => components\MapHelper::arrayToMap( $countries ),
             'value' => $r_countries,
             'language' => 'us',
-            'options' => ['placeholder' => 'Select a country ...', 'multiple' => true],
+            'options' => ['multiple' => true],
             'pluginOptions' => [
                 //'tags' => true,
                 'tokenSeparators' => [',', ' '],
@@ -505,6 +495,21 @@ if ( isset($params['exchange_id']) && $params['exchange_id'] ){
         ]);           
     ?>
 
+    <?=
+        '<label class="control-label">Model</label>';
+        echo Select2::widget( [
+            'name' => 'model',
+            'data' => ['CPM'=> 'CPM', 'RS'=>'RS'],
+            'value' => $r_models,
+            'language' => 'us',
+            'options' => ['multiple' => true],
+            'pluginOptions' => [
+                //'tags' => true,
+                'tokenSeparators' => [',', ' '],
+                'maximumInputLength' => 10
+            ],
+        ]);           
+    ?>
 
     </dir>
     <dir class="col-md-4">
@@ -516,7 +521,7 @@ if ( isset($params['exchange_id']) && $params['exchange_id'] ){
             'data' => components\MapHelper::arrayToMap( $carriers ),
             'value' => $r_carriers,
             'language' => 'us',
-            'options' => ['placeholder' => 'Select a carrier ...', 'multiple' => true],
+            'options' => ['multiple' => true],
             'pluginOptions' => [
                 //'tags' => true,
                 'tokenSeparators' => [',', ' '],
@@ -532,7 +537,7 @@ if ( isset($params['exchange_id']) && $params['exchange_id'] ){
             'data' => components\MapHelper::arrayToMap( $devices ),
             'value' => $r_devices,      
             'language' => 'us',
-            'options' => ['placeholder' => 'Select a device ...', 'multiple' => true],
+            'options' => ['multiple' => true],
             'pluginOptions' => [
                 //'tags' => true,
                 'tokenSeparators' => [',', ' '],
@@ -548,7 +553,7 @@ if ( isset($params['exchange_id']) && $params['exchange_id'] ){
             'data' => components\MapHelper::arrayToMap( $deviceBrands ),   
             'value' => $r_devicebrands,   
             'language' => 'us',
-            'options' => ['placeholder' => 'Select a device brand ...', 'multiple' => true],
+            'options' => ['multiple' => true],
             'pluginOptions' => [
                 //'tags' => true,
                 'tokenSeparators' => [',', ' '],
@@ -564,7 +569,7 @@ if ( isset($params['exchange_id']) && $params['exchange_id'] ){
             'data' => components\MapHelper::arrayToMap( $deviceModels ), 
             'value' => $r_devicemodels,    
             'language' => 'us',
-            'options' => ['placeholder' => 'Select a device model ...', 'multiple' => true],
+            'options' => ['multiple' => true],
             'pluginOptions' => [
                 //'tags' => true,
                 'tokenSeparators' => [',', ' '],
@@ -580,7 +585,7 @@ if ( isset($params['exchange_id']) && $params['exchange_id'] ){
             'data' => components\MapHelper::arrayToMap( $os ),  
             'value' => $r_os,    
             'language' => 'us',
-            'options' => ['placeholder' => 'Select an os ...', 'multiple' => true],
+            'options' => ['multiple' => true],
             'pluginOptions' => [
                 //'tags' => true,
                 'tokenSeparators' => [',', ' '],
@@ -596,7 +601,24 @@ if ( isset($params['exchange_id']) && $params['exchange_id'] ){
             'data' => components\MapHelper::arrayToMap( $osVersions ), 
             'value' => $r_osversions,     
             'language' => 'us',
-            'options' => ['placeholder' => 'Select an os version ...', 'multiple' => true],
+            'options' => ['multiple' => true],
+            'pluginOptions' => [
+                //'tags' => true,
+                'tokenSeparators' => [',', ' '],
+                'maximumInputLength' => 10
+            ],
+        ]);           
+    ?>  
+
+
+    <?=
+        '<label class="control-label">Browser</label>';
+        echo Select2::widget( [
+            'name' => 'browser',
+            'data' => components\MapHelper::arrayToMap( $browsers ), 
+            'value' => $r_browsers,
+            'language' => 'us',
+            'options' => ['multiple' => true],
             'pluginOptions' => [
                 //'tags' => true,
                 'tokenSeparators' => [',', ' '],
@@ -610,29 +632,13 @@ if ( isset($params['exchange_id']) && $params['exchange_id'] ){
 
 
     <?=
-        '<label class="control-label">Browser</label>';
-        echo Select2::widget( [
-            'name' => 'browser',
-            'data' => components\MapHelper::arrayToMap( $browsers ), 
-            'value' => $r_browsers,
-            'language' => 'us',
-            'options' => ['placeholder' => 'Select a browser ...', 'multiple' => true],
-            'pluginOptions' => [
-                //'tags' => true,
-                'tokenSeparators' => [',', ' '],
-                'maximumInputLength' => 10
-            ],
-        ]);           
-    ?>  
-
-    <?=
         '<label class="control-label">Browser Version</label>';
         echo Select2::widget( [
             'name' => 'browser_version',
             'data' => components\MapHelper::arrayToMap( $browserVersions ),
             'value' => $r_browserversions,      
             'language' => 'us',
-            'options' => ['placeholder' => 'Select a browser version ...', 'multiple' => true],
+            'options' => ['multiple' => true],
             'pluginOptions' => [
                 //'tags' => true,
                 'tokenSeparators' => [',', ' '],
@@ -648,7 +654,7 @@ if ( isset($params['exchange_id']) && $params['exchange_id'] ){
             'data' => components\MapHelper::arrayToMap( $pubIds ),
             'value' => $r_pubids,      
             'language' => 'us',
-            'options' => ['placeholder' => 'Select a pub id ...', 'multiple' => true],
+            'options' => ['multiple' => true],
             'pluginOptions' => [
                 //'tags' => true,
                 'tokenSeparators' => [',', ' '],
@@ -664,7 +670,7 @@ if ( isset($params['exchange_id']) && $params['exchange_id'] ){
             'data' => components\MapHelper::arrayToMap( $subpubIds ),
             'value' => $r_subpubids,      
             'language' => 'us',
-            'options' => ['placeholder' => 'Select a subpub id ...', 'multiple' => true],
+            'options' => ['multiple' => true],
             'pluginOptions' => [
                 //'tags' => true,
                 'tokenSeparators' => [',', ' '],
@@ -680,7 +686,7 @@ if ( isset($params['exchange_id']) && $params['exchange_id'] ){
             'data' => components\MapHelper::arrayToMap( $exchangeIds ),
             'value' => $r_exchangeids,      
             'language' => 'us',
-            'options' => ['placeholder' => 'Select an exchange id ...', 'multiple' => true],
+            'options' => ['multiple' => true],
             'pluginOptions' => [
                 //'tags' => true,
                 'tokenSeparators' => [',', ' '],
@@ -696,7 +702,7 @@ if ( isset($params['exchange_id']) && $params['exchange_id'] ){
             'data' => components\MapHelper::arrayToMap( $deviceIds ),
             'value' => $r_deviceids,      
             'language' => 'us',
-            'options' => ['placeholder' => 'Select a device id ...', 'multiple' => true],
+            'options' => ['multiple' => true],
             'pluginOptions' => [
                 //'tags' => true,
                 'tokenSeparators' => [',', ' '],
