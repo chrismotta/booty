@@ -20,6 +20,7 @@ class CampaignLogsSearch extends CampaignLogs
     public $fields_group1;
     public $fields_group2;
     public $fields_group3;
+    public $column;
 
 
     /**
@@ -96,14 +97,17 @@ class CampaignLogsSearch extends CampaignLogs
                 {
                     case 'campaign':
                         $fields[] = 'D_Campaign.name AS campaign';
+                        $fields[] = 'D_Campaign.id AS campaign_id';
                         $group[]  = 'D_Campaign.id';
                     break;
                     case 'affiliate':
                         $fields[] = 'D_Campaign.Affiliates_name AS affiliate';
+                        $fields[] = 'D_Campaign.Affiliates_id AS affiliate_id';
                         $group[]  = 'D_Campaign.Affiliates_id';
                     break;
                     case 'publisher':
                         $fields[] = 'D_Placement.Publishers_name AS publisher';
+                        $fields[] = 'D_Placement.Publishers_id AS publisher_id';
                         $group[]  = 'D_Placement.Publishers_id'; 
                     break;
                     case 'model':
@@ -129,10 +133,12 @@ class CampaignLogsSearch extends CampaignLogs
                     break;                                                   
                     case 'cluster':
                         $fields[] = 'F_ClusterLogs.cluster_name AS '.$field;
+                        $fields[] = 'F_ClusterLogs.cluster_id AS cluster_id';
                         $group[]  = 'F_ClusterLogs.cluster_id';
                     break;    
                     case 'placement':
                         $fields[] = 'D_Placement.name AS '.$field;
+                        $fields[] = 'D_Placement.id AS placement_id';
                         $group[]  = 'D_Placement.id';
                     break;  
                     case 'profit':
