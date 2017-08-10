@@ -17,9 +17,12 @@ use Yii;
 class CampaignLogs extends \yii\db\ActiveRecord
 {
     public $placement;
+    public $placement_id;
     public $publisher; 
+    public $publisher_id; 
     public $carrier;
     public $cluster;
+    public $cluster_id;
     public $device;
     public $device_brand;
     public $device_model;
@@ -28,8 +31,10 @@ class CampaignLogs extends \yii\db\ActiveRecord
     public $browser;
     public $browser_version;    
     public $campaign;
+    public $campaign_id;
     public $clusterlog;
     public $affiliate;
+    public $affiliate_id;
     public $model;
     public $status;
     public $country;
@@ -47,6 +52,7 @@ class CampaignLogs extends \yii\db\ActiveRecord
     public $profit_ecpm;
     public $profit;
     public $conv_rate;
+    public $column;
 
     /**
      * @inheritdoc

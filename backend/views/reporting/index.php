@@ -132,6 +132,46 @@ if(isset($dataProvider)){
         {
             switch ($column)
             {
+                case 'cluster':
+                    $columns[$p] = [
+                        'attribute' => $column,
+                        'value' => function($model, $key, $index, $widget) {
+                            return $model->cluster . ' ('.$model->cluster_id.')';
+                        },
+                    ];  
+                break;                
+                case 'publisher':
+                    $columns[$p] = [
+                        'attribute' => $column,
+                        'value' => function($model, $key, $index, $widget) {
+                            return $model->publisher . ' ('.$model->publisher_id.')';
+                        },
+                    ];  
+                break;                
+                case 'affiliate':
+                    $columns[$p] = [
+                        'attribute' => $column,
+                        'value' => function($model, $key, $index, $widget) {
+                            return $model->affiliate . ' ('.$model->affiliate_id.')';
+                        },
+                    ];  
+                break;                
+                case 'placement':
+                    $columns[$p] = [
+                        'attribute' => $column,
+                        'value' => function($model, $key, $index, $widget) {
+                            return $model->placement . ' ('.$model->placement_id.')';
+                        },
+                    ];                
+                break;                
+                case 'campaign':
+                    $columns[$p] = [
+                        'attribute' => $column,
+                        'value' => function($model, $key, $index, $widget) {
+                            return $model->campaign . ' ('.$model->campaign_id.')';
+                        },
+                    ];                
+                break;
                 case 'imps':
                 case 'convs':
                 case 'revenue_ecpm':
