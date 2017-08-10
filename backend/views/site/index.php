@@ -30,7 +30,7 @@ $dates          = [];
 $impsByCountry  = [];
 
 $currentDate    = date("Y-m-d");
-$from           = new DateTime(date("Y-m-d", strtotime("-7 days")));
+$from           = new DateTime(date("Y-m-d", strtotime("-6 days")));
 $to             = new DateTime($currentDate);
 $daterange      = new DatePeriod($from, new DateInterval('P1D'), $to);
 
