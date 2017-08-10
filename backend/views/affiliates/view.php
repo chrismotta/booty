@@ -13,7 +13,7 @@ $this->params['breadcrumbs'][] = $this->title;
 <div class="affiliates-view">
 
     <p>
-        <?= Html::a('Admin', ['affilliates/'], ['class' => 'btn btn-success']) ?>
+        <?= Html::a('Admin', ['affiliates/'], ['class' => 'btn btn-success']) ?>
         <?= Html::a('Update', ['update', 'id' => $model->id], ['class' => 'btn btn-primary']) ?>
         <?= Html::a('Delete', ['delete', 'id' => $model->id], [
             'class' => 'btn btn-danger',
