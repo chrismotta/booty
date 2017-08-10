@@ -67,7 +67,7 @@ class SiteController extends Controller
             ['date(date)'], 
             null, 
             [[ '=', 'date(date)',new \yii\db\Expression( 'CURDATE()' ) ]],
-            [ 'sum(imps) AS imps', 'sum(unique_users) AS unique_users', 'sum(installs) AS installs']
+            [ 'sum(imps) AS imps', 'sum(unique_users) AS unique_users', 'sum(installs) AS installs', 'sum(cost) AS cost', 'sum(revenue) AS revenue']
         );
 
         $yesterdayProvider = $model->loadData( 
