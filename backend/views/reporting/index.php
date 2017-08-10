@@ -136,7 +136,8 @@ if(isset($dataProvider)){
                     $columns[$p] = [
                         'attribute' => $column,
                         'value' => function($model, $key, $index, $widget) {
-                            return $model->cluster . ' ('.$model->cluster_id.')';
+                            $value = $model->cluster ? $model->cluster . ' ('.$model->cluster_id.')' : null;
+                            return $value;
                         },
                     ];  
                 break;                
@@ -144,7 +145,8 @@ if(isset($dataProvider)){
                     $columns[$p] = [
                         'attribute' => $column,
                         'value' => function($model, $key, $index, $widget) {
-                            return $model->publisher . ' ('.$model->publisher_id.')';
+                            $value = $model->publisher ? $model->publisher . ' ('.$model->publisher_id.')' : null;
+                            return $value;
                         },
                     ];  
                 break;                
@@ -152,7 +154,8 @@ if(isset($dataProvider)){
                     $columns[$p] = [
                         'attribute' => $column,
                         'value' => function($model, $key, $index, $widget) {
-                            return $model->affiliate . ' ('.$model->affiliate_id.')';
+                            $value = $model->affiliate ? $model->affiliate . ' ('.$model->affiliate_id.')' : null;
+                            return $value;
                         },
                     ];  
                 break;                
@@ -160,7 +163,8 @@ if(isset($dataProvider)){
                     $columns[$p] = [
                         'attribute' => $column,
                         'value' => function($model, $key, $index, $widget) {
-                            return $model->placement . ' ('.$model->placement_id.')';
+                            $value = $model->placement ? $model->placement . ' ('.$model->placement_id.')' : null;
+                            return $value;
                         },
                     ];                
                 break;                
@@ -168,7 +172,8 @@ if(isset($dataProvider)){
                     $columns[$p] = [
                         'attribute' => $column,
                         'value' => function($model, $key, $index, $widget) {
-                            return $model->campaign . ' ('.$model->campaign_id.')';
+                            $value = $model->campaign ? $model->campaign . ' ('.$model->campaign_id.')' : null;
+                            return $value;
                         },
                     ];                
                 break;
