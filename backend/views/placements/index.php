@@ -40,7 +40,7 @@ $filterByCluster = ArrayHelper::map(
 <?php Pjax::begin(); ?>    <?= GridView::widget([
         'dataProvider' => $dataProvider,
         'filterModel' => $searchModel,
-        'layout' => '<div class="box box-info"><div class="box-header">{summary}</div><div class="box-body">{items}</div><div class="box-footer">{pager}</div></div>',
+        'layout' => \Yii::$app->params['gridDefalutLayout'],
         'columns' => [
 
             'id',
