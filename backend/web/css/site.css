@@ -166,3 +166,16 @@ a.desc:after {
 .prevent-deep-link {
     cursor: default;
 }
+
+td.active {
+    color: green;
+}
+td.health_check {
+    color: orange;
+}
+td.test {
+    color: red;
+}
+td.paused {
+    color: grey;
+}
