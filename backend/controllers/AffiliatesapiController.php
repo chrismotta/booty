@@ -401,7 +401,7 @@ class AffiliatesapiController extends \yii\web\Controller
 			return $this->_alerts;
     	}  	
 
-        return '<tr><td>No errors</td></tr>';
+        return '<tr><td colspan="0">No errors</td></tr>';
     }
 
 
@@ -455,7 +455,7 @@ class AffiliatesapiController extends \yii\web\Controller
 			return $this->_changes;
     	}  	
 
-        return '<tr><td>No important changes</td></tr>';
+        return '<tr><td colspan="0">No important changes</td></tr>';
     }
 
     private function _sendmail ( $from, $to, $subject, $body )
