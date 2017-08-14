@@ -109,7 +109,7 @@ class Campaigns extends \yii\db\ActiveRecord
     public static function getByCluster( $cluster_id ){
         $campaigns = self::find();
         $campaigns->joinWith(['clustersHasCampaigns']);
-        $campaigns->select(['Campaigns.id AS id', 'Campaigns.status AS status']);
+        $campaigns->select(['Campaigns.id AS id', 'Campaigns.status AS status', 'Campaigns.landing_url AS landing_url', 'Campaigns.payout AS payout']);
         $campaigns->where(['=', 'Clusters_has_Campaigns.Clusters_id', $cluster_id] );
 
        return $campaigns->all();

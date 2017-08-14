@@ -114,10 +114,6 @@ class CampaignLogsSearch extends CampaignLogs
                         $fields[] = 'D_Placement.model AS model';
                         $group[]  = 'D_Placement.model';
                     break;
-                    case 'status':
-                        $fields[] = 'D_Placement.status AS status';
-                        $group[]  = 'D_Placement.status';
-                    break;
                     case 'imps':
                     case 'cost':
                         $fields[] = 'SUM(F_ClusterLogs.'.$field.') AS '.$field;
@@ -412,6 +408,20 @@ class CampaignLogsSearch extends CampaignLogs
                 }
             }
         }    
+
+        if ( isset($params['model']) && $params['model'] ){
+            $first = true;
+            foreach ( $params['model'] as $id )
+            {
+                if ( $first ){
+                    $query->andFilterWhere( ['=', 'D_Placement.model', $id] );
+                    $first = false;
+                }
+                else{
+                    $query->orFilterWhere( ['=', 'D_Placement.model', $id] );
+                }
+            }
+        }   
 
         if ( isset($params['device']) && $params['device'] ){
             $first = true;

@@ -157,7 +157,21 @@ class EtlController extends \yii\web\Controller
                 $this->_sendMail ( self::ALERT_FROM, self::ALERT_TO, $this->_alertSubject, $msg );
 
             die($msg);
-        }       
+        } 
+
+        try
+        {
+            $this->actionPopulatefilters();
+        } 
+        catch (Exception $e) {
+            $msg .= "REPORTING FILTERS POPULATE ERROR: ".$e->getCode().'<hr>';
+            $msg .= $e->getMessage();
+
+            if ( !$this->_noalerts )
+                $this->_sendMail ( self::ALERT_FROM, self::ALERT_TO, $this->_alertSubject, $msg );
+
+            die($msg);
+        }               
     }
 
 
@@ -590,19 +604,12 @@ class EtlController extends \yii\web\Controller
                     }
 
                     // save reporting multiselect data
-                    \Yii::$app->redis->sadd( 'carriers', $clusterLog['carrier']  );
-                    \Yii::$app->redis->sadd( 'countries', $clusterLog['country']  );
-                    \Yii::$app->redis->sadd( 'exchange_ids', $clusterLog['exchange_id']  );
-                    \Yii::$app->redis->sadd( 'pub_ids', $clusterLog['pub_id']  );
-                    \Yii::$app->redis->sadd( 'subpub_ids', $clusterLog['subpub_id']  );
-                    \Yii::$app->redis->sadd( 'device_ids', $clusterLog['device_id']  );                    
-
-                    // save cluster name to be used in reporting multiselect
-                    if ( !\in_array( $clusterLog['cluster_id'], $clusters ) )
-                    {
-                        \Yii::$app->redis->hset( 'clusternames', $clusterLog['cluster_id'], $clusterLog['cluster_name']  );
-                    }
-
+                    \Yii::$app->redis->zadd( 'carriers', 0, $clusterLog['carrier']  );
+                    \Yii::$app->redis->zadd( 'countries', 0, $clusterLog['country']  );
+                    \Yii::$app->redis->zadd( 'exchange_ids', 0, $clusterLog['exchange_id']  );
+                    \Yii::$app->redis->zadd( 'pub_ids', 0, $clusterLog['pub_id']  );
+                    \Yii::$app->redis->zadd( 'subpub_ids', 0, $clusterLog['subpub_id']  );
+                    \Yii::$app->redis->zadd( 'device_ids', 0, $clusterLog['device_id']  );                    
                     // free memory 
                     unset ( $clusterLog );
                 }
@@ -651,13 +658,14 @@ class EtlController extends \yii\web\Controller
         {
             $ua = $this->_redis->hgetall( 'ua:'.$id );
 
-            \Yii::$app->redis->sadd( 'devices', $ua['device']  );
-            \Yii::$app->redis->sadd( 'device_brands', $ua['device_brand']  );
-            \Yii::$app->redis->sadd( 'device_models', $ua['device_model']  );
-            \Yii::$app->redis->sadd( 'os', $ua['os']  );
-            \Yii::$app->redis->sadd( 'os_versions', $ua['os_version']  );
-            \Yii::$app->redis->sadd( 'browsers', $ua['browser']  );
-            \Yii::$app->redis->sadd( 'browser_versions', $ua['browser_version']  );
+            // guarda en redis con el component de yii, configurado para guardar en la db 9
+            \Yii::$app->redis->zadd( 'devices', 0, $ua['device']  );
+            \Yii::$app->redis->zadd( 'device_brands', 0, $ua['device_brand']  );
+            \Yii::$app->redis->zadd( 'device_models', 0, $ua['device_model']  );
+            \Yii::$app->redis->zadd( 'os', 0, $ua['os']  );
+            \Yii::$app->redis->zadd( 'os_versions', 0, $ua['os_version']  );
+            \Yii::$app->redis->zadd( 'browsers', 0, $ua['browser']  );
+            \Yii::$app->redis->zadd( 'browser_versions', 0, $ua['browser_version']  );
 
             // free memory cause there is no garbage collection until block ends
             unset($ua);
@@ -705,6 +713,153 @@ class EtlController extends \yii\web\Controller
 		echo 'Placements: '.$rows.' - Elapsed time: '.$elapsed.' seg.<hr/>';
     }
 
+
+    public function actionPopulatefilters ( )
+    {
+        $this->actionPopulateclusterfilters();
+        $this->actionPopulatecampaignfilters();
+        $this->actionPopulateplacementfilters();
+        $this->actionPopulateaffiliatefilters();
+        $this->actionPopulatepublisherfilters();
+    }
+
+
+    public function actionPopulateclusterfilters ( )
+    {
+        $start = time();
+
+        $clusters = models\Clusters::find()->all();
+
+        foreach ( $clusters as $model )
+        {
+            if (strlen($model->name)>31)
+                $fill = '...';
+            else
+                $fill = '';
+
+            $data = [
+                'name'  => substr($model->name,0,30) . $fill . ' ('.$model->id.')',
+                'id'    => $model->id
+            ];
+
+            // guarda en redis con el component de yii, configurado para guardar en la db 9
+            \Yii::$app->redis->zadd( 'clusters', 0,  json_encode($data) );
+        }
+
+        $elapsed = time() - $start;
+
+        echo 'Cluster filters: '.count($clusters).' rows - Elapsed time: '.$elapsed.' seg.<hr/>';
+    }
+
+
+    public function actionPopulatecampaignfilters ( )
+    {
+        $start = time();
+
+        $campaigns = models\Campaigns::find()->all();
+
+        foreach ( $campaigns as $model )
+        {
+            if (strlen($model->name)>31)
+                $fill = '...';
+            else
+                $fill = '';
+
+            $data = [
+                'name'  => substr($model->name,0,30) . $fill . ' ('.$model->id.')',
+                'id'    => $model->id
+            ];
+
+            // guarda en redis con el component de yii, configurado para guardar en la db 9
+            \Yii::$app->redis->zadd( 'campaigns', 0,  json_encode($data) );
+        }
+
+        $elapsed = time() - $start;
+
+        echo 'Campaigns filters: '.count($campaigns).' rows - Elapsed time: '.$elapsed.' seg.<hr/>';
+    } 
+
+
+    public function actionPopulateaffiliatefilters ( )
+    {
+        $start = time();
+
+        $affiliates = models\Affiliates::find()->all();
+
+        foreach ( $affiliates as $model )
+        {
+            if (strlen($model->name)>31)
+                $fill = '...';
+            else
+                $fill = '';
+
+            $data = [
+                'name'  => substr($model->name,0,30) . $fill . ' ('.$model->id.')',
+                'id'    => $model->id
+            ];
+
+            // guarda en redis con el component de yii, configurado para guardar en la db 9
+            \Yii::$app->redis->zadd( 'affiliates', 0,  json_encode($data) );
+        }
+
+        $elapsed = time() - $start;
+
+        echo 'Affiliate filters: '.count($affiliates).' rows - Elapsed time: '.$elapsed.' seg.<hr/>';
+    }        
+
+    public function actionPopulateplacementfilters ( )
+    {
+        $start = time();
+
+        $placements = models\Placements::find()->all();
+
+        foreach ( $placements as $model )
+        {
+            if (strlen($model->name)>31)
+                $fill = '...';
+            else
+                $fill = '';
+
+            $data = [
+                'name'  => substr($model->name,0,30) . $fill . ' ('.$model->id.')',
+                'id'    => $model->id
+            ];
+
+            // guarda en redis con el component de yii, configurado para guardar en la db 9
+            \Yii::$app->redis->zadd( 'placements', 0,  json_encode($data) );
+        }
+
+        $elapsed = time() - $start;
+
+        echo 'Placements filters: '.count($placements).' rows - Elapsed time: '.$elapsed.' seg.<hr/>';
+    }
+
+    public function actionPopulatepublisherfilters ( )
+    {
+        $start = time();
+
+        $publishers = models\Publishers::find()->all();
+
+        foreach ( $publishers as $model )
+        {
+            if (strlen($model->name)>31)
+                $fill = '...';
+            else
+                $fill = '';
+                            
+            $data = [
+                'name'  => substr($model->name,0,30) . $fill . ' ('.$model->id.')',
+                'id'    => $model->id
+            ];
+
+            // guarda en redis con el component de yii, configurado para guardar en la db 9
+            \Yii::$app->redis->zadd( 'publishers', 0,  json_encode($data) );
+        }
+
+        $elapsed = time() - $start;
+
+        echo 'Publishers filters: '.count($publishers).' rows - Elapsed time: '.$elapsed.' seg.<hr/>';
+    }      
 
     public function campaigns ( )
     {
@@ -941,7 +1096,15 @@ class EtlController extends \yii\web\Controller
                         $status = 0;
                     break;
                 }
+
                 $this->_redis->zadd( 'clusterlist:'.$model->id, $status, $campaign->id );
+
+                $this->_redis->hmset( 'campaign:'.$campaign->id, [
+                    'callback' => $campaign->landing_url,
+                    'payout'   => $campaign->payout
+                ]);
+
+                var_export($campaign);
             }
         }
 

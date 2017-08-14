@@ -24,23 +24,31 @@ $this->params['breadcrumbs'][] = $this->title;
 $searchModel->date_start = isset($_GET['CampaignLogsSearch']['date_start']) ? $_GET['CampaignLogsSearch']['date_start'] : date( 'd-m-Y' );
 $searchModel->date_end = isset($_GET['CampaignLogsSearch']['date_end']) ? $_GET['CampaignLogsSearch']['date_end'] : date( 'd-m-Y' );
 
-$DPlacement       = models\DPlacement::find()->asArray()->all();
-$DCampaign        = models\DCampaign::find()->asArray()->all();
 
-$clusterNames     = components\MapHelper::redisToMap(\Yii::$app->redis->hgetall( 'clusternames' ));
-$devices          = \Yii::$app->redis->smembers( 'devices' );
-$deviceBrands     = \Yii::$app->redis->smembers( 'device_brands' );
-$deviceModels     = \Yii::$app->redis->smembers( 'device_models' );
-$os               = \Yii::$app->redis->smembers( 'os' );
-$osVersions       = \Yii::$app->redis->smembers( 'os_versions' );
-$browsers         = \Yii::$app->redis->smembers( 'browsers' );
-$browserVersions  = \Yii::$app->redis->smembers( 'browser_versions' );
-$countries        = \Yii::$app->redis->smembers( 'countries' );
-$carriers         = \Yii::$app->redis->smembers( 'carriers' );
-$pubIds           = \Yii::$app->redis->smembers( 'pub_ids' );
-$exchangeIds      = \Yii::$app->redis->smembers( 'exchange_ids' );
-$subpubIds        = \Yii::$app->redis->smembers( 'subpub_ids' );
-$deviceIds        = \Yii::$app->redis->smembers( 'device_ids' );
+$clusters     = components\MapHelper::filtersFromRedisToSelectWidget( \Yii::$app->redis->zrange( 'clusters', 0, \Yii::$app->redis->zcard('clusters') ) );
+
+$placements     = components\MapHelper::filtersFromRedisToSelectWidget( \Yii::$app->redis->zrange( 'placements', 0, \Yii::$app->redis->zcard('placements') ) );
+
+$affiliates     = components\MapHelper::filtersFromRedisToSelectWidget( \Yii::$app->redis->zrange( 'affiliates', 0, \Yii::$app->redis->zcard('affiliates') ) );
+
+$publishers     = components\MapHelper::filtersFromRedisToSelectWidget( \Yii::$app->redis->zrange( 'publishers', 0, \Yii::$app->redis->zcard('publishers') ) );
+
+$campaigns     = components\MapHelper::filtersFromRedisToSelectWidget( \Yii::$app->redis->zrange( 'campaigns', 0, \Yii::$app->redis->zcard('campaigns') ) );
+
+
+$devices          = \Yii::$app->redis->zrange( 'devices', 0, \Yii::$app->redis->zcard('devices') );
+$deviceBrands     = \Yii::$app->redis->zrange( 'device_brands', 0, \Yii::$app->redis->zcard('device_brands') );
+$deviceModels     = \Yii::$app->redis->zrange( 'device_models', 0, \Yii::$app->redis->zcard('device_models') );
+$os               = \Yii::$app->redis->zrange( 'os', 0, \Yii::$app->redis->zcard('os') );
+$osVersions       = \Yii::$app->redis->zrange( 'os_versions', 0, \Yii::$app->redis->zcard('os_versions') );
+$browsers         = \Yii::$app->redis->zrange( 'browsers', 0, \Yii::$app->redis->zcard('browsers') );
+$browserVersions  = \Yii::$app->redis->zrange( 'browser_versions', 0, \Yii::$app->redis->zcard('browser_versions') );
+$countries        = \Yii::$app->redis->zrange( 'countries', 0, \Yii::$app->redis->zcard('countries') );
+$carriers         = \Yii::$app->redis->zrange( 'carriers', 0, \Yii::$app->redis->zcard('carriers') );
+$pubIds           = \Yii::$app->redis->zrange( 'pub_ids', 0, \Yii::$app->redis->zcard('pub_ids') );
+$exchangeIds      = \Yii::$app->redis->zrange( 'exchange_ids', 0, \Yii::$app->redis->zcard('exchange_ids') );
+$subpubIds        = \Yii::$app->redis->zrange( 'subpub_ids', 0, \Yii::$app->redis->zcard('subpub_ids') );
+$deviceIds        = \Yii::$app->redis->zrange( 'device_ids', 0, \Yii::$app->redis->zcard('device_ids') );
 
 $params = Yii::$app->request->get();
 $onloadJs = '
@@ -84,9 +92,11 @@ $this->registerJs(
     <?= $this->render('_form', [
         'model'       => $model,
         'searchModel' => $searchModel,
-        'DPlacement'  => $DPlacement,
-        'DCampaign'   => $DCampaign,
-        'clusterNames'=> $clusterNames,
+        'affiliates'  => $affiliates,
+        'placements'  => $placements,
+        'publishers'  => $publishers,
+        'campaigns'   => $campaigns,
+        'clusters'    => $clusters,
         'countries'   => $countries,
         'carriers'    => $carriers,
         'devices'     => $devices,
