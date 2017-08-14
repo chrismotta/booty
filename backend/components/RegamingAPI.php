@@ -14,7 +14,7 @@
 		protected $_msg;
 		protected $_status;
 
-		public function request ( $api_key, $user_id = null  )
+		public function requestCampaigns ( $api_key, $user_id = null  )
 		{
 			$url    = self::URL . '&token='.$api_key;
 			$curl   = curl_init($url);
