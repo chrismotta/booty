@@ -248,6 +248,10 @@ class ClustersController extends Controller
         }
 
         $cache->zadd( 'clusterlist:'.$id, $status, $campaign->id );
+        $cache->hmset( 'campaign:'.$campaign->id, [
+            'callback' => $campaign->landing_url,
+            'payout'   => $campaign->payout
+        ]);
         
         // debug
         // echo $return;
@@ -262,11 +266,6 @@ class ClustersController extends Controller
 
         $cache = new \Predis\Client( \Yii::$app->params['predisConString'] );
         $cache->zrem( 'clusterlist:'.$id, $campaign->id );
-
-        $cache->hmset( 'campaign:'.$campaign->id, [
-            'callback' => $campaign->landing_url,
-            'payout'   => $campaign->payout
-        ]);
 
         // debug
         // echo $return;
