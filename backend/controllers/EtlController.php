@@ -1103,8 +1103,6 @@ class EtlController extends \yii\web\Controller
                     'callback' => $campaign->landing_url,
                     'payout'   => $campaign->payout
                 ]);
-
-                var_export($campaign);
             }
         }
 
