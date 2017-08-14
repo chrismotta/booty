@@ -34,8 +34,8 @@
 			}
 			else if ( isset($response->error_messages) && $response->error_messages )
 			{
-				return false;
 				$this->_msg = $response->error_messages;
+				return false;
 			}
 
 			$result = [];
@@ -111,6 +111,7 @@
 				$result[] = [
 					'ext_id' 			=> $ext_id,
 					'name'				=> $campaign->Name,
+					'desc'				=> $campaign->Description,					
 					'payout' 			=> $campaign->Payout,
 					'landing_url'		=> $campaign->Tracking_url,
 					'country'			=> $countries,

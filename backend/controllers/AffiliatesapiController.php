@@ -29,111 +29,127 @@ class AffiliatesapiController extends \yii\web\Controller
 			[
 				'class' 		=> 'SlaviaMobileAPI',
 				'affiliate_id'	=> 3,
-			],			
+			],		
+            [
+                'class'         => 'PocketMediaAPI',
+                'affiliate_id'  => 4,
+            ],              	
 		];
 	}
 
 
-    public function actionIndex()
+    public function actionIndex( $affiliate_id = null )
     {	
     	$this->_changes = '';
     	$this->_alerts  = '';
     	$this->_redis 	= new \Predis\Client( \Yii::$app->params['predisConString'] );
 
-    	foreach ( $this->_apiRules() AS $rule )
-    	{
-    		$className  = 'backend\components\\'.$rule['class'];
-    		$api 		= new $className;
-    		$affiliate  = models\Affiliates::findOne( ['id' => $rule['affiliate_id'] ] );
 
-    		try
-    		{
-    			$campaignsData  = $api->requestCampaigns( $affiliate->api_key, $affiliate->user_id );
-
-    			if ( $campaignsData && is_array($campaignsData) )
-    			{
-    				foreach ( $campaignsData AS $campaignData )
-    				{
-    					$campaign = models\Campaigns::findOne([ 
-    						'ext_id' 		=> $campaignData['ext_id'],
-    						'Affiliates_id' => $affiliate->id
-    					]);
-
-    					if  ( $campaign )
-    					{
-    						$this->_checkChanges( $rule['class'], $campaign, $campaignData );
-
-							if ( 
-								$campaign->landing_url != $campaignData['landing_url'] 
-								&& $this->_redis->exists( 'campaign:'.$campaign->id ) 
-							)
-							{
-						        $this->_redis->hset( 'campaign:'.$campaign->id,
-						            'callback', 
-						            $campaign->landing_url
-						        );					
-							}    						
-    					}
-    					else
-    					{
-    						$campaign = new models\Campaigns;
-    					}
-
-
-    					$campaign->Affiliates_id = $affiliate->id;
-    					$campaign->name    		 = $campaignData['name'];
-    					$campaign->status  		 = $campaignData['status'];
-    					$campaign->ext_id  		 = $campaignData['ext_id'];
-    					$campaign->payout  		 = (float)$campaignData['payout'];
-    					$campaign->landing_url   = $campaignData['landing_url'];
-
-    					if ( $campaignData['country'] )
-    						$campaign->country  	= json_encode($campaignData['country']);
-
-    					if ( $campaignData['device_type'] )
-    						$campaign->device_type  = json_encode($campaignData['device_type']);
-
-    					if ( $campaignData['os'] )
-    						$campaign->os 			= json_encode($campaignData['os']);		
-
-    					if ( $campaignData['os_version'] )
-    						$campaign->os_version	= json_encode($campaignData['os_version']);		    								
-
-    					if ( $campaignData['carrier'] )
-    						$campaign->carrier 		= json_encode($campaignData['carrier']);		    					
-
-    					if ( $campaignData['connection_type'] )
-    						$campaign->connection_type = json_encode($campaignData['connection_type']);    					
-
-    					//var_export($campaign);die();
-    					
-    					if ( !$campaign->save() )
-    						$this->_createAlert(  $rule['class'], $campaign->getErrors(), $api->getStatus(), json_encode($campaignData) );
-
-    					unset( $campaign );				
-    				}
-    			}
-    			else
-    			{
-    				$this->_createAlert( $rule['class'], $api->getMessages(), $api->getStatus() );
-    				continue;
-    			}
-    		}
-    		catch ( Exception $e )
-    		{
-    			$msg = 'exception';
-    			$this->_createAlert(  $rule['class'], $msg, $api->getStatus() );
-    			continue;
-    		}
-
-    		unset ( $api );
-    		unset ( $affiliate );
-    	}
+        foreach ( $this->_apiRules() AS $rule )
+        {
+            if ( !$affiliate_id )
+            {
+                $this->_runAPI( $rule );
+            }            
+            if ( $affiliate_id == $rule['affiliate_id'] )
+            {
+                $this->_runAPI( $rule );
+                break;
+            }
+        }
 
     	$this->_sendAlerts();
     	$this->_sendNotifications();
+    }
 
-        //return $this->render('index');
+
+    protected function _runAPI ( array $rule )
+    {
+        $className  = 'backend\components\\'.$rule['class'];
+        $api        = new $className;
+        $affiliate  = models\Affiliates::findOne( ['id' => $rule['affiliate_id'] ] );
+
+        try
+        {
+            $campaignsData  = $api->requestCampaigns( $affiliate->api_key, $affiliate->user_id );
+
+            if ( $campaignsData && is_array($campaignsData) )
+            {
+                foreach ( $campaignsData AS $campaignData )
+                {
+                    $campaign = models\Campaigns::findOne([ 
+                        'ext_id'        => $campaignData['ext_id'],
+                        'Affiliates_id' => $affiliate->id
+                    ]);
+
+                    if  ( $campaign )
+                    {
+                        $this->_checkChanges( $rule['class'], $campaign, $campaignData );
+
+                        if ( 
+                            $campaign->landing_url != $campaignData['landing_url'] 
+                            && $this->_redis->exists( 'campaign:'.$campaign->id ) 
+                        )
+                        {
+                            $this->_redis->hset( 'campaign:'.$campaign->id,
+                                'callback', 
+                                $campaign->landing_url
+                            );                  
+                        }                           
+                    }
+                    else
+                    {
+                        $campaign = new models\Campaigns;
+                    }
+
+
+                    $campaign->Affiliates_id = $affiliate->id;
+                    $campaign->name          = $campaignData['name'];
+                    $campaign->status        = $campaignData['status'];
+                    $campaign->ext_id        = $campaignData['ext_id'];
+                    $campaign->info          = $campaignData['desc'];
+                    $campaign->payout        = (float)$campaignData['payout'];
+                    $campaign->landing_url   = $campaignData['landing_url'];
+
+                    if ( $campaignData['country'] )
+                        $campaign->country      = json_encode($campaignData['country']);
+
+                    if ( $campaignData['device_type'] )
+                        $campaign->device_type  = json_encode($campaignData['device_type']);
+
+                    if ( $campaignData['os'] )
+                        $campaign->os           = json_encode($campaignData['os']);     
+
+                    if ( $campaignData['os_version'] )
+                        $campaign->os_version   = json_encode($campaignData['os_version']);                                         
+
+                    if ( $campaignData['carrier'] )
+                        $campaign->carrier      = json_encode($campaignData['carrier']);                                
+
+                    if ( $campaignData['connection_type'] )
+                        $campaign->connection_type = json_encode($campaignData['connection_type']);                     
+
+                    //var_export($campaign);die();
+                    
+                    if ( !$campaign->save() )
+                        $this->_createAlert(  $rule['class'], $campaign->getErrors(), $api->getStatus(), json_encode($campaignData) );
+
+                    unset( $campaign );             
+                }
+            }
+            else
+            {
+                $this->_createAlert( $rule['class'], $api->getMessages(), $api->getStatus() );
+            }
+        }
+        catch ( Exception $e )
+        {
+            $msg = 'exception';
+            $this->_createAlert(  $rule['class'], $msg, $api->getStatus() );
+        }
+
+        unset ( $api );
+        unset ( $affiliate );    
     }
 
 
