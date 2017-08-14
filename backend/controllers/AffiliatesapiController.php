@@ -9,8 +9,8 @@ use backend\components;
 
 class AffiliatesapiController extends \yii\web\Controller
 {
-	const NOTIFY_INBOX = '';
-	const ALERTS_INBOX = '';
+	const NOTIFY_INBOX = 'dev@splad.co';
+	const ALERTS_INBOX = 'dev@splad.co';
 
 	protected $_notifications;
 	protected $_redis;
@@ -58,8 +58,54 @@ class AffiliatesapiController extends \yii\web\Controller
             }
         }
 
-    	$this->_sendAlerts();
-    	$this->_sendNotifications();
+        echo '
+            <html>
+                <head>
+                    <style>
+                        td {
+                            padding:10px;
+                            border:1px solid;
+                        }
+                        table{
+                            border:1px solid;
+                            border-collapse:collapse;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <h1>Errors</h1>
+                    <table>
+                        <thead>
+                            <td>API</td>
+                            <td>HTTP STATUS</td>                                
+                            <td>MESSAGE</td>
+                            <td>PARAMS</td>
+                        </thead>
+                        <tbody>'.$this->_sendAlerts().'</tbody>
+                    </table>   
+                    <br>
+                    <hr>
+                    <h1>Notifications</h1>             
+                    <table>
+                        <thead>
+                            <td>API</td>
+                            <td>CAMPAIGN ID</td>
+                            <td>EXT ID</td>
+                            <td>PAYOUT</td>
+                            <td>COUNTRY</td>
+                            <td>CARRIER</td>
+                            <td>CONNECTION</td>
+                            <td>DEVICE</td>
+                            <td>OS</td>
+                            <td>OS VERSION</td>
+                            <td>STATUS</td>
+                            <td>AFFECTED CLUSTERS</td>
+                        </thead>
+                        <tbody>'.$this->_sendNotifications().'</tbody>
+                    </table>                    
+                </body>
+            </html>         
+        ';
     }
 
 
@@ -352,8 +398,10 @@ class AffiliatesapiController extends \yii\web\Controller
 				$html 
 			);
 
-			echo $html.'<hr>';
+			return $this->_alerts;
     	}  	
+
+        return '<tr><td>No errors</td></tr>';
     }
 
 
@@ -404,8 +452,10 @@ class AffiliatesapiController extends \yii\web\Controller
 				$html 
 			);
 
-			echo $html.'<hr>';
+			return $this->_changes;
     	}  	
+
+        return '<tr><td>No important changes</td></tr>';
     }
 
     private function _sendmail ( $from, $to, $subject, $body )
