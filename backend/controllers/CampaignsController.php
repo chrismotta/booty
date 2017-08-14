@@ -3,6 +3,7 @@
 namespace backend\controllers;
 
 use Yii;
+use app\models;
 use app\models\Campaigns;
 use app\models\CampaignsSearch;
 use app\models\Countries;
@@ -102,9 +103,9 @@ class CampaignsController extends Controller
                 break;
             }
 
-            foreach ( $clusterHasCampaigns as $assign )
+            foreach ( $clustersHasCampaigns as $assign )
             {
-                $this->_redis->zadd( 'clusterlist:'.$assign['Clusters_id'], $status, $campaign->id );
+                $cache->zadd( 'clusterlist:'.$assign['Clusters_id'], $status, $assign['Campaigns_id'] );
             }
    
             return $this->redirect(['view', 'id' => $model->id]);
