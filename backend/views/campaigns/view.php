@@ -32,6 +32,7 @@ $this->params['breadcrumbs'][] = $this->title;
                 'attribute' => 'affiliates.name'
             ],
             'name',
+            'ext_id',
             'payout',
             'country',
             'connection_type',
