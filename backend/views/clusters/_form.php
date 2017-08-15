@@ -38,7 +38,7 @@ $carriers        = models\Carriers::find()->asArray()->all();
 
     <?= $form->field($model, 'os')->dropDownList([ 'Android' => 'Android', 'iOS' => 'iOS', 'Windows' => 'Windows', 'BlackBerry' => 'BlackBerry' ], ['prompt' => '']) ?>
 
-    <?= $form->field($model, 'os_version')->textInput(['type' => 'number']) ?>
+    <?= $form->field($model, 'os_version')->textInput(['type' => 'text']) ?>
 
     <?= 
         '<label class="control-label">Static Campaign</label>';

@@ -44,6 +44,12 @@ $this->params['breadcrumbs'][] = $this->title;
             'landing_url:url',
             'creative_320x50',
             'creative_300x250',
+            [
+                'attribute'=>'Test URL',
+                'value'=> function($model, $widget){
+                    return 'http://ad.spdx.co/click/test/'.$model->id;
+                }
+            ]
         ],
     ]) ?>
 
