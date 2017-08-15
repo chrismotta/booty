@@ -8,7 +8,7 @@
 	 
 	class PocketMediaAPI extends Component
 	{
-
+		// uses hasoffers.com plattform
 		const URL = 'https://pocketmedia.api.hasoffers.com/Apiv3/json?&Target=Offer&Method=findAll';
 
 		protected $_msg;

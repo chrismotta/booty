@@ -76,10 +76,10 @@ class AffiliatesapiController extends \yii\web\Controller
                     <h1>Errors</h1>
                     <table>
                         <thead>
-                            <td>API</td>
-                            <td>HTTP STATUS</td>                                
-                            <td>MESSAGE</td>
-                            <td>PARAMS</td>
+                            <th>API</th>
+                            <th>HTTP STATUS</th>                                
+                            <th>MESSAGE</th>
+                            <th>PARAMS</th>
                         </thead>
                         <tbody>'.$this->_sendAlerts().'</tbody>
                     </table>   
@@ -88,18 +88,18 @@ class AffiliatesapiController extends \yii\web\Controller
                     <h1>Notifications</h1>             
                     <table>
                         <thead>
-                            <td>API</td>
-                            <td>CAMPAIGN ID</td>
-                            <td>EXT ID</td>
-                            <td>PAYOUT</td>
-                            <td>COUNTRY</td>
-                            <td>CARRIER</td>
-                            <td>CONNECTION</td>
-                            <td>DEVICE</td>
-                            <td>OS</td>
-                            <td>OS VERSION</td>
-                            <td>STATUS</td>
-                            <td>AFFECTED CLUSTERS</td>
+                            <th>API</th>
+                            <th>CAMPAIGN ID</th>
+                            <th>EXT ID</th>
+                            <th>PAYOUT</th>
+                            <th>COUNTRY</th>
+                            <th>CARRIER</th>
+                            <th>CONNECTION</th>
+                            <th>DEVICE</th>
+                            <th>OS</th>
+                            <th>OS VERSION</th>
+                            <th>STATUS</th>
+                            <th>AFFECTED CLUSTERS</th>
                         </thead>
                         <tbody>'.$this->_sendNotifications().'</tbody>
                     </table>                    
@@ -130,6 +130,8 @@ class AffiliatesapiController extends \yii\web\Controller
 
                     if  ( $campaign )
                     {
+                        $newCampaign = false;
+
                         $this->_checkChanges( $rule['class'], $campaign, $campaignData );
 
                         if ( 
@@ -139,13 +141,14 @@ class AffiliatesapiController extends \yii\web\Controller
                         {
                             $this->_redis->hset( 'campaign:'.$campaign->id,
                                 'callback', 
-                                $campaign->landing_url
+                                $campaignData['landing_url']
                             );                  
                         }                           
                     }
                     else
                     {
-                        $campaign = new models\Campaigns;
+                        $newCampaign = true;
+                        $campaign    = new models\Campaigns;                         
                     }
 
 
@@ -175,10 +178,18 @@ class AffiliatesapiController extends \yii\web\Controller
                     if ( $campaignData['connection_type'] )
                         $campaign->connection_type = json_encode($campaignData['connection_type']);                     
 
-                    //var_export($campaign);die();
-                    
+
                     if ( !$campaign->save() )
+                    {
                         $this->_createAlert(  $rule['class'], $campaign->getErrors(), $api->getStatus(), json_encode($campaignData) );
+                    }
+
+                    if  ( $newCampaign )
+                    {
+                        $this->_redis->hmset( 'campaign:'.$campaign->id, [
+                            'callback' => $campaign->landing_url,
+                        ]);
+                    }
 
                     unset( $campaign );             
                 }
@@ -380,10 +391,10 @@ class AffiliatesapiController extends \yii\web\Controller
 	                <body>
 	                    <table>
 	                        <thead>
-	                            <td>API</td>
-	                            <td>HTTP STATUS</td>	                            
-	                            <td>MESSAGE</td>
-	                            <td>PARAMS</td>
+	                            <th>API</th>
+	                            <th>HTTP STATUS</th>	                            
+	                            <th>MESSAGE</th>
+	                            <th>PARAMS</th>
 	                        </thead>
 	                        <tbody>'.$this->_alerts.'</tbody>
 	                    </table>
@@ -401,7 +412,7 @@ class AffiliatesapiController extends \yii\web\Controller
 			return $this->_alerts;
     	}  	
 
-        return '<tr><td colspan="0">No errors</td></tr>';
+        return '<tr><td style="-webkit-column-span: all;column-span: all;">No errors</td></tr>';
     }
 
 
@@ -426,18 +437,18 @@ class AffiliatesapiController extends \yii\web\Controller
 	                <body>
 	                    <table>
 	                        <thead>
-	                            <td>API</td>
-	                            <td>CAMPAIGN ID</td>
-	                            <td>EXT ID</td>
-	                            <td>PAYOUT</td>
-	                            <td>COUNTRY</td>
-	                            <td>CARRIER</td>
-	                            <td>CONNECTION</td>
-	                            <td>DEVICE</td>
-	                            <td>OS</td>
-	                            <td>OS VERSION</td>
-	                            <td>STATUS</td>
-	                           	<td>AFFECTED CLUSTERS</td>
+	                            <th>API</th>
+	                            <th>CAMPAIGN ID</th>
+	                            <th>EXT ID</th>
+	                            <th>PAYOUT</th>
+	                            <th>COUNTRY</th>
+	                            <th>CARRIER</th>
+	                            <th>CONNECTION</th>
+	                            <th>DEVICE</th>
+	                            <th>OS</th>
+	                            <th>OS VERSION</th>
+	                            <th>STATUS</th>
+	                           	<th>AFFECTED CLUSTERS</th>
 	                        </thead>
 	                        <tbody>'.$this->_changes.'</tbody>
 	                    </table>
@@ -455,7 +466,7 @@ class AffiliatesapiController extends \yii\web\Controller
 			return $this->_changes;
     	}  	
 
-        return '<tr><td colspan="0">No important changes</td></tr>';
+        return '<tr><td  style="-webkit-column-span: all;column-span: all;">No important changes</td></tr>';
     }
 
     private function _sendmail ( $from, $to, $subject, $body )

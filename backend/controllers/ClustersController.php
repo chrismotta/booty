@@ -250,7 +250,6 @@ class ClustersController extends Controller
         $cache->zadd( 'clusterlist:'.$id, $status, $campaign->id );
         $cache->hmset( 'campaign:'.$campaign->id, [
             'callback' => $campaign->landing_url,
-            'payout'   => $campaign->payout
         ]);
         
         // debug

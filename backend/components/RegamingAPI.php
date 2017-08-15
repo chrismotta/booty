@@ -8,7 +8,7 @@
 	 
 	class RegamingAPI extends Component
 	{
-
+		// uses orangear.com plattform
 		const URL = 'http://api.regaming.com/affiliate/offer/findAll/?approved=1';
 
 		protected $_msg;

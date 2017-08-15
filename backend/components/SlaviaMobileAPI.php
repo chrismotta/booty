@@ -8,7 +8,7 @@
 	 
 	class SlaviaMobileAPI extends Component
 	{
-
+		// uses orangear.com plattform
 		const URL = 'http://api.slaviamobile.com/affiliate/offer/findAll/?approved=1';
 
 		protected $_msg;
