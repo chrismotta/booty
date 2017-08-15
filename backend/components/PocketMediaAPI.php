@@ -6,17 +6,17 @@
 	use yii\base\Component;
 	use yii\base\InvalidConfigException;
 	 
-	class SlaviaMobileAPI extends Component
+	class PocketMediaAPI extends Component
 	{
-		// uses orangear.com plattform
-		const URL = 'http://api.slaviamobile.com/affiliate/offer/findAll/?approved=1';
+		// uses hasoffers.com plattform
+		const URL = 'https://pocketmedia.api.hasoffers.com/Apiv3/json?&Target=Offer&Method=findAll';
 
 		protected $_msg;
 		protected $_status;
 
 		public function requestCampaigns ( $api_key, $user_id = null  )
 		{
-			$url    = self::URL . '&token='.$api_key;
+			$url    = self::URL . '&NetworkToken='.$api_key;
 			$curl   = curl_init($url);
 
 			curl_setopt($curl, CURLOPT_HEADER, false);
@@ -28,19 +28,24 @@
 
 			$this->_status = curl_getinfo( $curl, CURLINFO_HTTP_CODE );
 
+			if ( $response && isset( $response ) )
+				$response = $response->response;
+			else
+				return false;
+
 			if ( !$response )
 			{
 				return false;
 			}
-			else if ( isset($response->error_messages) && $response->error_messages )
+			else if ( isset($response->errorMessage) && $response->errorMessage )
 			{
-				$this->_msg = $response->error_messages;
+				$this->_msg = $response->errorMessage;				
 				return false;
 			}
 
 			$result = [];
-		
-			foreach ( $response->offers AS $ext_id => $campaign )
+
+			foreach ( $response->data AS $ext_id => $campaign )
 			{
 				if ( isset($campaign->Countries) && $campaign->Countries && is_array($campaign->Countries) )
 				{
@@ -98,7 +103,7 @@
 					}
 				}
 
-				switch ( strtolower($campaign->Status) )
+				switch ( strtolower($campaign->status) )
 				{
 					case 'active':
 						$status = 'active';
@@ -111,7 +116,7 @@
 				$result[] = [
 					'ext_id' 			=> $ext_id,
 					'name'				=> $campaign->Name,
-					'desc'				=> $campaign->Description,					
+					'desc'				=> $campaign->Description,
 					'payout' 			=> $campaign->Payout,
 					'landing_url'		=> $campaign->Tracking_url,
 					'country'			=> $countries,

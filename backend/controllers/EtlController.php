@@ -1042,6 +1042,7 @@ class EtlController extends \yii\web\Controller
     public function actionPopulatecache ( )
     {
         $this->actionPopulateclusters();
+        $this->actionPopulatecampaigns();
         $this->actionPopulateplacements();
     }
 
@@ -1098,11 +1099,6 @@ class EtlController extends \yii\web\Controller
                 }
 
                 $this->_redis->zadd( 'clusterlist:'.$model->id, $status, $campaign->id );
-
-                $this->_redis->hmset( 'campaign:'.$campaign->id, [
-                    'callback' => $campaign->landing_url,
-                    'payout'   => $campaign->payout
-                ]);
             }
         }
 
@@ -1151,5 +1147,26 @@ class EtlController extends \yii\web\Controller
 
         echo 'Placements cached: '.count($placements).' - Elapsed time: '.$elapsed.' seg.<hr/>';
     }        
+
+
+   public function actionPopulatecampaigns ( )
+   {
+        $this->_redis->select( 0 );
+
+        $start = time();
+
+        $campaigns = models\Campaigns::find()->all();
+
+        foreach ( $campaigns as $model )
+        {
+            $this->_redis->hmset( 'campaign:'.$model->id, [
+                'callback' => $model->landing_url, 
+            ]);
+        }
+
+        $elapsed = time() - $start;
+
+        echo 'Campaigns cached: '.count($campaigns).' - Elapsed time: '.$elapsed.' seg.<hr/>';
+    }            
 
 }

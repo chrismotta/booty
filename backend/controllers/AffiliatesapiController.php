@@ -9,8 +9,8 @@ use backend\components;
 
 class AffiliatesapiController extends \yii\web\Controller
 {
-	const NOTIFY_INBOX = '';
-	const ALERTS_INBOX = '';
+	const NOTIFY_INBOX = 'dev@splad.co';
+	const ALERTS_INBOX = 'dev@splad.co';
 
 	protected $_notifications;
 	protected $_redis;
@@ -29,111 +29,184 @@ class AffiliatesapiController extends \yii\web\Controller
 			[
 				'class' 		=> 'SlaviaMobileAPI',
 				'affiliate_id'	=> 3,
-			],			
+			],		
+            [
+                'class'         => 'PocketMediaAPI',
+                'affiliate_id'  => 4,
+            ],              	
 		];
 	}
 
 
-    public function actionIndex()
+    public function actionIndex( $affiliate_id = null )
     {	
     	$this->_changes = '';
     	$this->_alerts  = '';
     	$this->_redis 	= new \Predis\Client( \Yii::$app->params['predisConString'] );
 
-    	foreach ( $this->_apiRules() AS $rule )
-    	{
-    		$className  = 'backend\components\\'.$rule['class'];
-    		$api 		= new $className;
-    		$affiliate  = models\Affiliates::findOne( ['id' => $rule['affiliate_id'] ] );
 
-    		try
-    		{
-    			$campaignsData  = $api->requestCampaigns( $affiliate->api_key, $affiliate->user_id );
+        foreach ( $this->_apiRules() AS $rule )
+        {
+            if ( !$affiliate_id )
+            {
+                $this->_runAPI( $rule );
+            }            
+            if ( $affiliate_id == $rule['affiliate_id'] )
+            {
+                $this->_runAPI( $rule );
+                break;
+            }
+        }
 
-    			if ( $campaignsData && is_array($campaignsData) )
-    			{
-    				foreach ( $campaignsData AS $campaignData )
-    				{
-    					$campaign = models\Campaigns::findOne([ 
-    						'ext_id' 		=> $campaignData['ext_id'],
-    						'Affiliates_id' => $affiliate->id
-    					]);
+        echo '
+            <html>
+                <head>
+                    <style>
+                        td {
+                            padding:10px;
+                            border:1px solid;
+                        }
+                        table{
+                            border:1px solid;
+                            border-collapse:collapse;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <h1>Errors</h1>
+                    <table>
+                        <thead>
+                            <th>API</th>
+                            <th>HTTP STATUS</th>                                
+                            <th>MESSAGE</th>
+                            <th>PARAMS</th>
+                        </thead>
+                        <tbody>'.$this->_sendAlerts().'</tbody>
+                    </table>   
+                    <br>
+                    <hr>
+                    <h1>Notifications</h1>             
+                    <table>
+                        <thead>
+                            <th>API</th>
+                            <th>CAMPAIGN ID</th>
+                            <th>EXT ID</th>
+                            <th>PAYOUT</th>
+                            <th>COUNTRY</th>
+                            <th>CARRIER</th>
+                            <th>CONNECTION</th>
+                            <th>DEVICE</th>
+                            <th>OS</th>
+                            <th>OS VERSION</th>
+                            <th>STATUS</th>
+                            <th>AFFECTED CLUSTERS</th>
+                        </thead>
+                        <tbody>'.$this->_sendNotifications().'</tbody>
+                    </table>                    
+                </body>
+            </html>         
+        ';
+    }
 
-    					if  ( $campaign )
-    					{
-    						$this->_checkChanges( $rule['class'], $campaign, $campaignData );
 
-							if ( 
-								$campaign->landing_url != $campaignData['landing_url'] 
-								&& $this->_redis->exists( 'campaign:'.$campaign->id ) 
-							)
-							{
-						        $this->_redis->hset( 'campaign:'.$campaign->id,
-						            'callback', 
-						            $campaign->landing_url
-						        );					
-							}    						
-    					}
-    					else
-    					{
-    						$campaign = new models\Campaigns;
-    					}
+    protected function _runAPI ( array $rule )
+    {
+        $className  = 'backend\components\\'.$rule['class'];
+        $api        = new $className;
+        $affiliate  = models\Affiliates::findOne( ['id' => $rule['affiliate_id'] ] );
+
+        try
+        {
+            $campaignsData  = $api->requestCampaigns( $affiliate->api_key, $affiliate->user_id );
+
+            if ( $campaignsData && is_array($campaignsData) )
+            {
+                foreach ( $campaignsData AS $campaignData )
+                {
+                    $campaign = models\Campaigns::findOne([ 
+                        'ext_id'        => $campaignData['ext_id'],
+                        'Affiliates_id' => $affiliate->id
+                    ]);
+
+                    if  ( $campaign )
+                    {
+                        $newCampaign = false;
+
+                        $this->_checkChanges( $rule['class'], $campaign, $campaignData );
+
+                        if ( 
+                            $campaign->landing_url != $campaignData['landing_url'] 
+                            && $this->_redis->exists( 'campaign:'.$campaign->id ) 
+                        )
+                        {
+                            $this->_redis->hset( 'campaign:'.$campaign->id,
+                                'callback', 
+                                $campaignData['landing_url']
+                            );                  
+                        }                           
+                    }
+                    else
+                    {
+                        $newCampaign = true;
+                        $campaign    = new models\Campaigns;                         
+                    }
 
 
-    					$campaign->Affiliates_id = $affiliate->id;
-    					$campaign->name    		 = $campaignData['name'];
-    					$campaign->status  		 = $campaignData['status'];
-    					$campaign->ext_id  		 = $campaignData['ext_id'];
-    					$campaign->payout  		 = (float)$campaignData['payout'];
-    					$campaign->landing_url   = $campaignData['landing_url'];
+                    $campaign->Affiliates_id = $affiliate->id;
+                    $campaign->name          = $campaignData['name'];
+                    $campaign->status        = $campaignData['status'];
+                    $campaign->ext_id        = $campaignData['ext_id'];
+                    $campaign->info          = $campaignData['desc'];
+                    $campaign->payout        = (float)$campaignData['payout'];
+                    $campaign->landing_url   = $campaignData['landing_url'];
 
-    					if ( $campaignData['country'] )
-    						$campaign->country  	= json_encode($campaignData['country']);
+                    if ( $campaignData['country'] )
+                        $campaign->country      = json_encode($campaignData['country']);
 
-    					if ( $campaignData['device_type'] )
-    						$campaign->device_type  = json_encode($campaignData['device_type']);
+                    if ( $campaignData['device_type'] )
+                        $campaign->device_type  = json_encode($campaignData['device_type']);
 
-    					if ( $campaignData['os'] )
-    						$campaign->os 			= json_encode($campaignData['os']);		
+                    if ( $campaignData['os'] )
+                        $campaign->os           = json_encode($campaignData['os']);     
 
-    					if ( $campaignData['os_version'] )
-    						$campaign->os_version	= json_encode($campaignData['os_version']);		    								
+                    if ( $campaignData['os_version'] )
+                        $campaign->os_version   = json_encode($campaignData['os_version']);                                         
 
-    					if ( $campaignData['carrier'] )
-    						$campaign->carrier 		= json_encode($campaignData['carrier']);		    					
+                    if ( $campaignData['carrier'] )
+                        $campaign->carrier      = json_encode($campaignData['carrier']);                                
 
-    					if ( $campaignData['connection_type'] )
-    						$campaign->connection_type = json_encode($campaignData['connection_type']);    					
+                    if ( $campaignData['connection_type'] )
+                        $campaign->connection_type = json_encode($campaignData['connection_type']);                     
 
-    					//var_export($campaign);die();
-    					
-    					if ( !$campaign->save() )
-    						$this->_createAlert(  $rule['class'], $campaign->getErrors(), $api->getStatus(), json_encode($campaignData) );
 
-    					unset( $campaign );				
-    				}
-    			}
-    			else
-    			{
-    				$this->_createAlert( $rule['class'], $api->getMessages(), $api->getStatus() );
-    				continue;
-    			}
-    		}
-    		catch ( Exception $e )
-    		{
-    			$msg = 'exception';
-    			$this->_createAlert(  $rule['class'], $msg, $api->getStatus() );
-    			continue;
-    		}
+                    if ( !$campaign->save() )
+                    {
+                        $this->_createAlert(  $rule['class'], $campaign->getErrors(), $api->getStatus(), json_encode($campaignData) );
+                    }
 
-    		unset ( $api );
-    		unset ( $affiliate );
-    	}
+                    if  ( $newCampaign )
+                    {
+                        $this->_redis->hmset( 'campaign:'.$campaign->id, [
+                            'callback' => $campaign->landing_url,
+                        ]);
+                    }
 
-    	$this->_sendAlerts();
-    	$this->_sendNotifications();
+                    unset( $campaign );             
+                }
+            }
+            else
+            {
+                $this->_createAlert( $rule['class'], $api->getMessages(), $api->getStatus() );
+            }
+        }
+        catch ( Exception $e )
+        {
+            $msg = 'exception';
+            $this->_createAlert(  $rule['class'], $msg, $api->getStatus() );
+        }
 
-        //return $this->render('index');
+        unset ( $api );
+        unset ( $affiliate );    
     }
 
 
@@ -318,10 +391,10 @@ class AffiliatesapiController extends \yii\web\Controller
 	                <body>
 	                    <table>
 	                        <thead>
-	                            <td>API</td>
-	                            <td>HTTP STATUS</td>	                            
-	                            <td>MESSAGE</td>
-	                            <td>PARAMS</td>
+	                            <th>API</th>
+	                            <th>HTTP STATUS</th>	                            
+	                            <th>MESSAGE</th>
+	                            <th>PARAMS</th>
 	                        </thead>
 	                        <tbody>'.$this->_alerts.'</tbody>
 	                    </table>
@@ -336,8 +409,10 @@ class AffiliatesapiController extends \yii\web\Controller
 				$html 
 			);
 
-			echo $html.'<hr>';
+			return $this->_alerts;
     	}  	
+
+        return '<tr><td style="-webkit-column-span: all;column-span: all;">No errors</td></tr>';
     }
 
 
@@ -362,18 +437,18 @@ class AffiliatesapiController extends \yii\web\Controller
 	                <body>
 	                    <table>
 	                        <thead>
-	                            <td>API</td>
-	                            <td>CAMPAIGN ID</td>
-	                            <td>EXT ID</td>
-	                            <td>PAYOUT</td>
-	                            <td>COUNTRY</td>
-	                            <td>CARRIER</td>
-	                            <td>CONNECTION</td>
-	                            <td>DEVICE</td>
-	                            <td>OS</td>
-	                            <td>OS VERSION</td>
-	                            <td>STATUS</td>
-	                           	<td>AFFECTED CLUSTERS</td>
+	                            <th>API</th>
+	                            <th>CAMPAIGN ID</th>
+	                            <th>EXT ID</th>
+	                            <th>PAYOUT</th>
+	                            <th>COUNTRY</th>
+	                            <th>CARRIER</th>
+	                            <th>CONNECTION</th>
+	                            <th>DEVICE</th>
+	                            <th>OS</th>
+	                            <th>OS VERSION</th>
+	                            <th>STATUS</th>
+	                           	<th>AFFECTED CLUSTERS</th>
 	                        </thead>
 	                        <tbody>'.$this->_changes.'</tbody>
 	                    </table>
@@ -388,8 +463,10 @@ class AffiliatesapiController extends \yii\web\Controller
 				$html 
 			);
 
-			echo $html.'<hr>';
+			return $this->_changes;
     	}  	
+
+        return '<tr><td  style="-webkit-column-span: all;column-span: all;">No important changes</td></tr>';
     }
 
     private function _sendmail ( $from, $to, $subject, $body )
