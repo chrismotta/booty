@@ -994,7 +994,7 @@ class EtlController extends \yii\web\Controller
             SELECT * FROM (
                 SELECT 
                     cl.country AS country, 
-                    cl.imp_time AS date, 
+                    date(cl.imp_time) AS date, 
                     sum( cl.imps ) AS imps, 
                     count( cl.session_hash ) AS unique_users,
                     sum(CASE 
