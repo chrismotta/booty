@@ -392,12 +392,9 @@ class EtlController extends \yii\web\Controller
 
     private function _clusterLogs ( )
     {
-        if ( $this->_db )
-            $db = $this->_db;
-        else
-            $db = isset( $_GET['db'] ) ? $_GET['db'] : 'current';
+        $this->_db = isset( $_GET['db'] ) ? $_GET['db'] : 'current';
 
-        switch ( $db )
+        switch ( $this->_db )
         {
             case 'yesterday':
                 $this->_redis->select( $this->_getYesterdayDatabase() );
@@ -595,11 +592,25 @@ class EtlController extends \yii\web\Controller
                     // add placements to placements update query
                     if ( !\in_array( $clusterLog['placement_id'], $placements ) )
                     {
-                        $placements[]      = $clusterLog['placement_id'];
-                        $health_check_imps = $this->_redis->hget( 'placement:'.$clusterLog['placement_id'], 'imps' );
+                        $this->_redis->select(0);
 
-                        if ( $health_check_imps && $health_check_imps>0 )
-                            $this->_placementSql     .= 'UPDATE Placements SET imps='.$health_check_imps.' WHERE id='.$clusterLog['placement_id'].';';
+                        $placements[]      = $clusterLog['placement_id'];
+                        $placementCache = $this->_redis->hmget( 'placement:'.$clusterLog['placement_id'], 'imps', 'status' );
+
+                        if ( $placementCache && (int)$placementCache[0]>0 )
+                        {
+                            $this->_placementSql     .= 'UPDATE Placements SET imps='.(int)$placementCache[0].', status="'.$placementCache[1].'" WHERE id='.$clusterLog['placement_id'].';';
+                        }
+
+                        switch ( $this->_db )
+                        {
+                            case 'yesterday':
+                                $this->_redis->select( $this->_getYesterdayDatabase() );
+                            break;
+                            case 'current':
+                                $this->_redis->select( $this->_getCurrentDatabase() );
+                            break;
+                        }  
                         $this->_count++;
                     }
 
