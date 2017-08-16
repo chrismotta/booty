@@ -30,12 +30,18 @@
 
 			if ( !$response )
 			{
+				$this->_msg = 'Response without body';
 				return false;
 			}
 			else if ( isset($response->error_messages) && $response->error_messages )
 			{
 				$this->_msg = $response->error_messages;
 				return false;
+			}
+			else if ( !isset($response->offers) )
+			{
+				$this->_msg = 'No campaign data in response';
+				return false;				
 			}
 
 			$result = [];
