@@ -31,6 +31,7 @@ $this->params['breadcrumbs'][] = $this->title;
                 'value'=>'affiliates.name',
             ],
             'name',
+            'payout',
             [
                 'attribute'=>'country',
                 'format'=>'html',
@@ -112,6 +113,7 @@ $this->params['breadcrumbs'][] = $this->title;
                 'value'=>'affiliates.name',
             ],
             'name',
+            'payout',
             [
                 'attribute' => 'country',
                 'filterOptions' => [
