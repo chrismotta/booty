@@ -63,8 +63,8 @@ class EtlController extends \yii\web\Controller
         $this->_alertSubject    = 'AD NIGMA - ETL2 ERROR ' . date( "Y-m-d H:i:s", $this->_timestamp );
 
 
-		\ini_set('memory_limit','3000M');
-		\set_time_limit(0);
+		ini_set('memory_limit','3000M');
+		set_time_limit(0);
 
         $this->_count = 0;
 	}
@@ -74,7 +74,7 @@ class EtlController extends \yii\web\Controller
     {
         try
         {
-            $this->campaigns();            
+            $this->actionCampaigns();            
         }
         catch ( Exception $e )
         {
@@ -89,7 +89,7 @@ class EtlController extends \yii\web\Controller
 
         try
         {
-            $this->placements();
+            $this->actionPlacements();
         }
         catch ( Exception $e )
         {
@@ -104,7 +104,7 @@ class EtlController extends \yii\web\Controller
         
         try
         {
-            $this->imps();
+            $this->actionImps();
         } 
         catch (Exception $e) {
             $msg .= "ETL IMPRESSIONS ERROR: ".$e->getCode().'<hr>';
@@ -119,7 +119,7 @@ class EtlController extends \yii\web\Controller
 
         try
         {
-            $this->convs();
+            $this->actionConvs();
         } 
         catch (Exception $e) {
             $msg .= "ETL CONVERSIONS ERROR: ".$e->getCode().'<hr>';
@@ -147,7 +147,7 @@ class EtlController extends \yii\web\Controller
 
         try
         {
-            $this->userAgents();
+            $this->actionUseragents();
         } 
         catch (Exception $e) {
             $msg .= "ETL USER AGENT ERROR: ".$e->getCode().'<hr>';
@@ -164,7 +164,7 @@ class EtlController extends \yii\web\Controller
             $this->actionPopulatefilters();
         } 
         catch (Exception $e) {
-            $msg .= "REPORTING FILTERS POPULATE ERROR: ".$e->getCode().'<hr>';
+            $msg .= "ETL FILTERS POPULATE ERROR: ".$e->getCode().'<hr>';
             $msg .= $e->getMessage();
 
             if ( !$this->_noalerts )
@@ -185,7 +185,7 @@ class EtlController extends \yii\web\Controller
     }
 
 
-    public function convs ( )
+    public function actionConvs ( )
     {
         if ( $this->_db )
             $db = $this->_db;
@@ -271,7 +271,7 @@ class EtlController extends \yii\web\Controller
     }
 
 
-    public function imps ( )
+    public function actionImps ( )
     {
     	$this->_campaignLogs();
     	$this->_clusterLogs();
@@ -611,6 +611,8 @@ class EtlController extends \yii\web\Controller
                                 $this->_redis->select( $this->_getCurrentDatabase() );
                             break;
                         }  
+
+                        unset ( $placementCache );
                         $this->_count++;
                     }
 
@@ -674,7 +676,7 @@ class EtlController extends \yii\web\Controller
     }
 
 
-    public function userAgents ( )
+    public function actionUseragents ( )
     {
         $start = time();
 
@@ -705,7 +707,7 @@ class EtlController extends \yii\web\Controller
     }
 
 
-    public function placements ( )
+    public function actionPlacements ( )
     {
     	$start = time();
 
@@ -890,7 +892,7 @@ class EtlController extends \yii\web\Controller
         echo 'Publishers filters: '.count($publishers).' rows - Elapsed time: '.$elapsed.' seg.<hr/>';
     }      
 
-    public function campaigns ( )
+    public function actionCampaigns ( )
     {
     	$start = time();
 
