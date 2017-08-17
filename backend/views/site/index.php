@@ -19,6 +19,9 @@ $todayCost      = isset($totals[0]) ? $totals[0]['cost'] : 0;
 $todayRev       = isset($totals[0]) ? $totals[0]['revenue'] : 0;
 $todayProfit    = $todayRev-$todayCost;
 
+if ( $todayProfit<0 )
+  $todayProfit = 0.00;
+
 $yesterdayImps  = isset($yesterday[0]) ? $yesterday[0]['imps'] : 0; 
 $yesterdayUsers = isset($yesterday[0]) ? $yesterday[0]['unique_users'] : 0;
 $yesterdayConvs = isset($yesterday[0]) ? $yesterday[0]['installs'] : 0;
@@ -52,9 +55,9 @@ foreach( $daterange as $date )
           $profit = $data['revenue']-$data['cost'];
 
           if ( $profit < 0 )
-            $profitByDate[] = 0;
-          else
-            $profitByDate[] = $profit;
+            $profit = 0.00;
+
+          $profitByDate[] = $profit;
 
           break;
         }
@@ -63,10 +66,13 @@ foreach( $daterange as $date )
             $revByDate[]    = 0;
             $spendByDate[]  = 0;
             $profitByDate[] = 0;
-        }        
+        }
+
+        $dates[] = $formattedDate;      
     }
 
-    $dates[] = $formattedDate;
+    if ( !in_array($formattedDate, $dates) )
+      $dates[] = $formattedDate; 
 }
 
 $dates[]        = $currentDate;
