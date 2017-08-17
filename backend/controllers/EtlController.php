@@ -684,14 +684,12 @@ class EtlController extends \yii\web\Controller
 
         // load user agents into local cache
         $userAgentIds = $this->_redis->smembers( 'uas' );
-        echo '<hr>';
-        var_export($userAgentIds);die();
-        echo '<hr>';
+
         foreach ( $userAgentIds as $id )
         {
+            $userAgentIds = $this->_redis->zadd( 'useragents', 0, $id );
+            /*
             $ua = $this->_redis->hgetall( 'ua:'.$id );
-            var_export($ua);
-            echo '<br><br>';
 
             // guarda en redis con el component de yii, configurado para guardar en la db 9
             \Yii::$app->redis->zadd( 'devices', 0, $ua['device']  );
@@ -704,6 +702,7 @@ class EtlController extends \yii\web\Controller
 
             // free memory cause there is no garbage collection until block ends
             unset($ua);
+            */
         }
 
         $elapsed = time() - $start;
