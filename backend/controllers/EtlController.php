@@ -685,7 +685,7 @@ class EtlController extends \yii\web\Controller
         // load user agents into local cache
         $userAgentIds = $this->_redis->smembers( 'uas' );
         echo '<hr>';
-        var_export($userAgentIds);
+        var_export($userAgentIds);die();
         echo '<hr>';
         foreach ( $userAgentIds as $id )
         {
