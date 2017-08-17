@@ -614,13 +614,31 @@ class EtlController extends \yii\web\Controller
                         $this->_count++;
                     }
 
+                    $carrierFilter    = preg_replace('(")', '', $clusterLog['carrier'] );
+                    $countryFilter    = preg_replace('(")', '', $clusterLog['country'] );
+                    $exchangeIdFilter = preg_replace('(")', '', $clusterLog['exchange_id'] );
+                    $pubidFilter      = preg_replace('(")', '', $clusterLog['pub_id'] );
+                    $subpubidFilter   = preg_replace('(")', '', $clusterLog['subpub_id'] );
+                    $deviceidFilter   = preg_replace('(")', '', $clusterLog['device_id'] );                                                                        
                     // save reporting multiselect data
-                    \Yii::$app->redis->zadd( 'carriers', 0, $clusterLog['carrier']  );
-                    \Yii::$app->redis->zadd( 'countries', 0, $clusterLog['country']  );
-                    \Yii::$app->redis->zadd( 'exchange_ids', 0, $clusterLog['exchange_id']  );
-                    \Yii::$app->redis->zadd( 'pub_ids', 0, $clusterLog['pub_id']  );
-                    \Yii::$app->redis->zadd( 'subpub_ids', 0, $clusterLog['subpub_id']  );
-                    \Yii::$app->redis->zadd( 'device_ids', 0, $clusterLog['device_id']  );                    
+                    if ( $carrierFilter != 'NULL' )
+                        \Yii::$app->redis->zadd( 'carriers', 0, $carrierFilter );
+
+                    if ( $countryFilter != 'NULL' )
+                        \Yii::$app->redis->zadd( 'countries', 0, $countryFilter );
+
+                    if ( $exchangeIdFilter != 'NULL' )
+                        \Yii::$app->redis->zadd( 'exchange_ids', 0, $exchangeIdFilter );
+
+                    if ( $pubidFilter != 'NULL' )
+                        \Yii::$app->redis->zadd( 'pub_ids', 0, $pubidFilter );
+                    
+                    if ( $subpubidFilter != 'NULL' )
+                        \Yii::$app->redis->zadd( 'subpub_ids', 0, $subpubidFilter );
+
+                    if ( $deviceidFilter != 'NULL' )
+                        \Yii::$app->redis->zadd( 'device_ids', 0, $deviceidFilter );
+
                     // free memory 
                     unset ( $clusterLog );
                 }
@@ -1178,6 +1196,32 @@ class EtlController extends \yii\web\Controller
         $elapsed = time() - $start;
 
         echo 'Campaigns cached: '.count($campaigns).' - Elapsed time: '.$elapsed.' seg.<hr/>';
-    }            
+    }
+
+
+    public function actionRepairfilters ( )
+    {
+        $filters = [
+            'carriers',
+            'countries',
+            'exchange_ids',
+            'pub_ids',
+            'subpub_ids',
+            'device_ids'
+        ];
+
+        foreach ( $filters as $filter )
+        {
+            $values = \Yii::$app->redis->zrange( $filter, 0, \Yii::$app->redis->zcard($filter) );
+
+            foreach ( $values as $value )
+            {
+                \Yii::$app->redis->zrem( $filter, $value );
+
+                if ( $value && $value!='NULL' && $value!='"NULL"' )
+                    \Yii::$app->redis->zadd( $filter, 0, preg_replace('(")', '', $value ) );  
+            }
+        }        
+    }
 
 }
