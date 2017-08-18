@@ -682,27 +682,59 @@ class EtlController extends \yii\web\Controller
 
         $this->_redis->select(0);
 
-        // load user agents into local cache
-        $userAgentIds = $this->_redis->smembers( 'uas' );
-
-        foreach ( $userAgentIds as $id )
+        if ( $this->_redis->scard('uas')>0 )
         {
-            $userAgentIds = $this->_redis->zadd( 'useragents', 0, $id );
-            /*
-            $ua = $this->_redis->hgetall( 'ua:'.$id );
+            $userAgentIds = $this->_redis->smembers( 'uas' );
 
-            // guarda en redis con el component de yii, configurado para guardar en la db 9
-            \Yii::$app->redis->zadd( 'devices', 0, $ua['device']  );
-            \Yii::$app->redis->zadd( 'device_brands', 0, $ua['device_brand']  );
-            \Yii::$app->redis->zadd( 'device_models', 0, $ua['device_model']  );
-            \Yii::$app->redis->zadd( 'os', 0, $ua['os']  );
-            \Yii::$app->redis->zadd( 'os_versions', 0, $ua['os_version']  );
-            \Yii::$app->redis->zadd( 'browsers', 0, $ua['browser']  );
-            \Yii::$app->redis->zadd( 'browser_versions', 0, $ua['browser_version']  );
+            foreach ( $userAgentIds as $id )
+            {
+                $ua = $this->_redis->hgetall( 'ua:'.$id );
 
-            // free memory cause there is no garbage collection until block ends
-            unset($ua);
-            */
+                // guarda en redis con el component de yii, configurado para guardar en la db 9
+                \Yii::$app->redis->zadd( 'devices', 0, $ua['device']  );
+                \Yii::$app->redis->zadd( 'device_brands', 0, $ua['device_brand']  );
+                \Yii::$app->redis->zadd( 'device_models', 0, $ua['device_model']  );
+                \Yii::$app->redis->zadd( 'os', 0, $ua['os']  );
+                \Yii::$app->redis->zadd( 'os_versions', 0, $ua['os_version']  );
+                \Yii::$app->redis->zadd( 'browsers', 0, $ua['browser']  );
+                \Yii::$app->redis->zadd( 'browser_versions', 0, $ua['browser_version']  );
+
+                $this->_redis->zadd( 'loadedagents', 0 , $id );
+
+                // free memory cause there is no garbage collection until block ends
+                unset($ua);
+            }    
+        }
+
+
+        $uaCount = $this->_redis->zcard( 'useragents' );
+        $queries = ceil( $uaCount/$this->_objectLimit );
+
+
+        for ( $i=0; $i<=$queries; $i++ )
+        {
+            // load user agents into local cache
+            $userAgentIds = $this->_redis->zrange( 'useragents', 0, $this->_objectLimit );
+
+            foreach ( $userAgentIds as $id )
+            {
+                $ua = $this->_redis->hgetall( 'ua:'.$id );
+
+                // guarda en redis con el component de yii, configurado para guardar en la db 9
+                \Yii::$app->redis->zadd( 'devices', 0, $ua['device']  );
+                \Yii::$app->redis->zadd( 'device_brands', 0, $ua['device_brand']  );
+                \Yii::$app->redis->zadd( 'device_models', 0, $ua['device_model']  );
+                \Yii::$app->redis->zadd( 'os', 0, $ua['os']  );
+                \Yii::$app->redis->zadd( 'os_versions', 0, $ua['os_version']  );
+                \Yii::$app->redis->zadd( 'browsers', 0, $ua['browser']  );
+                \Yii::$app->redis->zadd( 'browser_versions', 0, $ua['browser_version']  );
+
+                $this->_redis->zrem( 'useragents', $id );
+                $this->_redis->zadd( 'loadedagents', 0, $id );
+
+                // free memory cause there is no garbage collection until block ends
+                unset($ua);
+            }
         }
 
         $elapsed = time() - $start;
