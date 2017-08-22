@@ -90,9 +90,6 @@
 						case 'Android':
 							if ( !in_array($o, $oss) )
 								$oss[]		   = $o;
-
-							if ( !in_array('Smartphone', $deviceTypes) )
-								$deviceTypes[] = 'Smartphone';
 						break;
 						default:
 							if ( !in_array($o, $oss) )

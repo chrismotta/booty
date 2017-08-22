@@ -75,21 +75,23 @@
 								$oss[] 		   = 'iOS';
 
 							if ( !in_array('Tablet', $deviceTypes) )
-								$deviceTypes[] = 'Tablet';							
+								$deviceTypes[] = 'Tablet';				
 						break;
 						case 'iphone':
 							if ( !in_array('iOS', $oss) )
 								$oss[] 		   = 'iOS';
 
 							if ( !in_array('Smartphone', $deviceTypes) )
-								$deviceTypes[] = 'Smartphone';
+								$deviceTypes[] = 'Smartphone';			
+						break;
+						case 'ios':
+							if ( !in_array('iOS', $oss) )
+								$oss[] 		   = 'iOS';
+
 						break;
 						case 'android':
 							if ( !in_array($o, $oss) )
 								$oss[]		   = 'Android';
-
-							if ( !in_array('Smartphone', $deviceTypes) )
-								$deviceTypes[] = 'Smartphone';
 						break;
 						default:
 							if ( !in_array($o, $oss) )
@@ -105,7 +107,7 @@
 				$result[] = [
 					'ext_id' 			=> $campaign->id,
 					'name'				=> $campaign->name,
-					'desc'				=> $campaign->description,					
+					'desc'				=> $campaign->description,		
 					'payout' 			=> $campaign->payout,
 					'landing_url'		=> $campaign->tracking_url,
 					'country'			=> $countries,

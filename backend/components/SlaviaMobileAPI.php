@@ -78,7 +78,7 @@
 								$oss[] 		   = 'iOS';
 
 							if ( !in_array('Tablet', $deviceTypes) )
-								$deviceTypes[] = 'Tablet';							
+								$deviceTypes[] = 'Tablet';				
 						break;
 						case 'iPhone':
 							if ( !in_array('iOS', $oss) )
@@ -90,9 +90,6 @@
 						case 'Android':
 							if ( !in_array($o, $oss) )
 								$oss[]		   = $o;
-
-							if ( !in_array('Smartphone', $deviceTypes) )
-								$deviceTypes[] = 'Smartphone';
 						break;
 						default:
 							if ( !in_array($o, $oss) )
