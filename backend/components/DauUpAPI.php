@@ -6,17 +6,17 @@
 	use yii\base\Component;
 	use yii\base\InvalidConfigException;
 	 
-	class RegamingAPI extends Component
+	class DauUpAPI extends Component
 	{
 		// uses orangear.com plattform
-		const URL = 'http://api.regaming.com/affiliate/offer/findAll/?approved=1';
+		const URL = 'https://api.clicksmob.com/api/v2/services/offers.json?uid=15055&featureList=S.T';
 
 		protected $_msg;
 		protected $_status;
 
 		public function requestCampaigns ( $api_key, $user_id = null  )
 		{
-			$url    = self::URL . '&token='.$api_key;
+			$url    = self::URL . '&utoken='.$api_key;
 			$curl   = curl_init($url);
 
 			curl_setopt($curl, CURLOPT_HEADER, false);
@@ -46,7 +46,7 @@
 
 			$result = [];
 		
-			foreach ( $response->offers AS $ext_id => $campaign )
+			foreach ( $response->offers AS $campaign )
 			{
 				if ( isset($campaign->Countries) && $campaign->Countries && is_array($campaign->Countries) )
 				{
@@ -90,6 +90,9 @@
 						case 'Android':
 							if ( !in_array($o, $oss) )
 								$oss[]		   = $o;
+
+							if ( !in_array('Smartphone', $deviceTypes) )
+								$deviceTypes[] = 'Smartphone';
 						break;
 						default:
 							if ( !in_array($o, $oss) )
@@ -112,8 +115,8 @@
 				}
 
 				$result[] = [
-					'ext_id' 			=> $ext_id,
-					'name'				=> $campaign->Name,
+					'ext_id' 			=> $campaign->Id,
+					'name'				=> $campaign->OfferName,
 					'desc'				=> $campaign->Description,					
 					'payout' 			=> $campaign->Payout,
 					'landing_url'		=> $campaign->Tracking_url,

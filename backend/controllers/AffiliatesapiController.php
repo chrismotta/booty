@@ -33,7 +33,11 @@ class AffiliatesapiController extends \yii\web\Controller
             [
                 'class'         => 'PocketMediaAPI',
                 'affiliate_id'  => 4,
-            ],              	
+            ], 
+            [
+                'class'         => 'MobobeatAPI',
+                'affiliate_id'  => 5,
+            ],                                   	
 		];
 	}
 
@@ -76,10 +80,10 @@ class AffiliatesapiController extends \yii\web\Controller
                     <h1>Errors</h1>
                     <table>
                         <thead>
-                            <th>API</th>
-                            <th>HTTP STATUS</th>                                
-                            <th>MESSAGE</th>
-                            <th>PARAMS</th>
+                            <td>API</td>
+                            <td>HTTP STATUS</td>                                
+                            <td>MESSAGE</td>
+                            <td>PARAMS</td>
                         </thead>
                         <tbody>'.$this->_sendAlerts().'</tbody>
                     </table>   
@@ -88,18 +92,18 @@ class AffiliatesapiController extends \yii\web\Controller
                     <h1>Notifications</h1>             
                     <table>
                         <thead>
-                            <th>API</th>
-                            <th>CAMPAIGN ID</th>
-                            <th>EXT ID</th>
-                            <th>PAYOUT</th>
-                            <th>COUNTRY</th>
-                            <th>CARRIER</th>
-                            <th>CONNECTION</th>
-                            <th>DEVICE</th>
-                            <th>OS</th>
-                            <th>OS VERSION</th>
-                            <th>STATUS</th>
-                            <th>AFFECTED CLUSTERS</th>
+                            <td>API</td>
+                            <td>CAMPAIGN ID</td>
+                            <td>EXT ID</td>
+                            <td>PAYOUT</td>
+                            <td>COUNTRY</td>
+                            <td>CARRIER</td>
+                            <td>CONNECTION</td>
+                            <td>DEVICE</td>
+                            <td>OS</td>
+                            <td>OS VERSION</td>
+                            <td>STATUS</td>
+                            <td>AFFECTED CLUSTERS</td>
                         </thead>
                         <tbody>'.$this->_sendNotifications().'</tbody>
                     </table>                    
@@ -391,10 +395,10 @@ class AffiliatesapiController extends \yii\web\Controller
 	                <body>
 	                    <table>
 	                        <thead>
-	                            <th>API</th>
-	                            <th>HTTP STATUS</th>	                            
-	                            <th>MESSAGE</th>
-	                            <th>PARAMS</th>
+	                            <td>API</td>
+	                            <td>HTTP STATUS</td>	                            
+	                            <td>MESSAGE</td>
+	                            <td>PARAMS</td>
 	                        </thead>
 	                        <tbody>'.$this->_alerts.'</tbody>
 	                    </table>
@@ -437,18 +441,18 @@ class AffiliatesapiController extends \yii\web\Controller
 	                <body>
 	                    <table>
 	                        <thead>
-	                            <th>API</th>
-	                            <th>CAMPAIGN ID</th>
-	                            <th>EXT ID</th>
-	                            <th>PAYOUT</th>
-	                            <th>COUNTRY</th>
-	                            <th>CARRIER</th>
-	                            <th>CONNECTION</th>
-	                            <th>DEVICE</th>
-	                            <th>OS</th>
-	                            <th>OS VERSION</th>
-	                            <th>STATUS</th>
-	                           	<th>AFFECTED CLUSTERS</th>
+	                            <td>API</td>
+	                            <td>CAMPAIGN ID</td>
+	                            <td>EXT ID</td>
+	                            <td>PAYOUT</td>
+	                            <td>COUNTRY</td>
+	                            <td>CARRIER</td>
+	                            <td>CONNECTION</td>
+	                            <td>DEVICE</td>
+	                            <td>OS</td>
+	                            <td>OS VERSION</td>
+	                            <td>STATUS</td>
+	                           	<td>AFFECTED CLUSTERS</td>
 	                        </thead>
 	                        <tbody>'.$this->_changes.'</tbody>
 	                    </table>

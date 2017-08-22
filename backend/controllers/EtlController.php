@@ -63,8 +63,8 @@ class EtlController extends \yii\web\Controller
         $this->_alertSubject    = 'AD NIGMA - ETL2 ERROR ' . date( "Y-m-d H:i:s", $this->_timestamp );
 
 
-		\ini_set('memory_limit','3000M');
-		\set_time_limit(0);
+		ini_set('memory_limit','3000M');
+		set_time_limit(0);
 
         $this->_count = 0;
 	}
@@ -74,7 +74,7 @@ class EtlController extends \yii\web\Controller
     {
         try
         {
-            $this->campaigns();            
+            $this->actionCampaigns();            
         }
         catch ( Exception $e )
         {
@@ -89,7 +89,7 @@ class EtlController extends \yii\web\Controller
 
         try
         {
-            $this->placements();
+            $this->actionPlacements();
         }
         catch ( Exception $e )
         {
@@ -104,7 +104,7 @@ class EtlController extends \yii\web\Controller
         
         try
         {
-            $this->imps();
+            $this->actionImps();
         } 
         catch (Exception $e) {
             $msg .= "ETL IMPRESSIONS ERROR: ".$e->getCode().'<hr>';
@@ -119,7 +119,7 @@ class EtlController extends \yii\web\Controller
 
         try
         {
-            $this->convs();
+            $this->actionConvs();
         } 
         catch (Exception $e) {
             $msg .= "ETL CONVERSIONS ERROR: ".$e->getCode().'<hr>';
@@ -147,7 +147,7 @@ class EtlController extends \yii\web\Controller
 
         try
         {
-            $this->userAgents();
+            //$this->actionUseragents();
         } 
         catch (Exception $e) {
             $msg .= "ETL USER AGENT ERROR: ".$e->getCode().'<hr>';
@@ -164,7 +164,7 @@ class EtlController extends \yii\web\Controller
             $this->actionPopulatefilters();
         } 
         catch (Exception $e) {
-            $msg .= "REPORTING FILTERS POPULATE ERROR: ".$e->getCode().'<hr>';
+            $msg .= "ETL FILTERS POPULATE ERROR: ".$e->getCode().'<hr>';
             $msg .= $e->getMessage();
 
             if ( !$this->_noalerts )
@@ -185,7 +185,7 @@ class EtlController extends \yii\web\Controller
     }
 
 
-    public function convs ( )
+    public function actionConvs ( )
     {
         if ( $this->_db )
             $db = $this->_db;
@@ -271,7 +271,7 @@ class EtlController extends \yii\web\Controller
     }
 
 
-    public function imps ( )
+    public function actionImps ( )
     {
     	$this->_campaignLogs();
     	$this->_clusterLogs();
@@ -392,12 +392,9 @@ class EtlController extends \yii\web\Controller
 
     private function _clusterLogs ( )
     {
-        if ( $this->_db )
-            $db = $this->_db;
-        else
-            $db = isset( $_GET['db'] ) ? $_GET['db'] : 'current';
+        $this->_db = isset( $_GET['db'] ) ? $_GET['db'] : 'current';
 
-        switch ( $db )
+        switch ( $this->_db )
         {
             case 'yesterday':
                 $this->_redis->select( $this->_getYesterdayDatabase() );
@@ -595,21 +592,55 @@ class EtlController extends \yii\web\Controller
                     // add placements to placements update query
                     if ( !\in_array( $clusterLog['placement_id'], $placements ) )
                     {
-                        $placements[]      = $clusterLog['placement_id'];
-                        $health_check_imps = $this->_redis->hget( 'placement:'.$clusterLog['placement_id'], 'imps' );
+                        $this->_redis->select(0);
 
-                        if ( $health_check_imps && $health_check_imps>0 )
-                            $this->_placementSql     .= 'UPDATE Placements SET imps='.$health_check_imps.' WHERE id='.$clusterLog['placement_id'].';';
+                        $placements[]      = $clusterLog['placement_id'];
+                        $placementCache = $this->_redis->hmget( 'placement:'.$clusterLog['placement_id'], 'imps', 'status' );
+
+                        if ( $placementCache && (int)$placementCache[0]>0 )
+                        {
+                            $this->_placementSql     .= 'UPDATE Placements SET imps='.(int)$placementCache[0].', status="'.$placementCache[1].'" WHERE id='.$clusterLog['placement_id'].';';
+                        }
+
+                        switch ( $this->_db )
+                        {
+                            case 'yesterday':
+                                $this->_redis->select( $this->_getYesterdayDatabase() );
+                            break;
+                            case 'current':
+                                $this->_redis->select( $this->_getCurrentDatabase() );
+                            break;
+                        }  
+
+                        unset ( $placementCache );
                         $this->_count++;
                     }
 
+                    $carrierFilter    = preg_replace('(")', '', $clusterLog['carrier'] );
+                    $countryFilter    = preg_replace('(")', '', $clusterLog['country'] );
+                    $exchangeIdFilter = preg_replace('(")', '', $clusterLog['exchange_id'] );
+                    $pubidFilter      = preg_replace('(")', '', $clusterLog['pub_id'] );
+                    $subpubidFilter   = preg_replace('(")', '', $clusterLog['subpub_id'] );
+                    $deviceidFilter   = preg_replace('(")', '', $clusterLog['device_id'] );                                                                        
                     // save reporting multiselect data
-                    \Yii::$app->redis->zadd( 'carriers', 0, $clusterLog['carrier']  );
-                    \Yii::$app->redis->zadd( 'countries', 0, $clusterLog['country']  );
-                    \Yii::$app->redis->zadd( 'exchange_ids', 0, $clusterLog['exchange_id']  );
-                    \Yii::$app->redis->zadd( 'pub_ids', 0, $clusterLog['pub_id']  );
-                    \Yii::$app->redis->zadd( 'subpub_ids', 0, $clusterLog['subpub_id']  );
-                    \Yii::$app->redis->zadd( 'device_ids', 0, $clusterLog['device_id']  );                    
+                    if ( $carrierFilter != 'NULL' )
+                        \Yii::$app->redis->zadd( 'carriers', 0, $carrierFilter );
+
+                    if ( $countryFilter != 'NULL' )
+                        \Yii::$app->redis->zadd( 'countries', 0, $countryFilter );
+
+                    if ( $exchangeIdFilter != 'NULL' )
+                        \Yii::$app->redis->zadd( 'exchange_ids', 0, $exchangeIdFilter );
+
+                    if ( $pubidFilter != 'NULL' )
+                        \Yii::$app->redis->zadd( 'pub_ids', 0, $pubidFilter );
+                    
+                    if ( $subpubidFilter != 'NULL' )
+                        \Yii::$app->redis->zadd( 'subpub_ids', 0, $subpubidFilter );
+
+                    if ( $deviceidFilter != 'NULL' )
+                        \Yii::$app->redis->zadd( 'device_ids', 0, $deviceidFilter );
+
                     // free memory 
                     unset ( $clusterLog );
                 }
@@ -645,30 +676,65 @@ class EtlController extends \yii\web\Controller
     }
 
 
-    public function userAgents ( )
+    public function actionUseragents ( )
     {
         $start = time();
 
         $this->_redis->select(0);
 
-        // load user agents into local cache
-        $userAgentIds = $this->_redis->smembers( 'uas' );
-
-        foreach ( $userAgentIds as $id )
+        if ( $this->_redis->scard('uas')>0 )
         {
-            $ua = $this->_redis->hgetall( 'ua:'.$id );
+            $userAgentIds = $this->_redis->smembers( 'uas' );
 
-            // guarda en redis con el component de yii, configurado para guardar en la db 9
-            \Yii::$app->redis->zadd( 'devices', 0, $ua['device']  );
-            \Yii::$app->redis->zadd( 'device_brands', 0, $ua['device_brand']  );
-            \Yii::$app->redis->zadd( 'device_models', 0, $ua['device_model']  );
-            \Yii::$app->redis->zadd( 'os', 0, $ua['os']  );
-            \Yii::$app->redis->zadd( 'os_versions', 0, $ua['os_version']  );
-            \Yii::$app->redis->zadd( 'browsers', 0, $ua['browser']  );
-            \Yii::$app->redis->zadd( 'browser_versions', 0, $ua['browser_version']  );
+            foreach ( $userAgentIds as $id )
+            {
+                $ua = $this->_redis->hgetall( 'ua:'.$id );
 
-            // free memory cause there is no garbage collection until block ends
-            unset($ua);
+                // guarda en redis con el component de yii, configurado para guardar en la db 9
+                \Yii::$app->redis->zadd( 'devices', 0, $ua['device']  );
+                \Yii::$app->redis->zadd( 'device_brands', 0, $ua['device_brand']  );
+                \Yii::$app->redis->zadd( 'device_models', 0, $ua['device_model']  );
+                \Yii::$app->redis->zadd( 'os', 0, $ua['os']  );
+                \Yii::$app->redis->zadd( 'os_versions', 0, $ua['os_version']  );
+                \Yii::$app->redis->zadd( 'browsers', 0, $ua['browser']  );
+                \Yii::$app->redis->zadd( 'browser_versions', 0, $ua['browser_version']  );
+
+                $this->_redis->zadd( 'loadedagents', 0 , $id );
+
+                // free memory cause there is no garbage collection until block ends
+                unset($ua);
+            }    
+        }
+
+
+        $uaCount = $this->_redis->zcard( 'useragents' );
+        $queries = ceil( $uaCount/$this->_objectLimit );
+
+
+        for ( $i=0; $i<=$queries; $i++ )
+        {
+            // load user agents into local cache
+            $userAgentIds = $this->_redis->zrange( 'useragents', 0, $this->_objectLimit );
+
+            foreach ( $userAgentIds as $id )
+            {
+                $ua = $this->_redis->hgetall( 'ua:'.$id );
+
+                // guarda en redis con el component de yii, configurado para guardar en la db 9
+                \Yii::$app->redis->zadd( 'devices', 0, $ua['device']  );
+                \Yii::$app->redis->zadd( 'device_brands', 0, $ua['device_brand']  );
+                \Yii::$app->redis->zadd( 'device_models', 0, $ua['device_model']  );
+                \Yii::$app->redis->zadd( 'os', 0, $ua['os']  );
+                \Yii::$app->redis->zadd( 'os_versions', 0, $ua['os_version']  );
+                \Yii::$app->redis->zadd( 'browsers', 0, $ua['browser']  );
+                \Yii::$app->redis->zadd( 'browser_versions', 0, $ua['browser_version']  );
+
+                $this->_redis->zrem( 'useragents', $id );
+                $this->_redis->zadd( 'loadedagents', 0, $id );
+
+                // free memory cause there is no garbage collection until block ends
+                unset($ua);
+            }
         }
 
         $elapsed = time() - $start;
@@ -676,7 +742,7 @@ class EtlController extends \yii\web\Controller
     }
 
 
-    public function placements ( )
+    public function actionPlacements ( )
     {
     	$start = time();
 
@@ -861,7 +927,7 @@ class EtlController extends \yii\web\Controller
         echo 'Publishers filters: '.count($publishers).' rows - Elapsed time: '.$elapsed.' seg.<hr/>';
     }      
 
-    public function campaigns ( )
+    public function actionCampaigns ( )
     {
     	$start = time();
 
@@ -983,7 +1049,7 @@ class EtlController extends \yii\web\Controller
             SELECT * FROM (
                 SELECT 
                     cl.country AS country, 
-                    cl.imp_time AS date, 
+                    date(cl.imp_time) AS date, 
                     sum( cl.imps ) AS imps, 
                     count( cl.session_hash ) AS unique_users,
                     sum(CASE 
@@ -1167,6 +1233,32 @@ class EtlController extends \yii\web\Controller
         $elapsed = time() - $start;
 
         echo 'Campaigns cached: '.count($campaigns).' - Elapsed time: '.$elapsed.' seg.<hr/>';
-    }            
+    }
+
+
+    public function actionRepairfilters ( )
+    {
+        $filters = [
+            'carriers',
+            'countries',
+            'exchange_ids',
+            'pub_ids',
+            'subpub_ids',
+            'device_ids'
+        ];
+
+        foreach ( $filters as $filter )
+        {
+            $values = \Yii::$app->redis->zrange( $filter, 0, \Yii::$app->redis->zcard($filter) );
+
+            foreach ( $values as $value )
+            {
+                \Yii::$app->redis->zrem( $filter, $value );
+
+                if ( $value && $value!='NULL' && $value!='"NULL"' )
+                    \Yii::$app->redis->zadd( $filter, 0, preg_replace('(")', '', $value ) );  
+            }
+        }        
+    }
 
 }
