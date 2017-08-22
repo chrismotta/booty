@@ -42,6 +42,7 @@ class Placements extends \yii\db\ActiveRecord
             [['Publishers_id', 'Clusters_id', 'frequency_cap', 'health_check_imps', 'imps'], 'integer'],
             [['payout'], 'number'],
             [['model', 'status'], 'string'],
+            // [['health_check_imps'], 'default', 'value' => '100'],
             [['name', 'size'], 'string', 'max' => 255],
             [['Publishers_id'], 'exist', 'skipOnError' => true, 'targetClass' => Publishers::className(), 'targetAttribute' => ['Publishers_id' => 'id']], 
             [['Clusters_id'], 'exist', 'skipOnError' => true, 'targetClass' => Clusters::className(), 'targetAttribute' => ['Clusters_id' => 'id']], 

@@ -9,6 +9,8 @@ use yii\helpers\Html;
 $this->title = 'Create Placement';
 $this->params['breadcrumbs'][] = ['label' => 'Placements', 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
+$model->status = 'health_check';
+$model->health_check_imps = 10000;
 ?>
 <div class="placements-create">
 
