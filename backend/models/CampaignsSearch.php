@@ -171,6 +171,7 @@ class CampaignsSearch extends Campaigns
                 ['like', 'os', $this->os]
                 ]);
 
+        /*
         if(isset($this->os_version))
             $query->andWhere([
                 'or', 
@@ -186,6 +187,7 @@ class CampaignsSearch extends Campaigns
                 // ['>=', 'convert(os_version->"$[8]", decimal(11,2))', $this->os_version],
                 // ['>=', 'convert(os_version->"$[9]", decimal(11,2))', $this->os_version]
                 ]);
+        */
         
         if(isset($this->connection_type))
             $query->andWhere([
