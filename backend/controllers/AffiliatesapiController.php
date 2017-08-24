@@ -37,7 +37,15 @@ class AffiliatesapiController extends \yii\web\Controller
             [
                 'class'         => 'MobobeatAPI',
                 'affiliate_id'  => 5,
-            ],                                   	
+            ], 
+            [
+                'class'         => 'ClicksmobAPI',
+                'affiliate_id'  => 6,
+            ], 
+            [
+                'class'         => 'GlispaAPI',
+                'affiliate_id'  => 7,
+            ],             	
 		];
 	}
 
