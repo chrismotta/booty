@@ -97,7 +97,7 @@ class AffiliatesapiController extends \yii\web\Controller
                     </table>   
                     <br>
                     <hr>
-                    <h1>Notifications</h1>             
+                    <h1>Notifications</h1>
                     <table>
                         <thead>
                             <td>API</td>
@@ -131,10 +131,14 @@ class AffiliatesapiController extends \yii\web\Controller
         {
             $campaignsData  = $api->requestCampaigns( $affiliate->api_key, $affiliate->user_id );
 
+            $externalIds = [];
+
             if ( $campaignsData && is_array($campaignsData) )
             {
                 foreach ( $campaignsData AS $campaignData )
                 {
+                    $externalIds[] = $campaignData['ext_id'];
+
                     $campaign = models\Campaigns::findOne([ 
                         'ext_id'        => $campaignData['ext_id'],
                         'Affiliates_id' => $affiliate->id
@@ -155,12 +159,12 @@ class AffiliatesapiController extends \yii\web\Controller
                                 'callback', 
                                 $campaignData['landing_url']
                             );                  
-                        }                           
+                        }
                     }
                     else
                     {
                         $newCampaign = true;
-                        $campaign    = new models\Campaigns;                         
+                        $campaign    = new models\Campaigns;         
                     }
 
 
@@ -174,22 +178,35 @@ class AffiliatesapiController extends \yii\web\Controller
 
                     if ( $campaignData['country'] )
                         $campaign->country      = json_encode($campaignData['country']);
+                    else
+                        $campaign->country      = null;
 
                     if ( $campaignData['device_type'] )
                         $campaign->device_type  = json_encode($campaignData['device_type']);
+                    else
+                        $campaign->device_type  = null;
 
                     if ( $campaignData['os'] )
-                        $campaign->os           = json_encode($campaignData['os']);     
+                        $campaign->os           = json_encode($campaignData['os']);    
+                    else
+                        $campaign->os           = null;                         
 
                     if ( $campaignData['os_version'] )
-                        $campaign->os_version   = json_encode($campaignData['os_version']);                                         
+                        $campaign->os_version   = json_encode($campaignData['os_version']);
+                    else
+                        $campaign->os_version   = null;
+
 
                     if ( $campaignData['carrier'] )
-                        $campaign->carrier      = json_encode($campaignData['carrier']);                                
+                        $campaign->carrier      = json_encode($campaignData['carrier']);
+                    else
+                        $campaign->carrier      = null;
+
 
                     if ( $campaignData['connection_type'] )
-                        $campaign->connection_type = json_encode($campaignData['connection_type']);                     
-
+                        $campaign->connection_type = json_encode($campaignData['connection_type']);
+                    else
+                        $campaign->connection_type = null;                                         
 
                     if ( !$campaign->save() )
                     {
@@ -210,6 +227,8 @@ class AffiliatesapiController extends \yii\web\Controller
             {
                 $this->_createAlert( $rule['class'], $api->getMessages(), $api->getStatus() );
             }
+
+            $this->_clearCampaigns( $rule['affiliate_id'], $externalIds,  $rule['class'] );            
         }
         catch ( Exception $e )
         {
@@ -280,7 +299,7 @@ class AffiliatesapiController extends \yii\web\Controller
 
 				if ( $campaign->status != $campaignData['status'] )
 				{
-					$this->_redis->zadd( 'clusterlist:'.$assign['Clusters_id'], $status, $campaign->id );					
+					$this->_redis->zadd( 'clusterlist:'.$assign['Clusters_id'], $status, $campaign->id );
 				}
 			}
 
@@ -302,6 +321,52 @@ class AffiliatesapiController extends \yii\web\Controller
 	    		</tr>
 	    	';    		
     	}
+    }
+
+
+    protected function _clearCampaigns ( $affiliate_id, array $external_ids, $api_class )
+    {
+        $campaigns = models\Campaigns::find()->where(['Affiliates_id' => $affiliate_id ])->andWhere(['<>', 'status', 'archived'])->andWhere( ['not in' , 'ext_id', $external_ids] )->all();
+
+        foreach ( $campaigns AS $campaign )
+        {
+            if ( !in_array( $campaign->ext_id, $external_ids ) )
+            {
+                $clustersHasCampaigns = models\ClustersHasCampaigns::findAll(['Campaigns_id' => $campaign->id]);
+
+                $clusters = [];
+
+                foreach ( $clustersHasCampaigns as $assign )
+                {
+                    if ( $this->_redis->zrank('clusterlist:'.$assign['Clusters_id'], $campaign->id) )
+                        $this->_redis->zadd( 'clusterlist:'.$assign['Clusters_id'], 0, $campaign->id );
+                }
+
+                $prevStatus =  $campaign->status;
+                $campaign->status = 'archived';
+                $campaign->save();
+
+                $this->_changes .= '
+                    <tr>
+                        <td>'.$api_class.'</td>
+                        <td>'.$campaign->id.'</td>
+                        <td>'.$campaign->ext_id.'</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>'.$prevStatus.' => archived</td>
+                        <td>'.implode( ',', $clusters ).'</td>
+                    </tr>
+                ';
+
+                unset( $clusters );
+                unset( $clustersHasCampaigns );                   
+            }
+        }
     }
 
 

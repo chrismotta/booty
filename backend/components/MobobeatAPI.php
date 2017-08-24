@@ -87,7 +87,6 @@
 						case 'ios':
 							if ( !in_array('iOS', $oss) )
 								$oss[] 		   = 'iOS';
-
 						break;
 						case 'android':
 							if ( !in_array($o, $oss) )

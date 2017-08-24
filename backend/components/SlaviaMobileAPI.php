@@ -71,32 +71,33 @@
 
 				foreach ( $os as $o )
 				{
-					switch ( $o )
+					switch ( strtolower($o) )
 					{
-						case 'iPad':
+						case 'ipad':
 							if ( !in_array('iOS', $oss) )
 								$oss[] 		   = 'iOS';
 
 							if ( !in_array('Tablet', $deviceTypes) )
 								$deviceTypes[] = 'Tablet';				
 						break;
-						case 'iPhone':
+						case 'iphone':
 							if ( !in_array('iOS', $oss) )
 								$oss[] 		   = 'iOS';
 
 							if ( !in_array('Smartphone', $deviceTypes) )
 								$deviceTypes[] = 'Smartphone';
 						break;
-						case 'Android':
+						case 'android':
 							if ( !in_array($o, $oss) )
 								$oss[]		   = $o;
 						break;
+						case 'windows phone':
+							if ( !in_array('Windows', $oss) )
+								$oss[] 		   = 'Windows';
+						break;						
 						default:
 							if ( !in_array($o, $oss) )
 								$oss[] 		   = $o;
-
-							if ( !in_array('Other', $deviceTypes) )
-								$deviceTypes[] = 'Other'; 
 						break;
 					}
 				}
@@ -114,7 +115,7 @@
 				$result[] = [
 					'ext_id' 			=> $ext_id,
 					'name'				=> $campaign->Name,
-					'desc'				=> $campaign->Description,					
+					'desc'				=> $campaign->Description,		
 					'payout' 			=> $campaign->Payout,
 					'landing_url'		=> $campaign->Tracking_url,
 					'country'			=> $countries,

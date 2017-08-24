@@ -9,14 +9,14 @@
 	class PocketMediaAPI extends Component
 	{
 		// uses hasoffers.com plattform
-		const URL = 'https://pocketmedia.api.hasoffers.com/Apiv3/json?&Target=Offer&Method=findAll';
+		const URL = 'https://pocketmedia.api.hasoffers.com/Apiv3/json?Target=Affiliate_Offer&Method=findAll&fields[]=offer_id&fields[]=name&fields[]=approval_status&fields[]=description&fields[]=default_payout&filters[approval_status]=approved';
 
 		protected $_msg;
 		protected $_status;
 
 		public function requestCampaigns ( $api_key, $user_id = null  )
 		{
-			$url    = self::URL . '&NetworkToken='.$api_key;
+			$url    = self::URL . '&api_key='.$api_key;
 			$curl   = curl_init($url);
 
 			curl_setopt($curl, CURLOPT_HEADER, false);
