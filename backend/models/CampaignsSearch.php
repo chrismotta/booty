@@ -176,15 +176,15 @@ class CampaignsSearch extends Campaigns
                 'or', 
                 ['os_version' => null], 
                 ['>=', 'convert(os_version->"$[0]", decimal(11,2))', $this->os_version],
-                ['>=', 'convert(os_version->"$[1]", decimal(11,2))', $this->os_version],
-                ['>=', 'convert(os_version->"$[2]", decimal(11,2))', $this->os_version],
-                ['>=', 'convert(os_version->"$[3]", decimal(11,2))', $this->os_version],
-                ['>=', 'convert(os_version->"$[4]", decimal(11,2))', $this->os_version],
-                ['>=', 'convert(os_version->"$[5]", decimal(11,2))', $this->os_version],
-                ['>=', 'convert(os_version->"$[6]", decimal(11,2))', $this->os_version],
-                ['>=', 'convert(os_version->"$[7]", decimal(11,2))', $this->os_version],
-                ['>=', 'convert(os_version->"$[8]", decimal(11,2))', $this->os_version],
-                ['>=', 'convert(os_version->"$[9]", decimal(11,2))', $this->os_version]
+                // ['>=', 'convert(os_version->"$[1]", decimal(11,2))', $this->os_version],
+                // ['>=', 'convert(os_version->"$[2]", decimal(11,2))', $this->os_version],
+                // ['>=', 'convert(os_version->"$[3]", decimal(11,2))', $this->os_version],
+                // ['>=', 'convert(os_version->"$[4]", decimal(11,2))', $this->os_version],
+                // ['>=', 'convert(os_version->"$[5]", decimal(11,2))', $this->os_version],
+                // ['>=', 'convert(os_version->"$[6]", decimal(11,2))', $this->os_version],
+                // ['>=', 'convert(os_version->"$[7]", decimal(11,2))', $this->os_version],
+                // ['>=', 'convert(os_version->"$[8]", decimal(11,2))', $this->os_version],
+                // ['>=', 'convert(os_version->"$[9]", decimal(11,2))', $this->os_version]
                 ]);
         
         if(isset($this->connection_type))
