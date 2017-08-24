@@ -106,7 +106,7 @@
 				$result[] = [
 					'ext_id' 			=> $campaign->id,
 					'name'				=> $campaign->name,
-					'desc'				=> $campaign->description,		
+					'desc'				=> preg_replace('/[\xF0-\xF7].../s', '', $campaign->description),		
 					'payout' 			=> $campaign->payout,
 					'landing_url'		=> $campaign->tracking_url,
 					'country'			=> $countries,

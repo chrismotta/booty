@@ -84,7 +84,14 @@
 										$oss[] 		   = 'iOS';
 
 									if ( !in_array('Smartphone', $deviceTypes) )
-										$deviceTypes[] = 'Smartphone';			
+										$deviceTypes[] = 'Smartphone';
+								break;
+								case 'ipod':
+									if ( !in_array('iOS', $oss) )
+										$oss[] 		   = 'iOS';
+
+									if ( !in_array('Other', $deviceTypes) )
+										$deviceTypes[] = 'Other';
 								break;
 								case 'ios':
 									if ( !in_array('iOS', $oss) )
@@ -108,7 +115,7 @@
 						$result[] = [
 							'ext_id' 			=> $payout->id,
 							'name'				=> $campaign->offerName,
-							'desc'				=> $campaign->description,
+							'desc'				=> preg_replace('/[\xF0-\xF7].../s', '', $campaign->description),
 							'payout' 			=> $payout->payout,
 							'landing_url'		=> $campaign->targetURL,
 							'country'			=> $countries,
