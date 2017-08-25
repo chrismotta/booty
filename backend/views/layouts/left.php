@@ -131,6 +131,11 @@
                                     ['label' => 'Admin', 'icon' => 'circle-thin', 'url' => ['/static'],],
                                 ],
                             ],
+                            [
+                                'label' => 'Test Traffic Report',
+                                'icon' => 'circle-o',
+                                'url' => '/testtrafficreport'
+                            ],                            
                         ],
                     ],
                     ['label' => 'Reporting', 'icon' => 'bar-chart', 'url' => ['/reporting']],                   

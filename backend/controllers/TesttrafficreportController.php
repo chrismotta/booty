@@ -37,7 +37,7 @@ class TesttrafficreportController extends Controller
         $rows 		  = [];
         $campaignIds  = [];
         $data         = [];
-
+        $c=0;
         foreach ( $clickIds AS $clickId )
         {
         	$click = $cache->hgetall( 'campaignlog:'.$clickId );
@@ -47,9 +47,11 @@ class TesttrafficreportController extends Controller
 	        	$campaignId = $click['campaign_id'];
 
 	        	if ( isset( $counters[$campaignId] ) )
+	        	{
 					$counters[$campaignId]['clicks']++;
+	        	}
 				else
-					$counters[$campaignId]['clicks'] = 0;
+					$counters[$campaignId]['clicks'] = 1;
 
 				$convTime = $cache->get( 'conv:'.$clickId );
 
@@ -58,7 +60,7 @@ class TesttrafficreportController extends Controller
 		        	if ( isset( $counters[$campaignId]['convs'] ) )
 						$counters[$campaignId]['convs']++;
 					else
-						$counters[$campaignId]['convs'] = 0;			
+						$counters[$campaignId]['convs'] = 1;			
 				}
 
 	        	if ( !in_array( $campaignId, $campaignIds ))
