@@ -216,7 +216,8 @@ class AffiliatesapiController extends \yii\web\Controller
                     if  ( $newCampaign )
                     {
                         $this->_redis->hmset( 'campaign:'.$campaign->id, [
-                            'callback' => $campaign->landing_url,
+                            'callback'    => $campaign->landing_url,
+                            'click_macro' => $affiliate->click_macro
                         ]);
                     }
 

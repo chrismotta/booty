@@ -249,9 +249,10 @@ class ClustersController extends Controller
 
         $cache->zadd( 'clusterlist:'.$id, $status, $campaign->id );
         $cache->hmset( 'campaign:'.$campaign->id, [
-            'callback' => $campaign->landing_url,
+            'callback'      => $campaign->landing_url,
+            'click_macro'   => $campaign->affiliates->click_macro
         ]);
-        
+
         // debug
         // echo $return;
         return $this->redirect(Yii::$app->request->referrer);

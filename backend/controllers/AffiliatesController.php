@@ -3,6 +3,7 @@
 namespace backend\controllers;
 
 use Yii;
+use app\models;
 use app\models\Affiliates;
 use app\models\AffiliatesSearch;
 use yii\web\Controller;
@@ -85,6 +86,17 @@ class AffiliatesController extends Controller
         $model = $this->findModel($id);
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
+
+            $campaigns = models\Campaigns::findAll( ['Affiliates_id' => $model->id] );
+            $cache = new \Predis\Client( \Yii::$app->params['predisConString'] );
+
+            foreach ( $campaigns as $campaign )
+            {
+                $cache->hmset( 'campaign:'.$campaign->id, [
+                    'click_macro'   => $campaign->affiliates->click_macro
+                ]);                
+            }   
+
             return $this->redirect(['view', 'id' => $model->id]);
         } else {
             return $this->render('update', [
