@@ -1165,6 +1165,11 @@ class EtlController extends \yii\web\Controller
                 }
 
                 $this->_redis->zadd( 'clusterlist:'.$model->id, $status, $campaign->id );
+
+                $this->_redis->hmset( 'campaign:'.$campaign->id, [
+                    'callback'    => $campaign->landing_url,
+                    'click_macro' => $campaign->click_macro
+                ]);
             }
         }
 
