@@ -213,13 +213,10 @@ class AffiliatesapiController extends \yii\web\Controller
                         $this->_createAlert(  $rule['class'], $campaign->getErrors(), $api->getStatus(), json_encode($campaignData) );
                     }
 
-                    if  ( $newCampaign )
-                    {
-                        $this->_redis->hmset( 'campaign:'.$campaign->id, [
-                            'callback'    => $campaign->landing_url,
-                            'click_macro' => $affiliate->click_macro
-                        ]);
-                    }
+                    $this->_redis->hmset( 'campaign:'.$campaign->id, [
+                        'callback'    => $campaign->landing_url,
+                        'click_macro' => $affiliate->click_macro
+                    ]);
 
                     unset( $campaign );             
                 }
