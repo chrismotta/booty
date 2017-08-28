@@ -60,8 +60,10 @@ class TesttrafficreportController extends Controller
 		        	if ( isset( $counters[$campaignId]['convs'] ) )
 						$counters[$campaignId]['convs']++;
 					else
-						$counters[$campaignId]['convs'] = 1;			
-				}
+                        $counters[$campaignId]['convs'] = 1;            
+                }
+                else
+					$counters[$campaignId]['convs'] = 0;			
 
 	        	if ( !in_array( $campaignId, $campaignIds ))
 	        		$campaignIds[] = (int)$campaignId;
