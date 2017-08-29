@@ -4,7 +4,7 @@ use yii\helpers\Html;
 /* @var $this \yii\web\View */
 /* @var $content string */
 $username = isset( Yii::$app->user->identity->username ) ? Yii::$app->user->identity->username : null;
-    $path = Yii::$app->homeUrl;
+$path = Yii::$app->homeUrl;
 ?>
 
 <header class="main-header">
