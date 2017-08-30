@@ -43,6 +43,18 @@
 
 			foreach ( $response->offer AS $campaign )
 			{
+				$connectionType = [];
+
+				if ( (int)$campaign->allowedWiFi==1 )					
+				{
+					$connectionType[] = 'Wifi';
+				}
+
+				if ( (int)$campaign->allowed3G==1 )					
+				{
+					$connectionType[] = 'Carrier';
+				}
+
 				if ( $campaign->offerPayouts )
 				{
 					foreach ( $campaign->offerPayouts->offerPayout AS $payout )
@@ -120,7 +132,7 @@
 							'landing_url'		=> $campaign->targetURL,
 							'country'			=> $countries,
 							'device_type'		=> $deviceTypes,
-							'connection_type'	=> null,
+							'connection_type'	=> empty($connectionType) ? null : $connectionType,
 							'carrier'			=> null,
 							'os'				=> $oss,
 							'os_version'		=> null,
