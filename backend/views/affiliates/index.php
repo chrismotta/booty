@@ -6,6 +6,7 @@ use yii\helpers\ArrayHelper;
 use yii\grid\GridView;
 use yii\widgets\Pjax;
 use app\models;
+use common\models\User;
 use kartik\select2\Select2;
 /* @var $this yii\web\View */
 /* @var $searchModel app\models\AffiliatesSearch */
@@ -13,7 +14,7 @@ use kartik\select2\Select2;
 
 $this->title = 'Affiliates';
 $this->params['breadcrumbs'][] = $this->title;
-$users = models\User::find()->asArray()->all();
+$users = User::find()->asArray()->all();
 
 $filterByUser = ArrayHelper::map( 
     $users, 

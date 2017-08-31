@@ -8,7 +8,9 @@ use yii\helpers\ArrayHelper;
 /* @var $this yii\web\View */
 /* @var $model app\models\Affiliates */
 /* @var $form yii\widgets\ActiveForm */
-$users = models\User::find()->asArray()->all();
+use common\models\User;
+
+$users = User::find()->asArray()->all();
 ?>
 <div class="box box-info">
     <div class="box-body">

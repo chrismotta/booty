@@ -5,12 +5,13 @@ use yii\widgets\ActiveForm;
 use app\models;
 use kartik\select2\Select2;
 use yii\helpers\ArrayHelper;
+use common\models\User;
 
 /* @var $this yii\web\View */
 /* @var $model app\models\Publishers */
 /* @var $form yii\widgets\ActiveForm */
 
-$users = models\User::find()->asArray()->all();
+$users = User::find()->asArray()->all();
 ?>
 
 <div class="box box-info">

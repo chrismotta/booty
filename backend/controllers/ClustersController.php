@@ -10,6 +10,7 @@ use app\models\CampaignsSearch;
 use app\models\Countries;
 use app\models\Carriers;
 use yii\web\Controller;
+use yii\filters\AccessControl;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 
@@ -28,6 +29,18 @@ class ClustersController extends Controller
                 'class' => VerbFilter::className(),
                 'actions' => [
                     'delete' => ['POST'],
+                ],
+            ],
+            'access' => [
+                'class' => AccessControl::className(),
+                'only' => ['index', 'create', 'update', 'view', 'assignment'],
+                'rules' => [
+                    // allow authenticated users
+                    [
+                        'allow' => true,
+                        'roles' => ['Admin','Advisor'],
+                    ],
+                    // everything else is denied
                 ],
             ],
         ];

@@ -22,16 +22,16 @@ return [
         'request' => [
             'csrfParam' => '_csrf-backend',
         ],
-        'user' => [
-            'identityClass' => 'mdm\admin\models\User',
-            'loginUrl' => ['site/login'],
-            // 'identityClass' => 'common\models\User',
-            'enableAutoLogin' => true,
-            'identityCookie' => ['name' => '_identity-backend', 'httpOnly' => true],
-        ],
-        'authManager' => [
-            'class' => 'yii\rbac\PhpManager', // or use 'yii\rbac\DbManager'
-        ],
+        // 'user' => [
+        //     'identityClass' => 'mdm\admin\models\User',
+        //     'loginUrl' => ['site/login'],
+        //     // 'identityClass' => 'common\models\User',
+        //     'enableAutoLogin' => true,
+        //     'identityCookie' => ['name' => '_identity-backend', 'httpOnly' => true],
+        // ],
+        // 'authManager' => [
+        //     'class' => 'yii\rbac\DbManager', // or use 'yii\rbac\PhpManager'
+        // ],
         'session' => [
             // this is the name of the session cookie used for login on the backend
             'name' => 'advanced-backend',

@@ -4,6 +4,7 @@ use yii\helpers\Html;
 /* @var $this \yii\web\View */
 /* @var $content string */
 $username = isset( Yii::$app->user->identity->username ) ? Yii::$app->user->identity->username : null;
+$userrole = isset( Yii::$app->user->identity->role ) ? Yii::$app->user->identity->role : '';
 $path = Yii::$app->homeUrl;
 ?>
 
@@ -70,19 +71,19 @@ $path = Yii::$app->homeUrl;
 
                 <li class="dropdown user user-menu">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                        <img src="<?php echo Yii::$app->homeUrl?>img/generic_user.png" class="user-image" alt="User Image"/>
+                        <img src="<?php echo Yii::$app->homeUrl ?>img/generic_user.png" class="user-image" alt="User Image"/>
                         <span class="hidden-xs"><?php echo $username ?></span>
                     </a>
                     <ul class="dropdown-menu">
                         <!-- User image -->
 
                         <li class="user-header">
-                            <img src="<?php echo Yii::$app->homeUrl?>img/generic_user.png" class="img-circle"
+                            <img src="<?php echo Yii::$app->homeUrl ?>img/generic_user.png" class="img-circle"
                                  alt="User Image"/>
 
                             <p>
                                 <?php echo $username ?>
-                                <small>Member since Feb. 2015</small>
+                                <small>Member role: <?php echo $userrole ?></small>
                             </p>
                         </li>
 
