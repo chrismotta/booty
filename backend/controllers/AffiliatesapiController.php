@@ -41,7 +41,17 @@ class AffiliatesapiController extends \yii\web\Controller
             [
                 'class'         => 'GlispaAPI',
                 'affiliate_id'  => 7,
-            ],      
+            ],
+            [
+                'class'         => 'iWoopAPI',
+                'affiliate_id'  => 8,
+            ],    
+            /*         
+            [
+                'class'         => 'AppclientsAPI',
+                'affiliate_id'  => 9,
+            ],
+            */                    
             [
                 'class'         => 'PocketMediaAPI',
                 'affiliate_id'  => 4,

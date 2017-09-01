@@ -121,14 +121,60 @@
 			return $results;						
 		}
 
-		static function getValues ( $data )
+
+		static function getDeviceTypes ( $data )
+		{
+			$results = [];
+
+
+			if ( is_array($data) )
+				$values = $data;
+			else
+				$values = explode( ',' , $data );	
+
+
+			foreach ( $values as $v )
+			{
+				$platforms = preg_split( '/[^a-zA-Z\d]/', $v, null, PREG_SPLIT_NO_EMPTY );
+
+				foreach ( $platforms as $p )
+				{
+					switch ( strtolower($p) )
+					{
+						case 'android_phone':
+						case 'iphone':
+						case 'smartphone':
+							if ( !in_array( 'Smartphone', $results) )
+								$results[] = 'Smartphone';
+						break;
+						case 'android_tablet':
+						case 'ipad':
+						case 'tablet':						
+							if ( !in_array( 'Tablet', $results) )
+								$results[] = 'Tablet';						
+						break;
+						default:
+							if ( !in_array( 'Other', $results) )
+								$results[] = 'Other';
+						break;
+					}
+				}
+
+				unset ( $platforms );
+			}	
+
+			return $results;						
+		}
+
+
+		static function getValues ( $data, $delimiter = ',' )
 		{
 			$results = [];
 
 			if ( is_array($data) )
 				$values = $data;
 			else
-				$values = explode( ',' , $data );	
+				$values = explode( $delimiter , $data );	
 
 
 			foreach ( $values as $v )
