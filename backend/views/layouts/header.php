@@ -4,8 +4,9 @@ use yii\helpers\Html;
 /* @var $this \yii\web\View */
 /* @var $content string */
 $username = isset( Yii::$app->user->identity->username ) ? Yii::$app->user->identity->username : null;
-$userrole = isset( Yii::$app->user->identity->role ) ? Yii::$app->user->identity->role : '';
+$userroles = common\models\User::getRolesByID(Yii::$app->user->getId());
 $path = Yii::$app->homeUrl;
+
 ?>
 
 <header class="main-header">
@@ -83,7 +84,7 @@ $path = Yii::$app->homeUrl;
 
                             <p>
                                 <?php echo $username ?>
-                                <small>Member role: <?php echo $userrole ?></small>
+                                <!-- <small>Member role: </small> -->
                             </p>
                         </li>
 

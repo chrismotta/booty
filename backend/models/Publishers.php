@@ -4,7 +4,7 @@ namespace app\models;
 
 use Yii;
 use common\models\User;
-
+use yii\helpers\ArrayHelper;
 
 /**
  * This is the model class for table "Publishers".
@@ -68,5 +68,13 @@ class Publishers extends \yii\db\ActiveRecord
     public function getAdminUser()
     {
         return $this->hasOne(User::className(), ['id' => 'admin_user']);
+    }
+
+    public static function getPublishersByUser($user_id){
+        $aff = self::find();
+        $aff->select(['id']);
+        $aff->where(['admin_user' => $user_id]);
+        $result = $aff->asArray()->all();
+        return ArrayHelper::getColumn($result, 'id');
     }
 }

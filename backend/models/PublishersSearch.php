@@ -6,6 +6,7 @@ use Yii;
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
 use app\models\Publishers;
+use common\models\User;
 
 /**
  * PublishersSearch represents the model behind the search form about `app\models\Publishers`.
@@ -75,6 +76,14 @@ class PublishersSearch extends Publishers
             'Publishers.id' => $this->id,
             'Publishers.admin_user' => $this->admin_user,
         ]);
+
+
+        // role filter
+        $userroles = User::getRolesByID(Yii::$app->user->getId());
+        if(in_array('Advisor', $userroles)){
+            $assignedPublishers = Publishers::getPublishersByUser(Yii::$app->user->getId());
+            $query->andWhere( ['in', 'Publishers.id', $assignedPublishers] );
+        } 
 
         $query->andFilterWhere(['like', 'name', $this->name])
             ->andFilterWhere(['like', 'short_name', $this->short_name]);

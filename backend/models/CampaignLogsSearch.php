@@ -6,6 +6,8 @@ use Yii;
 use yii\base\Model;
 use yii\data\ActiveDataProvider;
 use backend\models\CampaignLogs;
+use app\models\Affiliates;
+use common\models\User;
 
 /**
  * CampaignLogsSearch represents the model behind the search form about `backend\models\CampaignLogs`.
@@ -53,6 +55,7 @@ class CampaignLogsSearch extends CampaignLogs
      */
     public function search($params)
     {
+
         $query = CampaignLogs::find();
 
         $dataProvider = new ActiveDataProvider([
@@ -295,8 +298,19 @@ class CampaignLogsSearch extends CampaignLogs
         $dataProvider->sort->attributes['conv_rate'] = [
             'asc' => ['conv_rate' => SORT_ASC],
             'desc' => ['conv_rate' => SORT_DESC],
-        ];                              
+        ];
+
+        // role filter
+        $userroles = User::getRolesByID(Yii::$app->user->getId());
+        if(in_array('Advisor', $userroles)){
+            $assignedPublishers = Publishers::getPublishersByUser(Yii::$app->user->getId());
+            $query->andWhere( ['in', 'D_Placement.Publishers_id', $assignedPublishers] );
+            // var_dump($assignedAffiliates);
+            // die('advisor');
+        } 
+
         // filters
+        
         if ( isset($params['CampaignLogsSearch']['date_start']) )
             $dateStart = date( 'Y-m-d', strtotime($params['CampaignLogsSearch']['date_start']) );
         else
