@@ -31,10 +31,6 @@ class AffiliatesapiController extends \yii\web\Controller
 				'affiliate_id'	=> 3,
 			],		
             [
-                'class'         => 'PocketMediaAPI',
-                'affiliate_id'  => 4,
-            ], 
-            [
                 'class'         => 'MobobeatAPI',
                 'affiliate_id'  => 5,
             ], 
@@ -45,13 +41,29 @@ class AffiliatesapiController extends \yii\web\Controller
             [
                 'class'         => 'GlispaAPI',
                 'affiliate_id'  => 7,
-            ],             	
+            ],
+            [
+                'class'         => 'iWoopAPI',
+                'affiliate_id'  => 8,
+            ],    
+            /*         
+            [
+                'class'         => 'AppclientsAPI',
+                'affiliate_id'  => 9,
+            ],
+            */                    
+            [
+                'class'         => 'PocketMediaAPI',
+                'affiliate_id'  => 4,
+            ],                    	
 		];
 	}
 
 
     public function actionIndex( $affiliate_id = null )
-    {	
+    {
+        set_time_limit(0);
+
     	$this->_changes = '';
     	$this->_alerts  = '';
     	$this->_redis 	= new \Predis\Client( \Yii::$app->params['predisConString'] );
