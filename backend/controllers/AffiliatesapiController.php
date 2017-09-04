@@ -51,11 +51,7 @@ class AffiliatesapiController extends \yii\web\Controller
                 'class'         => 'AppclientsAPI',
                 'affiliate_id'  => 9,
             ],
-            */                    
-            [
-                'class'         => 'PocketMediaAPI',
-                'affiliate_id'  => 4,
-            ],                    	
+            */                                      	
 		];
 	}
 
@@ -130,6 +126,73 @@ class AffiliatesapiController extends \yii\web\Controller
                 </body>
             </html>         
         ';
+    }
+
+
+    public function actionPocketmedia( )
+    {
+        set_time_limit(0);
+
+        $this->_changes = '';
+        $this->_alerts  = '';
+        $this->_redis   = new \Predis\Client( \Yii::$app->params['predisConString'] );
+
+        $this->_runAPI(
+            [
+                'class'         => 'PocketMediaAPI',
+                'affiliate_id'  => 4,
+            ]              
+        );
+
+
+        echo '
+            <html>
+                <head>
+                    <style>
+                        td {
+                            padding:10px;
+                            border:1px solid;
+                        }
+                        table{
+                            border:1px solid;
+                            border-collapse:collapse;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <h1>Errors</h1>
+                    <table>
+                        <thead>
+                            <td>API</td>
+                            <td>HTTP STATUS</td>                                
+                            <td>MESSAGE</td>
+                            <td>PARAMS</td>
+                        </thead>
+                        <tbody>'.$this->_sendAlerts().'</tbody>
+                    </table>   
+                    <br>
+                    <hr>
+                    <h1>Notifications</h1>
+                    <table>
+                        <thead>
+                            <td>API</td>
+                            <td>CAMPAIGN ID</td>
+                            <td>EXT ID</td>
+                            <td>PAYOUT</td>
+                            <td>COUNTRY</td>
+                            <td>CARRIER</td>
+                            <td>CONNECTION</td>
+                            <td>DEVICE</td>
+                            <td>OS</td>
+                            <td>OS VERSION</td>
+                            <td>STATUS</td>
+                            <td>AFFECTED CLUSTERS</td>
+                        </thead>
+                        <tbody>'.$this->_sendNotifications().'</tbody>
+                    </table>                    
+                </body>
+            </html>         
+        ';        
     }
 
 
