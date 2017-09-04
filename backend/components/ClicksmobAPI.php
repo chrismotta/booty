@@ -9,14 +9,14 @@
 	class ClicksmobAPI extends Component
 	{
 		// uses orangear.com plattform
-		const URL = 'https://api.clicksmob.com/api/v2/services/offers.json?uid=15027&featureList=S.T';
+		const URL = 'https://api.clicksmob.com/api/v2/services/offers.json?featureList=S.T';
 
 		protected $_msg;
 		protected $_status;
 
 		public function requestCampaigns ( $api_key, $user_id = null  )
 		{
-			$url    = self::URL . '&utoken='.$api_key;
+			$url    = self::URL . '&uid='.$user_id.'&utoken='.$api_key;
 			$curl   = curl_init($url);
 
 			curl_setopt($curl, CURLOPT_HEADER, false);
@@ -45,15 +45,13 @@
 			{
 				$connectionType = [];
 
-				if ( (int)$campaign->allowedWiFi==1 )					
-				{
+				if ( (int)$campaign->allowedWiFi==1 && !in_array('Wifi', $connectionType) )		
 					$connectionType[] = 'Wifi';
-				}
 
-				if ( (int)$campaign->allowed3G==1 )					
-				{
+
+				if ( (int)$campaign->allowed3G==1 && !in_array('Carrier', $connectionType) )	
 					$connectionType[] = 'Carrier';
-				}
+
 
 				if ( $campaign->offerPayouts )
 				{
@@ -139,10 +137,17 @@
 							'status'			=> 'active',
 							'currency'			=> 'USD'
 						];
+
+						unset ( $oss );
+						unset ( $deviceTypes);
 					}
 				}
 			}
 
+			unset ( $connectionType );
+
+			header('Content-Type: text/json');
+			echo json_encode( $result, JSON_PRETTY_PRINT );
 			return $result;
 		}
 
