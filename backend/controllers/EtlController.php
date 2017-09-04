@@ -1039,6 +1039,8 @@ class EtlController extends \yii\web\Controller
         $sql = '
             INSERT IGNORE INTO Dashboard (                
                 country,
+                Affiliates_id,
+                Publishers_id,
                 date,
                 imps,
                 unique_users,
@@ -1048,21 +1050,31 @@ class EtlController extends \yii\web\Controller
             ) 
             SELECT * FROM (
                 SELECT 
-                    cl.country AS country, 
-                    date(cl.imp_time) AS date, 
-                    sum( cl.imps ) AS imps, 
+                    cl.country               AS country, 
+                    c.Affiliates_id          AS Affiliates_id,
+                    p.Publishers_id          AS Publishers_id,
+                    date(cl.imp_time)        AS date, 
+                    sum( cl.imps )           AS imps, 
                     count( cl.session_hash ) AS unique_users,
+
                     sum(CASE 
                         WHEN date(cp.conv_time)=date(cl.imp_time) THEN 1 
                         ELSE 0 
-                    END) AS installs, 
-                    sum( cl.cost ) AS cost,
-                    sum( cp.revenue ) AS revenue 
+                    END)                     AS installs, 
+
+                    sum( cl.cost )           AS cost,
+                    sum( cp.revenue )        AS revenue 
+
                 FROM F_CampaignLogs cp 
-                RIGHT JOIN F_ClusterLogs cl ON ( cp.session_hash = cl.session_hash ) 
+
+                LEFT JOIN D_Campaign c       ON ( cp.D_Campaign_id= c.id ) 
+                RIGHT JOIN F_ClusterLogs cl  ON ( cp.session_hash = cl.session_hash ) 
+                LEFT JOIN D_Placement p      ON ( cl.D_Placement_id = p.id )
+
                 WHERE date(cl.imp_time)="'.$date.'" 
                 GROUP BY date(cl.imp_time), cl.country 
             ) AS r
+
             ON DUPLICATE KEY UPDATE 
                 imps = r.imps, 
                 unique_users = r.unique_users, 
