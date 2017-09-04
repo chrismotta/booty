@@ -51,7 +51,20 @@ class AffiliatesapiController extends \yii\web\Controller
                 'class'         => 'AppclientsAPI',
                 'affiliate_id'  => 9,
             ],
-            */                                      	
+            */
+            /*           
+            [
+                'class'         => 'BriskAdsAPI',
+                'affiliate_id'  => 10,
+            ],
+            */
+            /*
+            [
+                'class'         => 'MinimobAPI',
+                'affiliate_id'  => 11,
+            ],
+            */            
+                                             	
 		];
 	}
 

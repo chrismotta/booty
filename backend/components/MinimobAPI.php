@@ -7,6 +7,7 @@
 	use app\models;
 	use yii\base\InvalidConfigException;
 	 
+	// EL RESPONSE VIENE SIN OFERTAS
 	class MinimobAPI extends Component
 	{
 		// uses hasoffers.com plattform
