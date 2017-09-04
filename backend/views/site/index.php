@@ -110,8 +110,8 @@ else
   $todayYesterdayConvs = 0;
 
 
-$convRate = $totalConvs>0 ? number_format( $totalConvs*100/$totalImps , 2) : 0;
-$yesterdayConvRate = $totalConvs>0 ? number_format( $totalConvs*100/$totalImps ,2) : 0;
+$convRate = $totalConvs>0 ? number_format( $totalConvs*100/$totalImps , 4) : 0;
+$yesterdayConvRate = $totalConvs>0 ? number_format( $totalConvs*100/$totalImps ,4) : 0;
 
 if( $yesterdayConvRate > 0 && $convRate > 0 ) 
   $todayYesterdayRate = $convRate*100/$yesterdayConvRate;
