@@ -3,6 +3,7 @@
 namespace app\models;
 
 use yii\data\ActiveDataProvider;
+use common\models\User;
 use Yii;
 
 /**
@@ -73,6 +74,12 @@ class Dashboard extends \yii\db\ActiveRecord
             }
         }
 
+        // role filter
+        $userroles = User::getRolesByID(Yii::$app->user->getId());
+        if(in_array('Advisor', $userroles)){
+            $assignedPublishers = Publishers::getPublishersByUser(Yii::$app->user->getId());
+            $query->andWhere( ['in', 'Dashboard.Publishers_id', $assignedPublishers] );
+        }
 
         if ( $groupBy )
             $query->groupBy( $groupBy );
