@@ -45,13 +45,11 @@ class AffiliatesapiController extends \yii\web\Controller
             [
                 'class'         => 'iWoopAPI',
                 'affiliate_id'  => 8,
-            ],    
-            /*         
+            ],          
             [
                 'class'         => 'AppclientsAPI',
                 'affiliate_id'  => 9,
             ],
-            */
             [
                 'class'         => 'MinimobAPI',
                 'affiliate_id'  => 10,
