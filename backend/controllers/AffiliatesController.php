@@ -93,7 +93,10 @@ class AffiliatesController extends Controller
             foreach ( $campaigns as $campaign )
             {
                 $cache->hmset( 'campaign:'.$campaign->id, [
-                    'click_macro'   => $campaign->affiliates->click_macro
+                    'callback'      => $campaign->landing_url,
+                    'ext_id'        => $campaign->ext_id,
+                    'click_macro'   => $campaign->affiliates->click_macro,
+                    'placeholders'  => $campaign->affiliates->placeholders
                 ]);                
             }   
 
