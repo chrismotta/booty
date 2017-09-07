@@ -7,7 +7,6 @@
 	use app\models;
 	use yii\base\InvalidConfigException;
 	 
-	// VARIOS PAYOUTS SIN CRITERIO UNICO
 	class AppclientsAPI extends Component
 	{
 		// uses hasoffers.com plattform
