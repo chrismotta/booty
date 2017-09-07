@@ -627,27 +627,22 @@ class AffiliatesapiController extends \yii\web\Controller
 
     private function _sendmail ( $from, $to, $subject, $body )
     {
-        $headers = 'From:'.$from."\r\n".'MIME-Version: 1.0'."\r\n".'Content-Type: text/html; charset="UTF-8"';
+        $command = '
+            export MAILTO="'.$to.'"
+            export FROM="'.$from.'"
+            export SUBJECT="'.$subject.'"
+            export BODY="'.$body.'"
+            (
+             echo "From: $FROM"
+             echo "To: $MAILTO"
+             echo "Subject: $SUBJECT"
+             echo "MIME-Version: 1.0"
+             echo "Content-Type: text/html; charset=UTF-8"
+             echo $BODY
+            ) | /usr/sbin/sendmail -F $MAILTO -t -v -bm
+        ';
 
-        if ( !mail($to, $subject, $body, $headers ) )
-        {
-            $command = '
-                export MAILTO="'.$to.'"
-                export FROM="'.$from.'"
-                export SUBJECT="'.$subject.'"
-                export BODY="'.$body.'"
-                (
-                 echo "From: $FROM"
-                 echo "To: $MAILTO"
-                 echo "Subject: $SUBJECT"
-                 echo "MIME-Version: 1.0"
-                 echo "Content-Type: text/html; charset=UTF-8"
-                 echo $BODY
-                ) | /usr/sbin/sendmail -F $MAILTO -t -v -bm
-            ';
-
-            shell_exec( $command );             
-        }           
+        shell_exec( $command );
     }    
 
 
