@@ -403,7 +403,7 @@ if ( isset($params['exchange_id']) && $params['exchange_id'] ){
         echo Select2::widget( [
             'name' => 'publisher',
             // 'data' => $publishers,
-            // 'value' => $r_publishers,
+            'value' => $r_publishers,
             'language' => 'us',
             'options' => ['multiple' => true],
             'pluginOptions' => [
@@ -423,7 +423,7 @@ if ( isset($params['exchange_id']) && $params['exchange_id'] ){
         echo Select2::widget( [
             'name' => 'placement',
             // 'data' => $placements,         
-            // 'value' => $r_placements,
+            'value' => $r_placements,
             'language' => 'us',
             'options' => ['multiple' => true],
             'pluginOptions' => [
