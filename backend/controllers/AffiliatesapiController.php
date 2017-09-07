@@ -9,8 +9,8 @@ use backend\components;
 
 class AffiliatesapiController extends \yii\web\Controller
 {
-	const NOTIFY_INBOX = 'dev@splad.co';
-	const ALERTS_INBOX = 'dev@splad.co';
+	const NOTIFY_INBOX = 'dev@splad.co,adrianpastor1983@gmail.com';
+	const ALERTS_INBOX = 'dev@splad.co,adrianpastor1983@gmail.com';
 
 	protected $_notifications;
 	protected $_redis;
