@@ -10,7 +10,7 @@ use backend\components;
 class AffiliatesapiController extends \yii\web\Controller
 {
     CONST FROM = 'Splad - API Controller<no-reply@spladx.co>';
-	const NOTIFY_INBOX = 'dev@splad.co,adrianpastor1983@gmail.com';
+	const NOTIFY_INBOX = 'dev@splad.co,adrianpastor1983@gmail.com,tgonzalez@splad.co,mghio@splad.co,proman@splad.co';
 	const ALERTS_INBOX = 'dev@splad.co,adrianpastor1983@gmail.com';
 
 	protected $_notifications;
