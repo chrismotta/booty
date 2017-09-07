@@ -392,7 +392,10 @@ class EtlController extends \yii\web\Controller
 
     private function _clusterLogs ( )
     {
-        $this->_db = isset( $_GET['db'] ) ? $_GET['db'] : 'current';
+        if ( $this->_db )
+            $db = $this->_db;
+        else
+            $db = isset( $_GET['db'] ) ? $_GET['db'] : 'current';
 
         switch ( $this->_db )
         {
@@ -976,11 +979,11 @@ class EtlController extends \yii\web\Controller
     {
         switch ( floor(($this->_timestamp/60/60/24))%2+3 )
         {
-            case 1:
-                return 2;
+            case 3:
+                return 4;
             break;
-            case 2:
-                return 1;
+            case 4:
+                return 3;
             break;
         }
     }
