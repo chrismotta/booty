@@ -627,13 +627,10 @@ class AffiliatesapiController extends \yii\web\Controller
 
     private function _sendmail ( $from, $to, $subject, $body )
     {
-        $headers = 'From:'.$from.'\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset="UTF-8"\r\n';
+        $headers = 'From:'.$from."\r\n".'MIME-Version: 1.0'."\r\n".'Content-Type: text/html; charset="UTF-8"';
 
         if ( !mail($to, $subject, $body, $headers ) )
         {
-            $data = 'To: '.$to.'\nSubject: '.$subject.'\nFrom:'.$from.'\n'.$body;
-
-            $command = 'echo -e "'.$data.'" | sendmail -bm -t -v';
             $command = '
                 export MAILTO="'.$to.'"
                 export FROM="'.$from.'"
