@@ -98,6 +98,10 @@ class CampaignLogsSearch extends CampaignLogs
             {
                 switch ( $field )
                 {
+                    case 'date':
+                        $fields[] = 'date(F_ClusterLogs.imp_time) AS date';
+                        $group[]  = 'date(F_ClusterLogs.imp_time)';
+                    break;
                     case 'campaign':
                         $fields[] = 'D_Campaign.name AS campaign';
                         $fields[] = 'D_Campaign.id AS campaign_id';
@@ -121,6 +125,9 @@ class CampaignLogsSearch extends CampaignLogs
                     case 'cost':
                         $fields[] = 'SUM(F_ClusterLogs.'.$field.') AS '.$field;
                     break;
+                    case 'unique_imps':
+                        $fields[] = 'COUNT(F_ClusterLogs.session_hash) AS '.$field;
+                    break;                    
                     case 'revenue':
                         $fields[] = 'SUM(F_CampaignLogs.'.$field.') AS '.$field;
                     break;
@@ -160,7 +167,7 @@ class CampaignLogsSearch extends CampaignLogs
                         $group[]  = 'F_ClusterLogs.'.$field;
                     break;
                 }
-            } 
+            }
         }
 
         if  ( empty($fields) )
@@ -172,13 +179,14 @@ class CampaignLogsSearch extends CampaignLogs
         if ( empty($group) )
             $group[]  = 'D_Campaign.id';                       
 
-        
         $query->groupBy( $group );
         $query->select( $fields );
-
-  
  
         // sorting
+        $dataProvider->sort->attributes['date'] = [
+            'asc' => ['date(F_ClusterLogs.imp_time)' => SORT_ASC],
+            'desc' => ['date(F_ClusterLogs.imp_time)' => SORT_DESC],
+        ];        
         $dataProvider->sort->attributes['campaign'] = [
             'asc' => ['D_Campaign.name' => SORT_ASC],
             'desc' => ['D_Campaign.name' => SORT_DESC],
@@ -186,27 +194,27 @@ class CampaignLogsSearch extends CampaignLogs
         $dataProvider->sort->attributes['affiliate'] = [
             'asc' => ['D_Campaign.Affiliates_name' => SORT_ASC],
             'desc' => ['D_Campaign.Affiliates_name' => SORT_DESC],
-        ];  
+        ];
         $dataProvider->sort->attributes['publisher'] = [
             'asc' => ['D_Placement.Publishers_name' => SORT_ASC],
             'desc' => ['D_Placement.Publishers_name' => SORT_DESC],
-        ];   
+        ];
         $dataProvider->sort->attributes['model'] = [
             'asc' => ['D_Placement.model' => SORT_ASC],
             'desc' => ['D_Placement.model' => SORT_DESC],
-        ];               
+        ];      
         $dataProvider->sort->attributes['status'] = [
             'asc' => ['D_Placement.status' => SORT_ASC],
             'desc' => ['D_Placement.status' => SORT_DESC],
-        ];            
+        ];
         $dataProvider->sort->attributes['cluster'] = [
             'asc' => ['F_ClusterLogs.cluster_name' => SORT_ASC],
             'desc' => ['F_ClusterLogs.cluster_name' => SORT_DESC],
-        ];        
+        ];
         $dataProvider->sort->attributes['placement'] = [
             'asc' => ['D_Placement.name' => SORT_ASC],
             'desc' => ['D_Placement.name' => SORT_DESC],
-        ];                
+        ];
         $dataProvider->sort->attributes['country'] = [
             'asc' => ['F_ClusterLogs.country' => SORT_ASC],
             'desc' => ['F_ClusterLogs.country' => SORT_DESC],
@@ -214,7 +222,7 @@ class CampaignLogsSearch extends CampaignLogs
         $dataProvider->sort->attributes['connection_type'] = [
             'asc' => ['F_ClusterLogs.connection_type' => SORT_ASC],
             'desc' => ['F_ClusterLogs.connection_type' => SORT_DESC],
-        ];        
+        ];
         $dataProvider->sort->attributes['carrier'] = [
             'asc' => ['F_ClusterLogs.carrier' => SORT_ASC],
             'desc' => ['F_ClusterLogs.carrier' => SORT_DESC],

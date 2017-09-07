@@ -291,6 +291,7 @@ if ( isset($params['exchange_id']) && $params['exchange_id'] ){
     <?= 
         $form->field($searchModel, 'fields_group1')->checkboxList(
             [
+                'date'      => 'Date',
                 'cluster'   => 'Cluster',
                 'affiliate' => 'Affiliate',
                 'campaign'  => 'Campaign',

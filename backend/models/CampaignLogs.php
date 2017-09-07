@@ -53,6 +53,8 @@ class CampaignLogs extends \yii\db\ActiveRecord
     public $profit;
     public $conv_rate;
     public $column;
+    public $date;
+    public $unique_imps;
 
     /**
      * @inheritdoc
@@ -95,7 +97,9 @@ class CampaignLogs extends \yii\db\ActiveRecord
             'profit'        => 'Profit',
             'revenue_ecpm'  => 'Revenue eCPM',
             'cost_ecpm'     => 'Cost eCPM',
-            'profit_ecpm'   => 'Profit eCPM'
+            'profit_ecpm'   => 'Profit eCPM',
+            'date'          => 'Date',
+            'unique_imps'   => 'Unique Imps'
         ];
     }
 
