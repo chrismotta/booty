@@ -194,20 +194,70 @@ if(isset($dataProvider)){
                 break;
                 case 'imps':
                 case 'convs':
-                case 'revenue_ecpm':
-                case 'cost_ecpm':
-                case 'profit':
-                case 'profit_ecpm':
                 case 'clicks':
                     $columns[$p] = [
                         'attribute' => $column,
                         'footer'    => isset($totals[0]) ? $totals[0][$column] : null,
+                        'footerOptions' => [
+                            'style' => 'font-weight:bold;'
+                        ],                        
                     ];
-                break;                   
+                break; 
+                case 'profit':
+                    $columns[$p] = [
+                        'attribute' => $column,
+                        'footer'    => isset($totals[0]) ? '%&nbsp'.number_format($totals[0][$column],2) : null,
+                        'footerOptions' => [
+                            'style' => 'font-weight:bold;'
+                        ],                        
+                        'value' => function($model, $key, $index, $widget) {
+                          return '% '.number_format($model->profit,2);
+                        },
+                    ];
+                break;                
+                case 'profit_ecpm':
+                    $columns[$p] = [
+                        'attribute' => $column,
+                        'footer'    => isset($totals[0]) ? '%&nbsp'.number_format($totals[0][$column],2) : null,
+                        'footerOptions' => [
+                            'style' => 'font-weight:bold;'
+                        ],                        
+                        'value' => function($model, $key, $index, $widget) {
+                          return '% '.number_format($model->profit_ecpm,2);
+                        },
+                    ];
+                break;                  
+                case 'cost_ecpm':
+                    $columns[$p] = [
+                        'attribute' => $column,
+                        'footer'    => isset($totals[0]) ? '%&nbsp'.number_format($totals[0][$column],2) : null,
+                        'footerOptions' => [
+                            'style' => 'font-weight:bold;'
+                        ],                        
+                        'value' => function($model, $key, $index, $widget) {
+                          return '% '.number_format($model->cost_ecpm,2);
+                        },
+                    ];
+                break;                 
+                case 'revenue_ecpm':
+                    $columns[$p] = [
+                        'attribute' => $column,
+                        'footer'    => isset($totals[0]) ? '%&nbsp'.number_format($totals[0][$column],2) : null,
+                        'footerOptions' => [
+                            'style' => 'font-weight:bold;'
+                        ],                        
+                        'value' => function($model, $key, $index, $widget) {
+                          return '% '.number_format($model->revenue_ecpm,2);
+                        },
+                    ];
+                break;                                   
                 case 'conv_rate':
                     $columns[$p] = [
                         'attribute' => $column,
-                        'footer'    => isset($totals[0]) ? '% '.number_format($totals[0][$column],2) : null,
+                        'footer'    => isset($totals[0]) ? '%&nbsp'.number_format($totals[0][$column],2) : null,
+                        'footerOptions' => [
+                            'style' => 'font-weight:bold;'
+                        ],                        
                         'value' => function($model, $key, $index, $widget) {
                           return '% '.number_format($model->conv_rate,2);
                         },
@@ -216,18 +266,24 @@ if(isset($dataProvider)){
                 case 'revenue':
                     $columns[$p] = [
                         'attribute' => $column,
-                        'footer'    => isset($totals[0]) ? '$ '.number_format($totals[0][$column],6) : null,
+                        'footer'    => isset($totals[0]) ? '$&nbsp'.number_format($totals[0][$column],2) : null,
+                        'footerOptions' => [
+                            'style' => 'font-weight:bold;'
+                        ],                        
                         'value' => function($model, $key, $index, $widget) {
-                          return '$ '.number_format($model->revenue,6);
+                          return '$ '.number_format($model->revenue,2);
                         },
                     ];
                 break;                             
                 case 'cost':
                     $columns[$p] = [
                         'attribute' => $column,
-                        'footer'    => isset($totals[0]) ? '$ '.number_format($totals[0][$column],6) : null,
+                        'footer'    => isset($totals[0]) ? '$&nbsp'.number_format($totals[0][$column],2) : null,
+                        'footerOptions' => [
+                            'style' => 'font-weight:bold;'
+                        ],
                         'value' => function($model, $key, $index, $widget) {
-                          return '$ '.number_format($model->cost,6);
+                          return '$ '.number_format($model->cost,2);
                         },
                     ];
                 break;
