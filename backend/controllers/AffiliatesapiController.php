@@ -9,6 +9,7 @@ use backend\components;
 
 class AffiliatesapiController extends \yii\web\Controller
 {
+    CONST FROM = 'Splad - API Controller<no-reply@spladx.co>';
 	const NOTIFY_INBOX = 'dev@splad.co,adrianpastor1983@gmail.com';
 	const ALERTS_INBOX = 'dev@splad.co,adrianpastor1983@gmail.com';
 
@@ -559,7 +560,7 @@ class AffiliatesapiController extends \yii\web\Controller
 			';
 
 			$this->_sendMail( 
-				'no-reply@spladx.co', 
+				self::FROM, 
 				self::ALERTS_INBOX, 
 				'AFFILIATES API ERROR '.date('Y-m-d'),  
 				$html 
@@ -613,7 +614,7 @@ class AffiliatesapiController extends \yii\web\Controller
 			';
 
 			$this->_sendMail( 
-				'no-reply@spladx.co', 
+				self::FROM, 
 				self::NOTIFY_INBOX, 
 				'CAMPAIGN CHANGES '.date('Y-m-d'),  
 				$html 
