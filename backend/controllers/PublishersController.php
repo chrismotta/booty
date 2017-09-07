@@ -123,4 +123,19 @@ class PublishersController extends Controller
             throw new NotFoundHttpException('The requested page does not exist.');
         }
     }
+
+    public function actionGetfilterlist($q=null){
+
+        \Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+        $list = PublishersSearch::searchForFilter($q);
+
+        foreach ($list as $value) {
+            $formatedList['results'][] = [
+                'id'   => $value['name_id'],
+                'text' => $value['name_id'],
+                ];
+        }
+
+        return $formatedList;
+    }
 }

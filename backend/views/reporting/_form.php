@@ -10,6 +10,8 @@ use yii\helpers\ArrayHelper;
 use backend\models;
 use backend\components;
 use yii\bootstrap;
+use yii\web\JsExpression;
+use yii\helpers\Url;
 /* @var $this yii\web\View */
 /* @var $model backend\models\CampaignLogs */
 /* @var $form yii\widgets\ActiveForm */
@@ -391,21 +393,51 @@ if ( isset($params['exchange_id']) && $params['exchange_id'] ){
 
     <dir class="col-md-4">
 
+    <?php 
+    $publishersFilterUrl = Url::to(['publishers/getfilterlist']); 
+    $placementsFilterUrl = Url::to(['placements/getfilterlist']); 
+    ?>
+
     <?= 
         '<label class="control-label">Publisher</label>';
         echo Select2::widget( [
             'name' => 'publisher',
-            'data' => $publishers,
-            'value' => $r_publishers,
+            // 'data' => $publishers,
+            // 'value' => $r_publishers,
             'language' => 'us',
-            'options' => [
-                'multiple' => true
-            ],
+            'options' => ['multiple' => true],
             'pluginOptions' => [
-                'tokenSeparators' => [' '],
-                'maximumInputLength' => 50
+                'maximumInputLength' => 50,
+                'ajax' => [
+                    'url' => $publishersFilterUrl,
+                    'dataType' => 'json',
+                    'data' => new JsExpression('function(params) { 
+                        return {q:params.term}; }')
+                ],
             ],
         ]);            
+    ?>
+
+    <?=
+        '<label class="control-label">Placement</label>';
+        echo Select2::widget( [
+            'name' => 'placement',
+            // 'data' => $placements,         
+            // 'value' => $r_placements,
+            'language' => 'us',
+            'options' => ['multiple' => true],
+            'pluginOptions' => [
+                //'tags' => true,
+                // 'tokenSeparators' => [',', ' '],
+                'maximumInputLength' => 10,
+                'ajax' => [
+                    'url' => $placementsFilterUrl,
+                    'dataType' => 'json',
+                    'data' => new JsExpression('function(params) { 
+                        return {q:params.term}; }')
+                ],
+            ],
+        ]);           
     ?>
 
     <?=
@@ -452,22 +484,6 @@ if ( isset($params['exchange_id']) && $params['exchange_id'] ){
             'name' => 'cluster',
             'data' => $clusters,
             'value' => $r_clusters,
-            'language' => 'us',
-            'options' => ['multiple' => true],
-            'pluginOptions' => [
-                //'tags' => true,
-                'tokenSeparators' => [',', ' '],
-                'maximumInputLength' => 10
-            ],
-        ]);           
-    ?>
-
-    <?=
-        '<label class="control-label">Placement</label>';
-        echo Select2::widget( [
-            'name' => 'placement',
-            'data' => $placements,         
-            'value' => $r_placements,
             'language' => 'us',
             'options' => ['multiple' => true],
             'pluginOptions' => [

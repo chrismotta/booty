@@ -27,14 +27,19 @@ $searchModel->date_end = isset($_GET['CampaignLogsSearch']['date_end']) ? $_GET[
 
 $clusters     = components\MapHelper::filtersFromRedisToSelectWidget( \Yii::$app->redis->zrange( 'clusters', 0, \Yii::$app->redis->zcard('clusters') ) );
 
-$placements     = components\MapHelper::filtersFromRedisToSelectWidget( \Yii::$app->redis->zrange( 'placements', 0, \Yii::$app->redis->zcard('placements') ) );
+$campaigns     = components\MapHelper::filtersFromRedisToSelectWidget( \Yii::$app->redis->zrange( 'campaigns', 0, \Yii::$app->redis->zcard('campaigns') ) );
 
 $affiliates     = components\MapHelper::filtersFromRedisToSelectWidget( \Yii::$app->redis->zrange( 'affiliates', 0, \Yii::$app->redis->zcard('affiliates') ) );
 
-$publishers     = components\MapHelper::filtersFromRedisToSelectWidget( \Yii::$app->redis->zrange( 'publishers', 0, \Yii::$app->redis->zcard('publishers') ) );
 
-$campaigns     = components\MapHelper::filtersFromRedisToSelectWidget( \Yii::$app->redis->zrange( 'campaigns', 0, \Yii::$app->redis->zcard('campaigns') ) );
+// switch to ajax
 
+$publishers     = [];//components\MapHelper::filtersFromRedisToSelectWidget( \Yii::$app->redis->zrange( 'publishers', 0, \Yii::$app->redis->zcard('publishers') ) );
+
+$placements     = [];//components\MapHelper::filtersFromRedisToSelectWidget( \Yii::$app->redis->zrange( 'placements', 0, \Yii::$app->redis->zcard('placements') ) );
+
+
+// redis
 
 $devices          = \Yii::$app->redis->zrange( 'devices', 0, \Yii::$app->redis->zcard('devices') );
 $deviceBrands     = \Yii::$app->redis->zrange( 'device_brands', 0, \Yii::$app->redis->zcard('device_brands') );
