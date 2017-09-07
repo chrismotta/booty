@@ -1243,7 +1243,10 @@ class EtlController extends \yii\web\Controller
         foreach ( $campaigns as $model )
         {
             $this->_redis->hmset( 'campaign:'.$model->id, [
-                'callback' => $model->landing_url, 
+                'callback' => $model->landing_url,
+                'ext_id'        => $model->ext_id,
+                'click_macro'   => $model->affiliates->click_macro,
+                'placeholders'   => $model->affiliates->placeholders
             ]);
         }
 

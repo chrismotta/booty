@@ -45,25 +45,16 @@ class AffiliatesapiController extends \yii\web\Controller
             [
                 'class'         => 'iWoopAPI',
                 'affiliate_id'  => 8,
-            ],    
-            /*         
+            ],          
             [
                 'class'         => 'AppclientsAPI',
                 'affiliate_id'  => 9,
             ],
-            */
-            /*           
-            [
-                'class'         => 'BriskAdsAPI',
-                'affiliate_id'  => 10,
-            ],
-            */
-            /*
             [
                 'class'         => 'MinimobAPI',
-                'affiliate_id'  => 11,
+                'affiliate_id'  => 10,
             ],
-            */            
+
                                              	
 		];
 	}
@@ -303,7 +294,9 @@ class AffiliatesapiController extends \yii\web\Controller
 
                     $this->_redis->hmset( 'campaign:'.$campaign->id, [
                         'callback'    => $campaign->landing_url,
-                        'click_macro' => $affiliate->click_macro
+                        'click_macro' => $affiliate->click_macro,
+                        'placeholders' => $affiliate->placeholders,
+                        'ext_id'      => $campaign->ext_id
                     ]);
 
                     unset( $campaign );             

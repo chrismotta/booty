@@ -26,11 +26,13 @@ $users = User::find()->asArray()->all();
 
     <?= $form->field($model, 'user_id')->textInput(['maxlength' => true]) ?>
 
+    <?= $form->field($model, 'api_key')->textInput(['maxlength' => true]) ?>
     </div>
     <div class="col-md-6">
 
-    <?= $form->field($model, 'api_key')->textInput(['maxlength' => true]) ?>
+
     <?= $form->field($model, 'click_macro')->textInput(['maxlength' => true]) ?>
+    <?= $form->field($model, 'placeholders')->textInput(['maxlength' => true]) ?>
 
     <?= 
         '<label class="control-label">Admin User</label>';

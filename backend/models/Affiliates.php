@@ -38,7 +38,7 @@ class Affiliates extends \yii\db\ActiveRecord
         return [
             [['name'], 'required'],
             [['admin_user'], 'integer'],
-            [['name', 'user_id', 'api_key', 'click_macro'], 'string', 'max' => 255],
+            [['name', 'user_id', 'api_key', 'click_macro', 'placeholders'], 'string', 'max' => 255],
             [['short_name'], 'string', 'max' => 3],
             [['admin_user'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['admin_user' => 'id']],
         ];
@@ -56,6 +56,7 @@ class Affiliates extends \yii\db\ActiveRecord
             'user_id' => 'User ID',
             'api_key' => 'Api Key',
             'click_macro' => 'Click Macro',
+            'placeholders' => 'Placeholders',
             'admin_user' => 'Admin User',
         ];
     }

@@ -45,30 +45,28 @@
 
 			foreach ( $response AS $campaign )
 			{
-				$osVersion  = ApiHelper::getValues($campaign->campaign_display_rules->min_device_os_version);
-				$os 		= ApiHelper::getOs($campaign->campaign_display_rules->device_os);
-				$devices 	= ApiHelper::getDeviceTypes( $campaign->campaign_display_rules->device_type->whitelist, '\\' );
-
-				$url = null;
-
-				foreach ( $campaign->creatives AS $creative )
+				if ( isset($campaign->campaign_products[0]->pay_rate) )
 				{
-					if ( $creative->url )
+					$osVersion  = ApiHelper::getValues($campaign->campaign_display_rules->min_device_os_version);
+					$os 		= ApiHelper::getOs($campaign->campaign_display_rules->device_os);
+					$devices 	= ApiHelper::getDeviceTypes( $campaign->campaign_display_rules->device_type->whitelist, '\\' );
+
+					$url = null;
+
+					foreach ( $campaign->creatives AS $creative )
 					{
-						$url = $creative->url;
-						break;
+						if ( $creative->url )
+						{
+							$url = $creative->url;
+							break;
+						}
 					}
-				}
-
-				foreach ( $campaign->campaign_products AS $payout )
-				{
-
 
 					$result[] = [
 						'ext_id' 			=> $campaign->campaign_id, 
 						'name'				=> $campaign->name, 
 						'desc'				=> preg_replace('/[\xF0-\xF7].../s', '', $campaign->instructions), 
-						'payout' 			=> null, 
+						'payout' 			=> (float)$campaign->campaign_products[0]->pay_rate, 
 						'landing_url'		=> $url, 
 						'country'			=> $campaign->campaign_country_target, 
 						'device_type'		=> $devices, 
@@ -77,20 +75,16 @@
 						'os'				=> empty($os) ? null : $os, 
 						'os_version'		=> empty($osVersions) ? null : $osVersions, 
 						'status'			=> 'active', 
-						'currency'			=> null
+						'currency'			=> $campaign->campaign_products[0]->currency
 					];
+
+					unset( $campaign );
+					unset( $osVersion );
+					unset( $countries );				
+
 				}
-
-
-
-
-				unset( $campaign );
-				unset( $osVersion );
-				unset( $countries );				
 			}
 
-			header('Content-Type: text/json');
-			echo json_encode( $result, JSON_PRETTY_PRINT );die();
 			return $result;
 		}
 
