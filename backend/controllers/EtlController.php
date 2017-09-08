@@ -36,7 +36,7 @@ class EtlController extends \yii\web\Controller
 	{
 		parent::__construct( $id, $module, $config );
 
-    	$this->_redis 	 	  	= new \Predis\Client( \Yii::$app->params['predisConString'] );
+    	$this->_redis = new \Predis\Client( \Yii::$app->params['predisConString'] );
 
         $this->_objectLimit = isset( $_GET['objectlimit'] ) ? $_GET['objectlimit'] : 50000;
 
@@ -52,15 +52,15 @@ class EtlController extends \yii\web\Controller
             die('invalid limit');
         }
       
-        $this->_showsql         = isset( $_GET['showsql'] ) && $_GET['showsql'] ? true : false;
-        $this->_noalerts        = isset( $_GET['noalerts'] ) && $_GET['noalerts'] ? true : false;
-        $this->_sqltest         = isset( $_GET['sqltest'] ) && $_GET['sqltest'] ? true : false;
+        $this->_showsql   = isset( $_GET['showsql'] ) && $_GET['showsql'] ? true : false;
+        $this->_noalerts  = isset( $_GET['noalerts'] ) && $_GET['noalerts'] ? true : false;
+        $this->_sqltest   = isset( $_GET['sqltest'] ) && $_GET['sqltest'] ? true : false;
 
-        $this->_timestamp       = time();
+        $this->_timestamp = time();
 
-        $this->_db              = false;
+        $this->_db = isset( $_GET['db'] ) ? $_GET['db'] : 'current';
 
-        $this->_alertSubject    = 'AD NIGMA - ETL2 ERROR ' . date( "Y-m-d H:i:s", $this->_timestamp );
+        $this->_alertSubject = 'AD NIGMA - ETL2 ERROR ' . date( "Y-m-d H:i:s", $this->_timestamp );
 
 
 		ini_set('memory_limit','3000M');
@@ -187,12 +187,7 @@ class EtlController extends \yii\web\Controller
 
     public function actionConvs ( )
     {
-        if ( $this->_db )
-            $db = $this->_db;
-        else
-            $db = isset( $_GET['db'] ) ? $_GET['db'] : 'current';
-
-        switch ( $db )
+        switch ( $this->_db )
         {
             case 'yesterday':
                 $this->_redis->select( $this->_getYesterdayConvDatabase() );
@@ -280,12 +275,7 @@ class EtlController extends \yii\web\Controller
 
     private function _campaignLogs ( )
     {
-        if ( $this->_db )
-            $db = $this->_db;
-        else
-            $db = isset( $_GET['db'] ) ? $_GET['db'] : 'current';
-
-        switch ( $db )
+        switch ( $this->_db )
         {
             case 'yesterday':
                 $this->_redis->select( $this->_getYesterdayDatabase() );
@@ -392,11 +382,6 @@ class EtlController extends \yii\web\Controller
 
     private function _clusterLogs ( )
     {
-        if ( $this->_db )
-            $db = $this->_db;
-        else
-            $db = isset( $_GET['db'] ) ? $_GET['db'] : 'current';
-
         switch ( $this->_db )
         {
             case 'yesterday':
