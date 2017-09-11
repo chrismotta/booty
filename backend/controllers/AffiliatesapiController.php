@@ -386,24 +386,19 @@ class AffiliatesapiController extends \yii\web\Controller
 				}
 			}
 
-			$changes .= '<td>'.implode( ',', $clusters ).'</td>';
-    	}
-    	else
-    	{
-    		$changes .= '<td>&nbsp;</td>'; 
+            if ( !empty($clusters) )
+            {
+                $this->_changes .= '
+                    <tr>
+                        <td>'.$api_class.'</td>
+                        <td>'.$campaign->id.'</td>
+                        <td>'.$campaign->ext_id.'</td>
+                        '.$changes.'
+                    </tr>
+                ';                          
+            }
     	}
 
-    	if ( $this->_changed )
-    	{
-	    	$this->_changes .= '
-	    		<tr>
-	    			<td>'.$api_class.'</td>
-	    			<td>'.$campaign->id.'</td>
-	    			<td>'.$campaign->ext_id.'</td>
-	    			'.$changes.'
-	    		</tr>
-	    	';    		
-    	}
     }
 
 

@@ -11,6 +11,12 @@ $yesterday      = $yesterdayProvider->getModels();
 $byDate         = $byDateProvider->getModels();
 $byCountry      = $byCountryProvider->getModels();
 
+if ( isset($_GET['debug']) && $_GET['debug']==1 )
+{
+  echo json_encode($byDate, JSON_PRETTY_PRINT);
+  echo '<hr>';
+}
+
 $totalImps      = isset($totals[0]) ? $totals[0]['imps'] : 0; 
 $totalUsers     = isset($totals[0]) ? $totals[0]['unique_users'] : 0;
 $totalConvs     = isset($totals[0]) ? $totals[0]['installs'] : 0;
@@ -51,7 +57,7 @@ foreach( $daterange as $date )
         {
           if ( isset($_GET['debug']) && $_GET['debug']==1 )
             echo $formattedDate . ': '.$data['cost'].'<hr>';
-          
+
           $revByDate[]    = $data['revenue'];
           $spendByDate[]  = $data['cost'];
 
