@@ -253,11 +253,13 @@ class EtlController extends \yii\web\Controller
         {
 			$return = \Yii::$app->db->createCommand( $sql )->bindValues( $params )->execute();
 
+            /*
             foreach ( $convIDs AS $clickID )
             {
-                //$this->_redis->zadd( 'loadedconvs', $this->_timestamp, $clickID );
-                //$this->_redis->zrem( 'convs', $clickID );
+                $this->_redis->zadd( 'loadedconvs', $this->_timestamp, $clickID );
+                $this->_redis->zrem( 'convs', $clickID );
             }
+            */
 
             return $return;
         }
