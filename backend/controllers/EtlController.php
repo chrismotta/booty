@@ -374,8 +374,8 @@ class EtlController extends \yii\web\Controller
                 {
                     foreach ( $clickIDs AS $clickID )
                     {
-                        //$this->_redis->zadd( 'loadedclicks', $this->_timestamp, $clickID );
-                        //$this->_redis->zrem( 'clickids', $clickID );
+                        $this->_redis->zadd( 'loadedclicks', $this->_timestamp, $clickID );
+                        $this->_redis->zrem( 'clickids', $clickID );
                     }                                        
                 }
 
