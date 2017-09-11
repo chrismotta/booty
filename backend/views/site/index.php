@@ -11,6 +11,9 @@ $yesterday      = $yesterdayProvider->getModels();
 $byDate         = $byDateProvider->getModels();
 $byCountry      = $byCountryProvider->getModels();
 
+if ( isset($_GET['debug']) && $_GET['debug']==1 )
+  var_dump($byDate);
+
 $totalImps      = isset($totals[0]) ? $totals[0]['imps'] : 0; 
 $totalUsers     = isset($totals[0]) ? $totals[0]['unique_users'] : 0;
 $totalConvs     = isset($totals[0]) ? $totals[0]['installs'] : 0;

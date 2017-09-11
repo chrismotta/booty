@@ -13,7 +13,7 @@ use Predis;
 
 class EtlController extends \yii\web\Controller
 {
-    CONST ALERT_FROM = 'Nigma<no-reply@tmlbox.co>';
+    CONST ALERT_FROM = 'Splad - ETL Controller<no-reply@spladx.co>';
     CONST ALERT_TO   = 'daniel@themedialab.co,chris@themedialab.co';
 
 	private $_redis;
