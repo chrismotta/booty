@@ -11,9 +11,6 @@ $yesterday      = $yesterdayProvider->getModels();
 $byDate         = $byDateProvider->getModels();
 $byCountry      = $byCountryProvider->getModels();
 
-if ( isset($_GET['debug']) && $_GET['debug']==1 )
-  var_dump($byDate);
-
 $totalImps      = isset($totals[0]) ? $totals[0]['imps'] : 0; 
 $totalUsers     = isset($totals[0]) ? $totals[0]['unique_users'] : 0;
 $totalConvs     = isset($totals[0]) ? $totals[0]['installs'] : 0;
@@ -52,6 +49,9 @@ foreach( $daterange as $date )
 
         if ( $data['date'] == $formattedDate )
         {
+          if ( isset($_GET['debug']) && $_GET['debug']==1 )
+            echo $formattedDate . ': '.$data['cost'].'<hr>';
+          
           $revByDate[]    = $data['revenue'];
           $spendByDate[]  = $data['cost'];
 
@@ -66,6 +66,9 @@ foreach( $daterange as $date )
         }
         else
         {
+          if ( isset($_GET['debug']) && $_GET['debug']==1 )
+            echo $formattedDate . ': '.$data['cost'].'<hr>';
+
             $revByDate[]    = 0;
             $spendByDate[]  = 0;
             $profitByDate[] = 0;
@@ -77,6 +80,8 @@ foreach( $daterange as $date )
     if ( !in_array($formattedDate, $dates) )
       $dates[] = $formattedDate; 
 }
+
+
 
 $dates[]        = $currentDate;
 $revByDate[]    = $todayRev;
