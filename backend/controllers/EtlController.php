@@ -14,7 +14,7 @@ use Predis;
 class EtlController extends \yii\web\Controller
 {
     CONST ALERT_FROM = 'Splad - ETL Controller<no-reply@spladx.co>';
-    CONST ALERT_TO   = 'daniel@themedialab.co,chris@themedialab.co';
+    CONST ALERT_TO   = 'dev@splad.co,apastor@splad.co';
 
 	private $_redis;
 	private $_objectLimit;
@@ -255,8 +255,8 @@ class EtlController extends \yii\web\Controller
 
             foreach ( $convIDs AS $clickID )
             {
-                $this->_redis->zadd( 'loadedconvs', $this->_timestamp, $clickID );
-                $this->_redis->zrem( 'convs', $clickID );
+                //$this->_redis->zadd( 'loadedconvs', $this->_timestamp, $clickID );
+                //$this->_redis->zrem( 'convs', $clickID );
             }
 
             return $return;
@@ -289,12 +289,17 @@ class EtlController extends \yii\web\Controller
     	$clickIDCount   = $this->_redis->zcard( 'clickids' );
     	$queries 		= ceil( $clickIDCount/$this->_objectLimit );
     	$rows 			= 0;
+        $start_at       = 0;
+        $end_at         = $this->_objectLimit;
 
 
     	// build separate sql queries based on $_objectLimit in order to control memory usage
     	for ( $i=0; $i<$queries; $i++ )
     	{
-    		$rows += $this->_buildCampaignLogsQuery( );
+    		$rows += $this->_buildCampaignLogsQuery( $start_at, $end_at );
+
+            $start_at += $this->_objectLimit-1;
+            $end_at   += $this->_objectLimit;
     	}
 
 		$elapsed = time() - $start;
@@ -302,7 +307,7 @@ class EtlController extends \yii\web\Controller
     }
 
 
-    private function _buildCampaignLogsQuery ( )
+    private function _buildCampaignLogsQuery ( $start_at, $end_at )
     {
     	$sql = '
     		INSERT INTO F_CampaignLogs (
@@ -316,7 +321,7 @@ class EtlController extends \yii\web\Controller
 
     	$values = '';
         
-    	$clickIDs = $this->_redis->zrange( 'clickids', 0, $this->_objectLimit );
+    	$clickIDs = $this->_redis->zrange( 'clickids', $start_at, $end_at );
 
 		if ( $clickIDs )
 		{
@@ -365,8 +370,8 @@ class EtlController extends \yii\web\Controller
                 {
                     foreach ( $clickIDs AS $clickID )
                     {
-                        $this->_redis->zadd( 'loadedclicks', $this->_timestamp, $clickID );
-                        $this->_redis->zrem( 'clickids', $clickID );
+                        //$this->_redis->zadd( 'loadedclicks', $this->_timestamp, $clickID );
+                        //$this->_redis->zrem( 'clickids', $clickID );
                     }                                        
                 }
 
@@ -1078,31 +1083,23 @@ class EtlController extends \yii\web\Controller
 
     private function _sendmail ( $from, $to, $subject, $body )
     {
-        $headers = 'From:'.$from.'\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset="UTF-8"\r\n';
+        $command = '
+            export MAILTO="'.$to.'"
+            export FROM="'.$from.'"
+            export SUBJECT="'.$subject.'"
+            export BODY="'.$body.'"
+            (
+             echo "From: $FROM"
+             echo "To: $MAILTO"
+             echo "Subject: $SUBJECT"
+             echo "MIME-Version: 1.0"
+             echo "Content-Type: text/html; charset=UTF-8"
+             echo $BODY
+            ) | /usr/sbin/sendmail -F $MAILTO -t -v -bm
+        ';
 
-        if ( !mail($to, $subject, $body, $headers ) )
-        {
-            $data = 'To: '.$to.'\nSubject: '.$subject.'\nFrom:'.$from.'\n'.$body;
-
-            $command = 'echo -e "'.$data.'" | sendmail -bm -t -v';
-            $command = '
-                export MAILTO="'.$to.'"
-                export FROM="'.$from.'"
-                export SUBJECT="'.$subject.'"
-                export BODY="'.$body.'"
-                (
-                 echo "From: $FROM"
-                 echo "To: $MAILTO"
-                 echo "Subject: $SUBJECT"
-                 echo "MIME-Version: 1.0"
-                 echo "Content-Type: text/html; charset=UTF-8"
-                 echo $BODY
-                ) | /usr/sbin/sendmail -F $MAILTO -t -v -bm
-            ';
-
-            shell_exec( $command );             
-        }           
-    }
+        shell_exec( $command );
+    }   
 
 
     public function actionPopulatecache ( )
