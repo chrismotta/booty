@@ -11,12 +11,6 @@ $yesterday      = $yesterdayProvider->getModels();
 $byDate         = $byDateProvider->getModels();
 $byCountry      = $byCountryProvider->getModels();
 
-if ( isset($_GET['debug']) && $_GET['debug']==1 )
-{
-  echo json_encode($byDate, JSON_PRETTY_PRINT);
-  echo '<hr>';
-}
-
 $totalImps      = isset($totals[0]) ? $totals[0]['imps'] : 0; 
 $totalUsers     = isset($totals[0]) ? $totals[0]['unique_users'] : 0;
 $totalConvs     = isset($totals[0]) ? $totals[0]['installs'] : 0;
@@ -46,6 +40,7 @@ $daterange      = new DatePeriod($from, new DateInterval('P1D'), $to);
 
 foreach( $daterange as $date )
 {
+
     $formattedDate = $date->format("Y-m-d");
 
     foreach ( $byDate as $data )
@@ -55,9 +50,6 @@ foreach( $daterange as $date )
 
         if ( $data['date'] == $formattedDate )
         {
-          if ( isset($_GET['debug']) && $_GET['debug']==1 )
-            echo $formattedDate . ': '.$data['cost'].'<hr>';
-
           $revByDate[]    = $data['revenue'];
           $spendByDate[]  = $data['cost'];
 
@@ -68,31 +60,24 @@ foreach( $daterange as $date )
 
           $profitByDate[] = $profit;
 
-          break;
-        }
-        else
-        {
-          if ( isset($_GET['debug']) && $_GET['debug']==1 )
-            echo $formattedDate . ': '.$data['cost'].'<hr>';
-
-            $revByDate[]    = 0;
-            $spendByDate[]  = 0;
-            $profitByDate[] = 0;
-        }
-
-        $dates[] = $formattedDate;      
+          $dates[] = $formattedDate;  
+        }   
     }
 
     if ( !in_array($formattedDate, $dates) )
+    {
       $dates[] = $formattedDate; 
+      $revByDate[]    = 0;
+      $spendByDate[]  = 0;
+      $profitByDate[] = 0;      
+    }
 }
-
-
 
 $dates[]        = $currentDate;
 $revByDate[]    = $todayRev;
 $spendByDate[]  = $todayCost;
 $profitByDate[] = $todayProfit;
+
 
 foreach ( $byCountry as $data )
 {
