@@ -201,11 +201,16 @@ class EtlController extends \yii\web\Controller
     	$convIDCount   = $this->_redis->zcard( 'convs' );
     	$queries 	   = ceil( $convIDCount/$this->_objectLimit );
     	$rows   	   = 0;
+        $start_at       = 0;
+        $end_at         = $this->_objectLimit;        
 
 		// build separate sql queries based on $_objectLimit in order to control memory usage
     	for ( $i=0; $i<=$queries; $i++ )
     	{
-    		$rows    += $this->_buildConvQuery ();
+    		$rows    += $this->_buildConvQuery ( $start_at, $end_at );
+
+            $start_at += $this->_objectLimit-1;
+            $end_at   += $this->_objectLimit;            
     	}
 
 		$elapsed = time() - $start;
@@ -213,13 +218,13 @@ class EtlController extends \yii\web\Controller
     }
 
 
-    private function _buildConvQuery ( )
+    private function _buildConvQuery ( $start_at, $end_at )
     {
 		$sql 		= '';
 		$params 	= [];
 		$paramCount = 0;
 
-		$convIDs 	= $this->_redis->zrange( 'convs', 0, $this->_objectLimit );
+		$convIDs 	= $this->_redis->zrange( 'convs', $start_at, $end_at );
 
 		// ad each conversion to SQL query
 		foreach ( $convIDs as $clickID )
@@ -291,17 +296,14 @@ class EtlController extends \yii\web\Controller
     	$clickIDCount   = $this->_redis->zcard( 'clickids' );
     	$queries 		= ceil( $clickIDCount/$this->_objectLimit );
     	$rows 			= 0;
-        $start_at       = 0;
-        $end_at         = $this->_objectLimit;
+
 
 
     	// build separate sql queries based on $_objectLimit in order to control memory usage
     	for ( $i=0; $i<$queries; $i++ )
     	{
-    		$rows += $this->_buildCampaignLogsQuery( $start_at, $end_at );
+    		$rows += $this->_buildCampaignLogsQuery( );
 
-            $start_at += $this->_objectLimit-1;
-            $end_at   += $this->_objectLimit;
     	}
 
 		$elapsed = time() - $start;
@@ -309,7 +311,7 @@ class EtlController extends \yii\web\Controller
     }
 
 
-    private function _buildCampaignLogsQuery ( $start_at, $end_at )
+    private function _buildCampaignLogsQuery (  )
     {
     	$sql = '
     		INSERT INTO F_CampaignLogs (
@@ -323,7 +325,7 @@ class EtlController extends \yii\web\Controller
 
     	$values = '';
         
-    	$clickIDs = $this->_redis->zrange( 'clickids', $start_at, $end_at );
+    	$clickIDs = $this->_redis->zrange( 'clickids', 0, $this->_objectLimit );
 
 		if ( $clickIDs )
 		{
