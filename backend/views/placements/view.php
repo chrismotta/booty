@@ -2,6 +2,7 @@
 
 use yii\helpers\Html;
 use yii\widgets\DetailView;
+use yii\web\View;
 
 /* @var $this yii\web\View */
 /* @var $model app\models\Placements */
@@ -46,10 +47,10 @@ $this->params['breadcrumbs'][] = $this->title;
     }
 
     $macros = [
-        'exchange_id' => '<YOUR_EXCHANGE_ID_MACRO_HERE>',
-        'pub_id'      => '<YOUR_PUB_ID_MACRO_HERE>',
-        'subpub_id'   => '<YOUR_SUBPUB_ID_MACRO_HERE>',
-        'device_id'   => '<YOUR_DEVICE_ID_MACRO_HERE>',
+        'exchange_id' => '{YOUR_EXCHANGE_ID_MACRO_HERE}',
+        'pub_id'      => '{YOUR_PUB_ID_MACRO_HERE}',
+        'subpub_id'   => '{YOUR_SUBPUB_ID_MACRO_HERE}',
+        'device_id'   => '{YOUR_DEVICE_ID_MACRO_HERE}',
     ];
     $qs_macros = urldecode(http_build_query($macros));
 
@@ -58,25 +59,65 @@ $this->params['breadcrumbs'][] = $this->title;
         $labels .= '<span class="label label-info">'.$key.'</span> ';
     }
 
+
+    $availableDomains = [
+        '//ad.spdx.co' => 'spdx.co (Default)',
+        // 'https://ad.spdx.co' => 'spdx.co (Secure)',
+        'http://ad.spdx.co' => 'spdx.co (Non Secure)',
+    ];
+    $defaultDomain = ['//ad.spdx.co'];
+
+    $this->registerJs(
+        '
+        $(".change-domain-iframe").change(function(){
+            
+            var content = \'<iframe src="\' + this.value + \'?'.$qs_macros.'" frameborder="0" scrolling="no" width="'.$width.'" height="'.$height.'"></iframe>\';
+
+            $("#domain-iframe").val(content);
+
+            //console.log(content);
+        });
+
+        $(".change-domain-script").change(function(){
+            
+            var content = \'<script type="text\/javascript" src="\' + this.value + \'?'.$qs_macros.'" ><\/script >\';
+
+            $("#domain-script").val(content);
+
+            console.log(content);
+        });
+        ',
+        View::POS_READY,
+        'change-domain'
+    );
     ?>
 
     <div class="box box-info">
         <div class="box-header with-border">
             <h3 class="box-title">Iframe Tag</h3>
+            <?= Html::dropDownList('iframe_domain', $defaultDomain, $availableDomains, [
+                'style' => 'float:right',
+                'class' => 'change-domain-iframe',
+                ]) ?>
         </div>
         <div class="box-body">
-        <?= Html::textarea('iframeTag', '<iframe src="'.$iframeSrc.'?'.$qs_macros.'" frameborder="0" scrolling="no" width="'.$width.'" height="'.$height.'"></iframe>', ['class' => 'form-control', 'disabled'=>'disabled', 'style'=>'cursor: text']) ?>
+        <?= Html::textarea('iframeTag', '<iframe src="'.$iframeSrc.'?'.$qs_macros.'" frameborder="0" scrolling="no" width="'.$width.'" height="'.$height.'"></iframe>', ['class' => 'form-control', 'disabled'=>'disabled', 'style'=>'cursor: text', 'id' => 'domain-iframe']) ?>
         </div>
         <div class="box-footer">
             <?= $labels ?>
         </div>
     </div>
+
     <div class="box box-info">
         <div class="box-header with-border">
             <h3 class="box-title">Javascript Tag</h3>
+            <?= Html::dropDownList('domain', $defaultDomain, $availableDomains, [
+                'style' => 'float:right',
+                'class' => 'change-domain-script',
+                ]) ?>
         </div>
         <div class="box-body">
-        <?= Html::textarea('javascriptTag', '<script type="text/javascript" src="'.$scriptSrc.'?'.$qs_macros.'"></script>', ['class' => 'form-control', 'disabled'=>'disabled', 'style'=>'cursor: text']) ?>
+        <?= Html::textarea('javascriptTag', '<script type="text/javascript" src="'.$scriptSrc.'?'.$qs_macros.'"></script>', ['class' => 'form-control', 'disabled'=>'disabled', 'style'=>'cursor: text', 'id' => 'domain-script']) ?>
         </div>
         <div class="box-footer">
             <?= $labels ?>
