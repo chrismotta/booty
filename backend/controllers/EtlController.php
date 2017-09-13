@@ -13,8 +13,8 @@ use Predis;
 
 class EtlController extends \yii\web\Controller
 {
-    CONST ALERT_FROM = 'Nigma<no-reply@tmlbox.co>';
-    CONST ALERT_TO   = 'daniel@themedialab.co,chris@themedialab.co';
+    CONST ALERT_FROM = 'Splad - ETL Controller<no-reply@spladx.co>';
+    CONST ALERT_TO   = 'dev@splad.co,apastor@splad.co';
 
 	private $_redis;
 	private $_objectLimit;
@@ -36,7 +36,7 @@ class EtlController extends \yii\web\Controller
 	{
 		parent::__construct( $id, $module, $config );
 
-    	$this->_redis 	 	  	= new \Predis\Client( \Yii::$app->params['predisConString'] );
+    	$this->_redis = new \Predis\Client( \Yii::$app->params['predisConString'] );
 
         $this->_objectLimit = isset( $_GET['objectlimit'] ) ? $_GET['objectlimit'] : 50000;
 
@@ -52,15 +52,15 @@ class EtlController extends \yii\web\Controller
             die('invalid limit');
         }
       
-        $this->_showsql         = isset( $_GET['showsql'] ) && $_GET['showsql'] ? true : false;
-        $this->_noalerts        = isset( $_GET['noalerts'] ) && $_GET['noalerts'] ? true : false;
-        $this->_sqltest         = isset( $_GET['sqltest'] ) && $_GET['sqltest'] ? true : false;
+        $this->_showsql   = isset( $_GET['showsql'] ) && $_GET['showsql'] ? true : false;
+        $this->_noalerts  = isset( $_GET['noalerts'] ) && $_GET['noalerts'] ? true : false;
+        $this->_sqltest   = isset( $_GET['sqltest'] ) && $_GET['sqltest'] ? true : false;
 
-        $this->_timestamp       = time();
+        $this->_timestamp = time();
 
-        $this->_db              = false;
+        $this->_db = isset( $_GET['db'] ) ? $_GET['db'] : 'current';
 
-        $this->_alertSubject    = 'AD NIGMA - ETL2 ERROR ' . date( "Y-m-d H:i:s", $this->_timestamp );
+        $this->_alertSubject = 'AD NIGMA - ETL2 ERROR ' . date( "Y-m-d H:i:s", $this->_timestamp );
 
 
 		ini_set('memory_limit','3000M');
@@ -187,12 +187,7 @@ class EtlController extends \yii\web\Controller
 
     public function actionConvs ( )
     {
-        if ( $this->_db )
-            $db = $this->_db;
-        else
-            $db = isset( $_GET['db'] ) ? $_GET['db'] : 'current';
-
-        switch ( $db )
+        switch ( $this->_db )
         {
             case 'yesterday':
                 $this->_redis->select( $this->_getYesterdayConvDatabase() );
@@ -206,11 +201,16 @@ class EtlController extends \yii\web\Controller
     	$convIDCount   = $this->_redis->zcard( 'convs' );
     	$queries 	   = ceil( $convIDCount/$this->_objectLimit );
     	$rows   	   = 0;
+        $start_at       = 0;
+        $end_at         = $this->_objectLimit;        
 
 		// build separate sql queries based on $_objectLimit in order to control memory usage
     	for ( $i=0; $i<=$queries; $i++ )
     	{
-    		$rows    += $this->_buildConvQuery ();
+    		$rows    += $this->_buildConvQuery ( $start_at, $end_at );
+
+            $start_at += $this->_objectLimit-1;
+            $end_at   += $this->_objectLimit;            
     	}
 
 		$elapsed = time() - $start;
@@ -218,13 +218,13 @@ class EtlController extends \yii\web\Controller
     }
 
 
-    private function _buildConvQuery ( )
+    private function _buildConvQuery ( $start_at, $end_at )
     {
 		$sql 		= '';
 		$params 	= [];
 		$paramCount = 0;
 
-		$convIDs 	= $this->_redis->zrange( 'convs', 0, $this->_objectLimit );
+		$convIDs 	= $this->_redis->zrange( 'convs', $start_at, $end_at );
 
 		// ad each conversion to SQL query
 		foreach ( $convIDs as $clickID )
@@ -258,11 +258,13 @@ class EtlController extends \yii\web\Controller
         {
 			$return = \Yii::$app->db->createCommand( $sql )->bindValues( $params )->execute();
 
+            /*
             foreach ( $convIDs AS $clickID )
             {
                 $this->_redis->zadd( 'loadedconvs', $this->_timestamp, $clickID );
                 $this->_redis->zrem( 'convs', $clickID );
             }
+            */
 
             return $return;
         }
@@ -280,12 +282,7 @@ class EtlController extends \yii\web\Controller
 
     private function _campaignLogs ( )
     {
-        if ( $this->_db )
-            $db = $this->_db;
-        else
-            $db = isset( $_GET['db'] ) ? $_GET['db'] : 'current';
-
-        switch ( $db )
+        switch ( $this->_db )
         {
             case 'yesterday':
                 $this->_redis->select( $this->_getYesterdayDatabase() );
@@ -301,10 +298,12 @@ class EtlController extends \yii\web\Controller
     	$rows 			= 0;
 
 
+
     	// build separate sql queries based on $_objectLimit in order to control memory usage
     	for ( $i=0; $i<$queries; $i++ )
     	{
     		$rows += $this->_buildCampaignLogsQuery( );
+
     	}
 
 		$elapsed = time() - $start;
@@ -312,7 +311,7 @@ class EtlController extends \yii\web\Controller
     }
 
 
-    private function _buildCampaignLogsQuery ( )
+    private function _buildCampaignLogsQuery (  )
     {
     	$sql = '
     		INSERT INTO F_CampaignLogs (
@@ -392,11 +391,6 @@ class EtlController extends \yii\web\Controller
 
     private function _clusterLogs ( )
     {
-        if ( $this->_db )
-            $db = $this->_db;
-        else
-            $db = isset( $_GET['db'] ) ? $_GET['db'] : 'current';
-
         switch ( $this->_db )
         {
             case 'yesterday':
@@ -1093,31 +1087,23 @@ class EtlController extends \yii\web\Controller
 
     private function _sendmail ( $from, $to, $subject, $body )
     {
-        $headers = 'From:'.$from.'\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset="UTF-8"\r\n';
+        $command = '
+            export MAILTO="'.$to.'"
+            export FROM="'.$from.'"
+            export SUBJECT="'.$subject.'"
+            export BODY="'.$body.'"
+            (
+             echo "From: $FROM"
+             echo "To: $MAILTO"
+             echo "Subject: $SUBJECT"
+             echo "MIME-Version: 1.0"
+             echo "Content-Type: text/html; charset=UTF-8"
+             echo $BODY
+            ) | /usr/sbin/sendmail -F $MAILTO -t -v -bm
+        ';
 
-        if ( !mail($to, $subject, $body, $headers ) )
-        {
-            $data = 'To: '.$to.'\nSubject: '.$subject.'\nFrom:'.$from.'\n'.$body;
-
-            $command = 'echo -e "'.$data.'" | sendmail -bm -t -v';
-            $command = '
-                export MAILTO="'.$to.'"
-                export FROM="'.$from.'"
-                export SUBJECT="'.$subject.'"
-                export BODY="'.$body.'"
-                (
-                 echo "From: $FROM"
-                 echo "To: $MAILTO"
-                 echo "Subject: $SUBJECT"
-                 echo "MIME-Version: 1.0"
-                 echo "Content-Type: text/html; charset=UTF-8"
-                 echo $BODY
-                ) | /usr/sbin/sendmail -F $MAILTO -t -v -bm
-            ';
-
-            shell_exec( $command );             
-        }           
-    }
+        shell_exec( $command );
+    }   
 
 
     public function actionPopulatecache ( )

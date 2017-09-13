@@ -4,6 +4,7 @@ namespace backend\models;
 
 use Yii;
 use yii\base\Model;
+use yii\db\Expression;
 use yii\data\ActiveDataProvider;
 use backend\models\CampaignLogs;
 use app\models\Affiliates;
@@ -329,8 +330,33 @@ class CampaignLogsSearch extends CampaignLogs
         else
             $dateEnd = date( 'Y-m-d' );
       
-        $query->andFilterWhere( ['>=', 'date(imp_time)', $dateStart] );
-        $query->andFilterWhere( ['<=', 'date(imp_time)', $dateEnd] );
+        $expression = new Expression('            
+            ( 
+                F_CampaignLogs.conv_time IS NOT NULL 
+                AND                    
+                date(F_CampaignLogs.conv_time) >= :date_start 
+                AND 
+                date(F_CampaignLogs.conv_time) <= :date_end 
+            ) 
+            OR 
+            ( 
+                F_CampaignLogs.conv_time IS NULL 
+                AND             
+                date(F_ClusterLogs.imp_time) >= :date_start 
+                AND 
+                date(F_ClusterLogs.imp_time) <= :date_end 
+            )
+        ', 
+        [ 
+            ':date_start' => $dateStart,
+            ':date_end'   => $dateEnd
+        ]);
+
+        $query->andWhere( $expression );
+        /*
+        $query->andFilterWhere( ['>=', 'date(F_ClusterLogs.imp_time)', $dateStart] );
+        $query->andFilterWHere( ['<=', 'date(F_ClusterLogs.imp_time)', $dateEnd] );
+        */
 
 
         if ( isset($params['publisher']) && $params['publisher'] ){
@@ -655,10 +681,33 @@ class CampaignLogsSearch extends CampaignLogs
         else
             $dateEnd = date( 'Y-m-d' );
       
-        $query->andFilterWhere( ['>=', 'date(imp_time)', $dateStart] );
-        $query->andFilterWhere( ['<=', 'date(imp_time)', $dateEnd] );
+        $expression = new Expression('            
+            ( 
+                F_CampaignLogs.conv_time IS NOT NULL 
+                AND                         
+                date(F_CampaignLogs.conv_time) >= :date_start 
+                AND 
+                date(F_CampaignLogs.conv_time) <= :date_end 
+            ) 
+            OR 
+            ( 
+                F_CampaignLogs.conv_time IS NULL 
+                AND             
+                date(F_ClusterLogs.imp_time) >= :date_start 
+                AND 
+                date(F_ClusterLogs.imp_time) <= :date_end 
+            )
+        ', 
+        [ 
+            'date_start' => $dateStart,
+            'date_end'   => $dateEnd
+        ]);
 
-
+        $query->andWhere( $expression );
+        /*
+        $query->andFilterWhere( ['>=', 'date(F_ClusterLogs.imp_time)', $dateStart] );
+        $query->andFilterWHere( ['<=', 'date(F_ClusterLogs.imp_time)', $dateEnd] );
+        */
         if ( isset($params['publisher']) && $params['publisher'] ){
             $first = true;
             foreach ( $params['publisher'] as $id )
@@ -868,8 +917,6 @@ class CampaignLogsSearch extends CampaignLogs
                 }
             }
         }    
-                          
-        //var_export( $query->createCommand()->getRawSql() );die();
 
         return $dataProvider;
     }    

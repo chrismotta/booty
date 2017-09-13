@@ -9,8 +9,9 @@ use backend\components;
 
 class AffiliatesapiController extends \yii\web\Controller
 {
-	const NOTIFY_INBOX = 'dev@splad.co';
-	const ALERTS_INBOX = 'dev@splad.co';
+    CONST FROM = 'Splad - API Controller<no-reply@spladx.co>';
+	const NOTIFY_INBOX = 'dev@splad.co,apastor@splad.co,tgonzalez@splad.co,mghio@splad.co,proman@splad.co';
+	const ALERTS_INBOX = 'dev@splad.co,apastor@splad.co';
 
 	protected $_notifications;
 	protected $_redis;
@@ -54,7 +55,10 @@ class AffiliatesapiController extends \yii\web\Controller
                 'class'         => 'MinimobAPI',
                 'affiliate_id'  => 10,
             ],
-
+            [
+                'class'         => 'AddictiveAdsAPI',
+                'affiliate_id'  => 11,
+            ],
                                              	
 		];
 	}
@@ -382,24 +386,20 @@ class AffiliatesapiController extends \yii\web\Controller
 				}
 			}
 
-			$changes .= '<td>'.implode( ',', $clusters ).'</td>';
-    	}
-    	else
-    	{
-    		$changes .= '<td>&nbsp;</td>'; 
+            if ( !empty($clusters) )
+            {
+                $this->_changes .= '
+                    <tr>
+                        <td>'.$api_class.'</td>
+                        <td>'.$campaign->id.'</td>
+                        <td>'.$campaign->ext_id.'</td>
+                        '.$changes.',
+                        <td>'.implode(", ", $clusters).'</td>
+                    </tr>
+                ';                          
+            }
     	}
 
-    	if ( $this->_changed )
-    	{
-	    	$this->_changes .= '
-	    		<tr>
-	    			<td>'.$api_class.'</td>
-	    			<td>'.$campaign->id.'</td>
-	    			<td>'.$campaign->ext_id.'</td>
-	    			'.$changes.'
-	    		</tr>
-	    	';    		
-    	}
     }
 
 
@@ -559,7 +559,7 @@ class AffiliatesapiController extends \yii\web\Controller
 			';
 
 			$this->_sendMail( 
-				'no-reply@spladx.co', 
+				self::FROM, 
 				self::ALERTS_INBOX, 
 				'AFFILIATES API ERROR '.date('Y-m-d'),  
 				$html 
@@ -613,7 +613,7 @@ class AffiliatesapiController extends \yii\web\Controller
 			';
 
 			$this->_sendMail( 
-				'no-reply@spladx.co', 
+				self::FROM, 
 				self::NOTIFY_INBOX, 
 				'CAMPAIGN CHANGES '.date('Y-m-d'),  
 				$html 
@@ -627,30 +627,22 @@ class AffiliatesapiController extends \yii\web\Controller
 
     private function _sendmail ( $from, $to, $subject, $body )
     {
-        $headers = 'From:'.$from.'\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset="UTF-8"\r\n';
+        $command = '
+            export MAILTO="'.$to.'"
+            export FROM="'.$from.'"
+            export SUBJECT="'.$subject.'"
+            export BODY="'.$body.'"
+            (
+             echo "From: $FROM"
+             echo "To: $MAILTO"
+             echo "Subject: $SUBJECT"
+             echo "MIME-Version: 1.0"
+             echo "Content-Type: text/html; charset=UTF-8"
+             echo $BODY
+            ) | /usr/sbin/sendmail -F $MAILTO -t -v -bm
+        ';
 
-        if ( !mail($to, $subject, $body, $headers ) )
-        {
-            $data = 'To: '.$to.'\nSubject: '.$subject.'\nFrom:'.$from.'\n'.$body;
-
-            $command = 'echo -e "'.$data.'" | sendmail -bm -t -v';
-            $command = '
-                export MAILTO="'.$to.'"
-                export FROM="'.$from.'"
-                export SUBJECT="'.$subject.'"
-                export BODY="'.$body.'"
-                (
-                 echo "From: $FROM"
-                 echo "To: $MAILTO"
-                 echo "Subject: $SUBJECT"
-                 echo "MIME-Version: 1.0"
-                 echo "Content-Type: text/html; charset=UTF-8"
-                 echo $BODY
-                ) | /usr/sbin/sendmail -F $MAILTO -t -v -bm
-            ';
-
-            shell_exec( $command );             
-        }           
+        shell_exec( $command );
     }    
 
 

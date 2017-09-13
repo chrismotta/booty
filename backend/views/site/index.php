@@ -40,6 +40,7 @@ $daterange      = new DatePeriod($from, new DateInterval('P1D'), $to);
 
 foreach( $daterange as $date )
 {
+
     $formattedDate = $date->format("Y-m-d");
 
     foreach ( $byDate as $data )
@@ -59,26 +60,24 @@ foreach( $daterange as $date )
 
           $profitByDate[] = $profit;
 
-          break;
-        }
-        else
-        {
-            $revByDate[]    = 0;
-            $spendByDate[]  = 0;
-            $profitByDate[] = 0;
-        }
-
-        $dates[] = $formattedDate;      
+          $dates[] = $formattedDate;  
+        }   
     }
 
     if ( !in_array($formattedDate, $dates) )
+    {
       $dates[] = $formattedDate; 
+      $revByDate[]    = 0;
+      $spendByDate[]  = 0;
+      $profitByDate[] = 0;      
+    }
 }
 
 $dates[]        = $currentDate;
 $revByDate[]    = $todayRev;
 $spendByDate[]  = $todayCost;
 $profitByDate[] = $todayProfit;
+
 
 foreach ( $byCountry as $data )
 {
