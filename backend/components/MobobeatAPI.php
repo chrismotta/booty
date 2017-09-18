@@ -76,6 +76,16 @@
 					$packageIds = [];
 				}				
 
+				switch ( strtolower($campaign->status) )
+				{
+					case 'active':
+						$status = 'active';
+					break;
+					default:
+						$status = 'aff_paused';
+					break;
+				}
+
 				$result[] = [
 					'ext_id' 			=> $campaign->id,
 					'name'				=> $campaign->name,
@@ -89,7 +99,7 @@
 					'os'				=> empty($os) ? null : $os,
 					'os_version'		=> null,
 					'package_id'		=> empty($packageIds) ? null : $packageIds,
-					'status'			=> strtolower($campaign->status),
+					'status'			=> $status,
 					'currency'			=> 'USD'
 				];
 			}

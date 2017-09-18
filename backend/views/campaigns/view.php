@@ -35,7 +35,7 @@ $this->params['breadcrumbs'][] = $this->title;
             'info:ntext',
             'ext_id',
             'payout',
-
+            'status',
             [
                 'attribute'=>'country',
                 'format'=>'html',
@@ -65,17 +65,11 @@ $this->params['breadcrumbs'][] = $this->title;
                 'attribute'=>'carrier',
                 'format'=>'html',
                 'value' => $model->formatValues('carrier', 'warning'),
-            ],
-
-            'connection_type',
-            'device_type',
-            'os',
-            'os_version',            
-            'carrier',           
+            ],  
+            'app_id',
             'landing_url:url',
             'creative_320x50:url',
             'creative_300x250:url',
-            'app_id',
             [
                 'attribute'=>'Test URL',
                 'format'=>'url',

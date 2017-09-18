@@ -367,39 +367,42 @@ class AffiliatesapiController extends \yii\web\Controller
 		}
 
         $newPackageIds = $campaignData['package_id'] ? $campaignData['package_id'] : [];
-        $oldPackageIds = json_decode($campaign->app_id);
+        $oldPackageIds = $campaign->app_id ? (array)json_decode($campaign->app_id) : [];
 
-        $packagesDiff = array_diff ( $oldPackageIds, $newPackageIds ) + array_diff( $newPackageIds, $oldPackageIds );      
+        $packagesDiff = array_diff ( $oldPackageIds, $newPackageIds ) + array_diff( $newPackageIds, $oldPackageIds );
       
-        var_dump($packagesDiff);die();
+        if ( !empty($packagesDiff) )
+            $this->_changed = true;
+
+
     	if ( $this->_changed )
     	{
-    		$clusters 			  = [];
-			$clustersHasCampaigns = models\ClustersHasCampaigns::findAll( ['Campaigns_id' => $campaign->id] );
+            $clusters             = [];
+            $clustersHasCampaigns = models\ClustersHasCampaigns::findAll( ['Campaigns_id' => $campaign->id] );
 
+            foreach ( $clustersHasCampaigns as $assign )
+            {
+                $clusters[] = $assign['Clusters_id'];
 
-			foreach ( $clustersHasCampaigns as $assign )
-			{
-				$clusters[] = $assign['Clusters_id'];
 
                 switch ( $campaignData['status'] )
                 {
                     case 'active':
-                        $addPackageIds    = array_merge( $newPackageIds, $oldPackageIds );
-                        $remPackageIds = array_merge( $oldPackageIds, $newPackageIds );
+                        $addPackageIds = array_diff( $newPackageIds, $oldPackageIds );
+                        $remPackageIds = array_diff( $oldPackageIds, $newPackageIds );
 
                         foreach ( $addPackageIds AS $os => $packageId )
                         {
                             $this->_redis->zadd( 'clusterlist:'.$assign['Clusters_id'], 
                                 $assign['delivery_freq'],
-                                $campaign->id.':'.$campaign->affiliate->id.':'.$packageId
+                                $campaign->id.':'.$campaign->affiliates->id.':'.$packageId
                             );
                         } 
 
                         foreach ( $remPackageIds AS $os => $packageId )
                         {
                             $this->_redis->zrem( 'clusterlist:'.$assign['Clusters_id'], 
-                                $campaign->id.':'.$campaign->affiliate->id.':'.$packageId
+                                $campaign->id.':'.$campaign->affiliates->id.':'.$packageId
                             );
                         }                                                    
                     break;
@@ -409,13 +412,13 @@ class AffiliatesapiController extends \yii\web\Controller
                         foreach ( $packageIds AS $os => $packageId )
                         {
                             $this->_redis->zrem( 'clusterlist:'.$assign['Clusters_id'], 
-                                $campaign->id.':'.$campaign->affiliate->id.':'.$packageId
+                                $campaign->id.':'.$campaign->affiliates->id.':'.$packageId
                             );
                         }
                     break;
                 }
 
-			}
+            }
 
             if ( !empty($clusters) )
             {
@@ -448,8 +451,8 @@ class AffiliatesapiController extends \yii\web\Controller
 
                 foreach ( $clustersHasCampaigns as $assign )
                 {
-                    if ( $this->_redis->zrank('clusterlist:'.$assign['Clusters_id'], $campaign->id) )
-                        $this->_redis->zadd( 'clusterlist:'.$assign['Clusters_id'], 0, $campaign->id );
+                    $value = "[".$campaign->id.':'.$campaign->affiliates->id;
+                    $cache->zremrangebylex( 'clusterlist:'.$id, $value, $value."\xff" );
                 }
 
                 $prevStatus =  $campaign->status;

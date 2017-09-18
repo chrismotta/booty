@@ -51,9 +51,15 @@
 			{
 				if ( isset($campaign->campaign_products[0]->pay_rate) )
 				{
-					$osVersion  = ApiHelper::getValues($campaign->campaign_display_rules->min_device_os_version);
-					$os 		= ApiHelper::getOs($campaign->campaign_display_rules->device_os);
-					$devices 	= ApiHelper::getDeviceTypes( $campaign->campaign_display_rules->device_type->whitelist, '\\' );
+
+					if ( isset($campaign->campaign_display_rules->min_device_os_version) )
+						$osVersion  = ApiHelper::getValues($campaign->campaign_display_rules->min_device_os_version);
+
+					if ( isset($campaign->campaign_display_rules->device_os) )
+						$os 		= ApiHelper::getOs($campaign->campaign_display_rules->device_os);
+
+					if ( isset($campaign->campaign_display_rules->device_type->whitelist) )
+						$devices 	= ApiHelper::getDeviceTypes( $campaign->campaign_display_rules->device_type->whitelist, '\\' );
 
 					$url = null;
 					$packageIds = [];

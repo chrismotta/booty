@@ -79,7 +79,7 @@
 						$status = 'active';
 					break;					
 					default:
-						$status = 'paused';
+						$status = 'aff_paused';
 					break;
 				}
 

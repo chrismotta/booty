@@ -96,17 +96,26 @@ class CampaignsController extends Controller
             switch ( $model->status )
             {
                 case 'active':
-                    $status = 1;
+                    foreach ( $clustersHasCampaigns as $assign )
+                    {
+                        $packageIds = (array)json_decode($campaign->app_id);
+
+                        foreach ( $packageIds AS $os => $packageId )
+                        {                
+                            $cache->zadd( 'clusterlist:'.$assign['Clusters_id'], $assign['frequency'], $model->id.':'.$model->Affiliates_id.':'.$packageId );
+                        }
+                    }
                 break;
                 default:
-                    $status = 0;
+                    foreach ( $clustersHasCampaigns as $assign )
+                    {
+                        $value = "[".$campaign->id.':'.$campaign->affiliates->id;
+                        $cache->zremrangebylex( 'clusterlist:'.$id, $value, $value."\xff" );
+                    }
                 break;
             }
 
-            foreach ( $clustersHasCampaigns as $assign )
-            {
-                $cache->zadd( 'clusterlist:'.$assign['Clusters_id'], $status, $assign['Campaigns_id'] );
-            }
+
    
             return $this->redirect(['view', 'id' => $model->id]);
 

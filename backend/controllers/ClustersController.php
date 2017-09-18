@@ -248,7 +248,6 @@ class ClustersController extends Controller
 
         $campaign = CampaignsSearch::findOne($campaignID);
         $return = $campaign->assignToCluster($id);
-
         $cache = new \Predis\Client( \Yii::$app->params['predisConString'] );
 
         switch ( $campaign->status )
@@ -260,9 +259,11 @@ class ClustersController extends Controller
                 $status = 0;
             break;
         }
+        
 
         if ( $campaign->app_id )
         {
+
             $packageIds = json_decode($campaign->app_id);
 
             foreach ( $packageIds as $packageId )
@@ -316,6 +317,18 @@ class ClustersController extends Controller
             'Clusters_id' => $Clusters_id,
             'Campaigns_id' => $Campaigns_id,
         ]);
+
+        if ( $chc->campaigns->app_id && $delivery_freq )
+        {
+            $cache = new \Predis\Client( \Yii::$app->params['predisConString'] );
+
+            $packageIds = json_decode($chc->campaigns->app_id);
+
+            foreach ( $packageIds as $packageId )
+            {
+                $cache->zadd( 'clusterlist:'.$id, $delivery_freq, $chc->campaigns->id.':'.$chc->campaigns->affiliates->id.':'.$packageId );
+            }
+        }
 
         if(!isset($chc))
             return 'error:2';

@@ -10,67 +10,6 @@
 	class ApiHelper extends Component
 	{
 	
-		static function getPlatformsData ( $data )
-		{
-			if ( is_array($data) )
-				$platforms = $data;
-			else		
-				$platforms = explode( ',' , $data );
-
-
-			$result = [
-				'os'			=> [],
-				'device_type'	=> []
-			];
-
-			foreach ( $platforms as $platform )
-			{
-				switch ( strtolower($platform) )
-				{
-					case 'iphone':
-						if ( !in_array('iOS', $result['os']) )
-							$result['os'][] 		 = 'iOS';
-
-						if ( !in_array('Smartphone', $result['device_type']) )
-							$result['device_type'][] = 'Smartphone';
-					break;
-					case 'android':
-						if ( !in_array($platform, $result['os']) )
-							$result['os'][]		   	 = $platform;
-					break;		
-					case 'ios':
-						if ( !in_array('iOS', $result['os']) )
-							$result['os'][] 		 = 'iOS';
-					break;								
-					case 'ipad':
-						if ( !in_array('iOS', $result['os']) )
-							$result['os'][] 		 = 'iOS';
-
-						if ( !in_array('Tablet', $result['device_type']) )
-							$result['device_type'][] = 'Tablet';							
-					break;					
-					case 'windows phone':
-						if ( !in_array('Windows', $result['os']) )
-							$result['os'][] 		 = 'Windows';
-					break;
-					case 'ipod':
-						if ( !in_array('iOS', $result['os']) )
-							$result['os'][] 		 = 'iOS';
-
-						if ( !in_array('Other', $result['device_type']) )
-							$result['device_type'][] = 'Other';
-					break;											
-					default:
-						if ( !in_array($platform, $result['os']) )
-							$result['os'][] 		 = $platform;
-					break;
-				}
-			}
-
-			return $result;
-		}
-
-
 		static function getOs ( $data, $otherAsDefault = true )
 		{
 			$results = [];
