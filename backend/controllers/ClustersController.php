@@ -274,7 +274,9 @@ class ClustersController extends Controller
 
         $cache->hmset( 'campaign:'.$campaign->id, [
             'callback'      => $campaign->landing_url,
-            'click_macro'   => $campaign->affiliates->click_macro
+            'ext_id'        => $campaign->ext_id,
+            'click_macro'   => $campaign->affiliates->click_macro,
+            'placeholders'  => $campaign->affiliates->placeholders            
         ]);        
 
         // debug
