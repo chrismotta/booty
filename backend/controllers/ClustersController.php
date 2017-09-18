@@ -9,6 +9,7 @@ use app\models\Campaigns;
 use app\models\CampaignsSearch;
 use app\models\Countries;
 use app\models\Carriers;
+use app\models\ClustersHasCampaigns;
 use yii\web\Controller;
 use yii\filters\AccessControl;
 use yii\web\NotFoundHttpException;
@@ -283,5 +284,34 @@ class ClustersController extends Controller
         // debug
         // echo $return;
         return $this->redirect(Yii::$app->request->referrer);
+    }
+
+    public function actionChangefreq($Clusters_id){
+        \Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+
+        $Campaigns_id = isset($_POST['editableKey']) ? $_POST['editableKey'] : null;
+        $delivery_freq = isset($_POST['Campaigns'][$_POST['editableIndex']]['delivery_freq']) ? $_POST['Campaigns'][$_POST['editableIndex']]['delivery_freq'] : null;
+
+        // debug //
+        // $file = fopen("/home/chris/test/editable.txt","w");
+        // fwrite($file, var_export($_POST['Campaigns'][$_POST['editableIndex']]['delivery_freq'], true));
+        // fclose($file);
+        
+        if(!isset($Campaigns_id) or !isset($delivery_freq))
+            return 'error:1';
+        
+        $chc = ClustersHasCampaigns::findOne([
+            'Clusters_id' => $Clusters_id,
+            'Campaigns_id' => $Campaigns_id,
+        ]);
+
+        if(!isset($chc))
+            return 'error:2';
+
+        $chc->delivery_freq = $delivery_freq;
+        if($chc->save())
+            return 'ok';
+        else
+            return 'error:3';
     }
 }

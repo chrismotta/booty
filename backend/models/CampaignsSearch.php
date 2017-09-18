@@ -13,6 +13,7 @@ use app\models\Campaigns;
 class CampaignsSearch extends Campaigns
 {
     public $affiliateName;
+
     /**
      * @inheritdoc
      */
@@ -225,6 +226,7 @@ class CampaignsSearch extends Campaigns
 
         $query = Campaigns::find();
         $query->joinWith(['clusters']);
+        $query->select(['Campaigns.*', 'Clusters.id as clusters_id']);
 
         $query->andFilterWhere(['Clusters.id'=>$clusterID]);
 
@@ -251,7 +253,5 @@ class CampaignsSearch extends Campaigns
 
         return  $return;
     }
-
-
 
 }

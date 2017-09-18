@@ -35,7 +35,38 @@ $this->params['breadcrumbs'][] = $this->title;
             'info:ntext',
             'ext_id',
             'payout',
-            'country',
+
+            [
+                'attribute'=>'country',
+                'format'=>'html',
+                'value' => $model->formatValues('country', 'success'),
+            ],
+            [
+                'attribute'=>'connection_type',
+                'format'=>'html',
+                'value' => $model->formatValues('connection_type', 'primary'),
+            ],
+            [
+                'attribute'=>'device_type',
+                'format'=>'html',
+                'value' => $model->formatValues('device_type', 'danger'),
+            ],
+            [
+                'attribute'=>'os',
+                'format'=>'html',
+                'value' => $model->formatValues('os', 'info'),
+            ],
+            [
+                'attribute'=>'os_version',
+                'format'=>'html',
+                'value' => $model->formatValues('os_version', 'default'),
+            ],
+            [
+                'attribute'=>'carrier',
+                'format'=>'html',
+                'value' => $model->formatValues('carrier', 'warning'),
+            ],
+
             'connection_type',
             'device_type',
             'os',
@@ -44,6 +75,7 @@ $this->params['breadcrumbs'][] = $this->title;
             'landing_url:url',
             'creative_320x50:url',
             'creative_300x250:url',
+            'app_id',
             [
                 'attribute'=>'Test URL',
                 'format'=>'url',

@@ -1,8 +1,11 @@
 <?php
 
 use yii\helpers\Html;
-use yii\grid\GridView;
+// use yii\grid\GridView;
+use kartik\grid\GridView;
+use kartik\grid\EditableColumn;
 use yii\widgets\Pjax;
+
 /* @var $this yii\web\View */
 /* @var $searchModel app\models\ClustersSearch */
 /* @var $dataProvider yii\data\ActiveDataProvider */
@@ -16,6 +19,10 @@ $this->params['breadcrumbs'][] = $this->title;
 <div class="box box-info">
     <div class="box-header with-border">
         <h3 class="box-title">Assigned Campaigns</h3>
+        <div class="box-tools">
+          <!-- This will cause the box to collapse when clicked -->
+          <button class="btn btn-box-tool" data-widget="collapse" data-toggle="tooltip" title="Collapse"><i class="fa fa-minus"></i></button>
+        </div>
     </div>
     <div class="box-body">
 <?php // Pjax::begin(); ?>    
@@ -31,6 +38,24 @@ $this->params['breadcrumbs'][] = $this->title;
                 'value'=>'affiliates.name',
             ],
             'name',
+
+            [
+                'class' => 'kartik\grid\EditableColumn',
+                'editableOptions'=> function ($model, $key, $index, $widget) {
+                    return [
+                        'id' => 'delivery_freq',
+                        'formOptions' => [
+                            'action' => ['changefreq', 
+                            'Clusters_id'   => $model->clusters_id,
+                        ]],
+                    ];
+                },
+                'attribute' =>'delivery_freq',
+                'value'     =>function($model, $key, $index){
+                    return $model->getDeliveryFreq();
+                },
+            ],
+
             'payout',
             [
                 'attribute'=>'country',
@@ -97,6 +122,10 @@ $this->params['breadcrumbs'][] = $this->title;
 <div class="box box-danger">
     <div class="box-header with-border">
         <h3 class="box-title">Available Campaigns</h3>
+        <div class="box-tools">
+          <!-- This will cause the box to collapse when clicked -->
+          <button class="btn btn-box-tool" data-widget="collapse" data-toggle="tooltip" title="Collapse"><i class="fa fa-minus"></i></button>
+        </div>
     </div>
     <div class="box-body">
 

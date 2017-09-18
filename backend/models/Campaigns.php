@@ -23,6 +23,9 @@ class Campaigns extends \yii\db\ActiveRecord
 {
     public $affiliate;
     public $click_macro;
+    public $delivery_freq;
+    public $clusters_id;
+    
     /**
      * @inheritdoc
      */
@@ -42,7 +45,7 @@ class Campaigns extends \yii\db\ActiveRecord
             [['payout'], 'number'],
             [['status', 'info'], 'string'],
             [['country' ], 'string'],
-            [['name', 'landing_url', 'creative_320x50', 'creative_300x250', 'os_version', 'carrier', 'os', 'connection_type', 'device_type'], 'string', 'max' => 255],
+            [['name', 'landing_url', 'creative_320x50', 'creative_300x250', 'os_version', 'carrier', 'os', 'connection_type', 'device_type', 'app_id'], 'string', 'max' => 255],
             [['os', 'connection_type', 'carrier', 'country', 'device_type', 'os_version'], 'default', 'value' => NULL],
             [['Affiliates_id'], 'exist', 'skipOnError' => true, 'targetClass' => Affiliates::className(), 'targetAttribute' => ['Affiliates_id' => 'id']],
         ];
@@ -67,7 +70,9 @@ class Campaigns extends \yii\db\ActiveRecord
             'os_version'       => 'OS Version',
             'country'          => 'Country',
             'carrier'          => 'Carrier',
-            'device_type'      => 'Device Type'
+            'device_type'      => 'Device Type',
+            'app_id'           => 'App ID',
+            'delivery_freq'    => 'Freq.', 
         ];
     }
 
@@ -116,5 +121,19 @@ class Campaigns extends \yii\db\ActiveRecord
         $campaigns->where(['=', 'Clusters_has_Campaigns.Clusters_id', $cluster_id] );
 
        return $campaigns->all();
-    }    
+    }
+
+
+    /**
+     * @return int
+     */
+    // public static function getDeliveryFreq($Campaigns_id, $Clusters_id){
+    //     $chc = ClustersHasCampaigns::findOne(['Campaigns_id' => $Campaigns_id, 'Clusters_id' => $Clusters_id]);
+    //     return $chc->delivery_freq;
+    // }
+    public function getDeliveryFreq(){
+        $cc = ClustersHasCampaigns::findOne(['Campaigns_id' => $this->id, 'Clusters_id' => $this->clusters_id]);
+        return isset($cc) ? $cc->delivery_freq : '-';
+    }
+
 }
