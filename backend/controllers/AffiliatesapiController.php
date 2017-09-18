@@ -391,7 +391,6 @@ class AffiliatesapiController extends \yii\web\Controller
             {
                 $clusters[] = $assign['Clusters_id'];
 
-
                 switch ( $campaignData['status'] )
                 {
                     case 'active':
@@ -458,6 +457,7 @@ class AffiliatesapiController extends \yii\web\Controller
 
                 foreach ( $clustersHasCampaigns as $assign )
                 {
+                    $clusters[] = $assign['Clusters_id'];
                     $value = "[".$campaign->id.':'.$campaign->affiliates->id;
                     $cache->zremrangebylex( 'clusterlist:'.$id, $value, $value."\xff" );
                 }
@@ -467,22 +467,25 @@ class AffiliatesapiController extends \yii\web\Controller
                 $campaign->status = 'aff_paused';
                 $campaign->save();
 
-                $this->_changes .= '
-                    <tr>
-                        <td>'.$api_class.'</td>
-                        <td>'.$campaign->id.'</td>
-                        <td>'.$campaign->ext_id.'</td>
-                        <td>&nbsp;</td>
-                        <td>&nbsp;</td>
-                        <td>&nbsp;</td>
-                        <td>&nbsp;</td>
-                        <td>&nbsp;</td>
-                        <td>&nbsp;</td>
-                        <td>&nbsp;</td>
-                        <td>'.$prevStatus.' => aff_paused</td>
-                        <td>'.implode( ',', $clusters ).'</td>
-                    </tr>
-                ';
+                if ( !empty($clusters) )
+                {
+                    $this->_changes .= '
+                        <tr>
+                            <td>'.$api_class.'</td>
+                            <td>'.$campaign->id.'</td>
+                            <td>'.$campaign->ext_id.'</td>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                            <td>'.$prevStatus.' => aff_paused</td>
+                            <td>'.implode( ',', $clusters ).'</td>
+                        </tr>
+                    ';                    
+                }
 
                 unset( $clusters );
                 unset( $clustersHasCampaigns );                   
