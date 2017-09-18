@@ -28,6 +28,14 @@
 
 			$this->_status = curl_getinfo( $curl, CURLINFO_HTTP_CODE );
 
+
+			if  ( isset($_GET['source']) && $_GET['source']==1 )
+			{
+				header('Content-Type: text/json');
+				echo json_encode( $response, JSON_PRETTY_PRINT );
+				die();
+			}	
+
 			if ( !$response )
 			{
 				$this->_msg = 'Response without body';
@@ -55,52 +63,23 @@
 				else
 				{
 					$countries = explode( ',' , $campaign->Countries );
-				}
+				}			
 
-				if ( isset($campaign->Platforms) && $campaign->Platforms && is_array($campaign->Platforms) )
+				$oss		 = ApiHelper::getOs($campaign->Platforms);
+				$deviceTypes = ApiHelper::getDeviceTypes($campaign->Platforms, false);
+
+				if ( !empty($oss) && $oss[0]!='Other' )
 				{
-					$os = $campaign->Platforms;
+					$packageIds = [
+						strtolower($oss[0]) => $campaign->APP_ID
+					];
 				}
 				else
 				{
-					$os = explode( ',' , $campaign->Platforms );
-				}				
-
-				$oss 		 = [];
-				$deviceTypes = [];
-
-				foreach ( $os as $o )
-				{
-					switch ( strtolower($o) )
-					{
-						case 'ipad':
-							if ( !in_array('iOS', $oss) )
-								$oss[] 		   = 'iOS';
-
-							if ( !in_array('Tablet', $deviceTypes) )
-								$deviceTypes[] = 'Tablet';				
-						break;
-						case 'iphone':
-							if ( !in_array('iOS', $oss) )
-								$oss[] 		   = 'iOS';
-
-							if ( !in_array('Smartphone', $deviceTypes) )
-								$deviceTypes[] = 'Smartphone';
-						break;
-						case 'android':
-							if ( !in_array($o, $oss) )
-								$oss[]		   = $o;
-						break;
-						case 'windows phone':
-							if ( !in_array('Windows', $oss) )
-								$oss[] 		   = 'Windows';
-						break;						
-						default:
-							if ( !in_array($o, $oss) )
-								$oss[] 		   = $o;
-						break;
-					}
-				}
+					$packageIds = [];
+				}					
+				if ( $ext_id == 6175 )
+					$packageIds = [];
 
 				switch ( strtolower($campaign->Status) )
 				{
@@ -124,9 +103,17 @@
 					'carrier'			=> null,
 					'os'				=> $oss,
 					'os_version'		=> null,
+					'package_id'		=> empty($packageIds) ? null : $packageIds,
 					'status'			=> $status,
 					'currency'			=> $campaign->Currency
 				];
+			}
+
+			if  ( isset($_GET['test']) && $_GET['test']==1 )
+			{
+				header('Content-Type: text/json');
+				echo json_encode( $result, JSON_PRETTY_PRINT );
+				die();
 			}
 
 			return $result;

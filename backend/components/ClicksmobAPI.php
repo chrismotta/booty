@@ -28,6 +28,13 @@
 			
 			$this->_status = curl_getinfo( $curl, CURLINFO_HTTP_CODE );
 
+			if  ( isset($_GET['source']) && $_GET['source']==1 )
+			{
+				header('Content-Type: text/json');
+				echo json_encode( $response, JSON_PRETTY_PRINT );
+				die();
+			}			
+
 			if ( !$response )
 			{
 				$this->_msg = 'Response without body';
@@ -37,13 +44,14 @@
 			{
 				$this->_msg = 'No campaign data in response';
 				return false;
-			}
+			}			
 
 			$result = [];
 
 			foreach ( $response->offer AS $campaign )
 			{
 				$connectionType = [];
+				$packageIds     = [];
 
 				if ( (int)$campaign->allowedWiFi==1 && !in_array('Wifi', $connectionType) )		
 					$connectionType[] = 'Wifi';
@@ -52,6 +60,16 @@
 				if ( (int)$campaign->allowed3G==1 && !in_array('Carrier', $connectionType) )	
 					$connectionType[] = 'Carrier';
 
+
+				if ( $campaign->iosbundleID )
+				{
+					$packageIds['ios'] = $campaign->iosbundleID;
+				}
+
+				if ( $campaign->androidPackageName )
+				{
+					$packageIds['android'] = $campaign->androidPackageName;
+				}				
 
 				if ( $campaign->offerPayouts )
 				{
@@ -66,61 +84,8 @@
 							$countries = explode( ',' , $payout->countries->country );
 						}
 
-						if ( isset($payout->platforms->platform) && $payout->platforms->platform && is_array($payout->platforms->platform) )
-						{
-							$os = $payout->platforms->platform;
-						}
-						else
-						{
-							$os = explode( ',' , $payout->platforms->platform );
-						}				
-
-						$oss 		 = [];
-						$deviceTypes = [];
-
-						foreach ( $os as $o )
-						{
-							switch ( strtolower($o) )
-							{
-								case 'ipad':
-									if ( !in_array('iOS', $oss) )
-										$oss[] 		   = 'iOS';
-
-									if ( !in_array('Tablet', $deviceTypes) )
-										$deviceTypes[] = 'Tablet';		
-								break;
-								case 'iphone':
-									if ( !in_array('iOS', $oss) )
-										$oss[] 		   = 'iOS';
-
-									if ( !in_array('Smartphone', $deviceTypes) )
-										$deviceTypes[] = 'Smartphone';
-								break;
-								case 'ipod':
-									if ( !in_array('iOS', $oss) )
-										$oss[] 		   = 'iOS';
-
-									if ( !in_array('Other', $deviceTypes) )
-										$deviceTypes[] = 'Other';
-								break;
-								case 'ios':
-									if ( !in_array('iOS', $oss) )
-										$oss[] 		   = 'iOS';
-								break;
-								case 'android':
-									if ( !in_array($o, $oss) )
-										$oss[]		   = 'Android';
-								break;
-								case 'windows phone':
-									if ( !in_array('Windows', $oss) )
-										$oss[] 		   = 'Windows';
-								break;									
-								default:
-									if ( !in_array($o, $oss) )
-										$oss[] 		   = $o;
-								break;
-							}
-						}
+						$deviceTypes = ApiHelper::getDeviceTypes($payout->platforms->platform, false);
+						$oss 		 = ApiHelper::getOs($payout->platforms->platform, false);
 
 						$result[] = [
 							'ext_id' 			=> $payout->id,
@@ -129,11 +94,12 @@
 							'payout' 			=> $payout->payout,
 							'landing_url'		=> $campaign->targetURL,
 							'country'			=> $countries,
-							'device_type'		=> $deviceTypes,
+							'device_type'		=> empty($deviceTypes) ? null : $deviceTypes,
 							'connection_type'	=> empty($connectionType) ? null : $connectionType,
 							'carrier'			=> null,
 							'os'				=> $oss,
 							'os_version'		=> null,
+							'package_id'		=> empty($packageIds) ? null : $packageIds,
 							'status'			=> 'active',
 							'currency'			=> 'USD'
 						];
@@ -145,6 +111,14 @@
 			}
 
 			unset ( $connectionType );
+			unset ( $packageIds );
+
+			if  ( isset($_GET['test']) && $_GET['test']==1 )
+			{
+				header('Content-Type: text/json');
+				echo json_encode( $result, JSON_PRETTY_PRINT );
+				die();
+			}
 
 			return $result;
 		}

@@ -6,7 +6,7 @@
 	use yii\base\Component;
 	use yii\base\InvalidConfigException;
 	 
-	// VARIOS PAYOUTS SIN CRITERIO UNICO
+	// STANDBY: VARIOS PAYOUTS SIN CRITERIO UNICO
 	class BriskAdsAPI extends Component
 	{
 		// uses orangear.com plattform

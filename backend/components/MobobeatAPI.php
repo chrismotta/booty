@@ -28,6 +28,14 @@
 			
 			$this->_status = curl_getinfo( $curl, CURLINFO_HTTP_CODE );
 
+
+			if  ( isset($_GET['source']) && $_GET['source']==1 )
+			{
+				header('Content-Type: text/json');
+				echo json_encode( $response, JSON_PRETTY_PRINT );
+				die();
+			}			
+
 			if ( !$response )
 			{
 				$this->_msg = 'Response without body';
@@ -52,72 +60,45 @@
 				else
 				{
 					$countries = explode( ',' , $campaign->countries );
-				}
+				}				
 
-				if ( isset($campaign->devices) && $campaign->devices && is_array($campaign->devices) )
+				$deviceTypes = ApiHelper::getDeviceTypes($campaign->devices, false);
+				$oss 		 = ApiHelper::getOs($campaign->devices, false);
+
+				if ( !empty($oss) && $oss[0]!='Other'  )
 				{
-					$os = $campaign->devices;
+					$packageIds = [
+						strtolower($oss[0]) => $campaign->packageid
+					];
 				}
 				else
 				{
-					$os = explode( ',' , $campaign->devices );
+					$packageIds = [];
 				}				
-
-				$oss 		 = [];
-				$deviceTypes = [];
-
-				foreach ( $os as $o )
-				{
-					switch ( strtolower($o) )
-					{
-						case 'ipad':
-							if ( !in_array('iOS', $oss) )
-								$oss[] 		   = 'iOS';
-
-							if ( !in_array('Tablet', $deviceTypes) )
-								$deviceTypes[] = 'Tablet';				
-						break;
-						case 'iphone':
-							if ( !in_array('iOS', $oss) )
-								$oss[] 		   = 'iOS';
-
-							if ( !in_array('Smartphone', $deviceTypes) )
-								$deviceTypes[] = 'Smartphone';			
-						break;
-						case 'ios':
-							if ( !in_array('iOS', $oss) )
-								$oss[] 		   = 'iOS';
-						break;
-						case 'android':
-							if ( !in_array($o, $oss) )
-								$oss[]		   = 'Android';
-						break;
-						default:
-							if ( !in_array($o, $oss) )
-								$oss[] 		   = $o;
-
-							if ( !in_array('Other', $deviceTypes) )
-								$deviceTypes[] = 'Other'; 
-						break;
-					}
-				}
-
 
 				$result[] = [
 					'ext_id' 			=> $campaign->id,
 					'name'				=> $campaign->name,
-					'desc'				=> preg_replace('/[\xF0-\xF7].../s', '', $campaign->description),		
+					'desc'				=> preg_replace('/[\xF0-\xF7].../s', '', $campaign->description), 
 					'payout' 			=> $campaign->payout,
 					'landing_url'		=> $campaign->tracking_url,
 					'country'			=> $countries,
 					'device_type'		=> $deviceTypes,
 					'connection_type'	=> null,
 					'carrier'			=> null,
-					'os'				=> $oss,
+					'os'				=> empty($os) ? null : $os,
 					'os_version'		=> null,
+					'package_id'		=> empty($packageIds) ? null : $packageIds,
 					'status'			=> strtolower($campaign->status),
 					'currency'			=> 'USD'
 				];
+			}
+
+			if  ( isset($_GET['test']) && $_GET['test']==1 )
+			{
+				header('Content-Type: text/json');
+				echo json_encode( $result, JSON_PRETTY_PRINT );
+				die();
 			}
 
 			return $result;

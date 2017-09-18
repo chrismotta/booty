@@ -55,11 +55,12 @@ class AffiliatesapiController extends \yii\web\Controller
                 'class'         => 'MinimobAPI',
                 'affiliate_id'  => 10,
             ],
+            /*
             [
                 'class'         => 'AddictiveAdsAPI',
                 'affiliate_id'  => 11,
             ],
-                                             	
+            */
 		];
 	}
 
@@ -80,7 +81,7 @@ class AffiliatesapiController extends \yii\web\Controller
                 $this->_runAPI( $rule );
             }            
             if ( $affiliate_id == $rule['affiliate_id'] )
-            {
+            {                
                 $this->_runAPI( $rule );
                 break;
             }
@@ -259,6 +260,11 @@ class AffiliatesapiController extends \yii\web\Controller
                     $campaign->payout        = (float)$campaignData['payout'];
                     $campaign->landing_url   = $campaignData['landing_url'];
 
+                    if ( $campaignData['package_id'] )
+                        $campaign->app_id      = json_encode($campaignData['package_id']);
+                    else
+                        $campaign->app_id      = null;
+
                     if ( $campaignData['country'] )
                         $campaign->country      = json_encode($campaignData['country']);
                     else
@@ -272,7 +278,7 @@ class AffiliatesapiController extends \yii\web\Controller
                     if ( $campaignData['os'] )
                         $campaign->os           = json_encode($campaignData['os']);    
                     else
-                        $campaign->os           = null;                         
+                        $campaign->os           = null;
 
                     if ( $campaignData['os_version'] )
                         $campaign->os_version   = json_encode($campaignData['os_version']);
@@ -303,7 +309,7 @@ class AffiliatesapiController extends \yii\web\Controller
                         'ext_id'      => $campaign->ext_id
                     ]);
 
-                    unset( $campaign );             
+                    unset( $campaign );
                 }
             }
             else
@@ -360,30 +366,55 @@ class AffiliatesapiController extends \yii\web\Controller
 			$changes .= '<td>&nbsp;</td>';
 		}
 
+        $newPackageIds = $campaignData['package_id'] ? $campaignData['package_id'] : [];
+        $oldPackageIds = json_decode($campaign->app_id);
 
+        $packagesDiff = array_diff ( $oldPackageIds, $newPackageIds ) + array_diff( $newPackageIds, $oldPackageIds );      
+      
+        var_dump($packagesDiff);die();
     	if ( $this->_changed )
     	{
     		$clusters 			  = [];
 			$clustersHasCampaigns = models\ClustersHasCampaigns::findAll( ['Campaigns_id' => $campaign->id] );
 
-			switch ( $campaignData['status'] )
-			{
-				case 'active':
-					$status = 1;
-				break;
-				default:
-					$status = 0;
-				break;
-			}
 
 			foreach ( $clustersHasCampaigns as $assign )
 			{
 				$clusters[] = $assign['Clusters_id'];
 
-				if ( $campaign->status != $campaignData['status'] )
-				{
-					$this->_redis->zadd( 'clusterlist:'.$assign['Clusters_id'], $status, $campaign->id );
-				}
+                switch ( $campaignData['status'] )
+                {
+                    case 'active':
+                        $addPackageIds    = array_merge( $newPackageIds, $oldPackageIds );
+                        $remPackageIds = array_merge( $oldPackageIds, $newPackageIds );
+
+                        foreach ( $addPackageIds AS $os => $packageId )
+                        {
+                            $this->_redis->zadd( 'clusterlist:'.$assign['Clusters_id'], 
+                                $assign['delivery_freq'],
+                                $campaign->id.':'.$campaign->affiliate->id.':'.$packageId
+                            );
+                        } 
+
+                        foreach ( $remPackageIds AS $os => $packageId )
+                        {
+                            $this->_redis->zrem( 'clusterlist:'.$assign['Clusters_id'], 
+                                $campaign->id.':'.$campaign->affiliate->id.':'.$packageId
+                            );
+                        }                                                    
+                    break;
+                    default:
+                        $packageIds = array_merge( $oldPackageIds, $newPackageIds );
+
+                        foreach ( $packageIds AS $os => $packageId )
+                        {
+                            $this->_redis->zrem( 'clusterlist:'.$assign['Clusters_id'], 
+                                $campaign->id.':'.$campaign->affiliate->id.':'.$packageId
+                            );
+                        }
+                    break;
+                }
+
 			}
 
             if ( !empty($clusters) )
@@ -394,7 +425,7 @@ class AffiliatesapiController extends \yii\web\Controller
                         <td>'.$campaign->id.'</td>
                         <td>'.$campaign->ext_id.'</td>
                         '.$changes.',
-                        <td>'.implode(", ", $clusters).'</td>
+                        <td>'.json_encode( $clusters ).'</td>
                     </tr>
                 ';                          
             }
@@ -646,90 +677,5 @@ class AffiliatesapiController extends \yii\web\Controller
     }    
 
 
-    public function actionConvs()
-    {	
-    	$this->_changes = '';
-    	$this->_alerts  = '';
-    	$this->_redis 	= new \Predis\Client( \Yii::$app->params['predisConString'] );
-
-    	foreach ( $this->_apiRules() AS $rule )
-    	{
-    		$className  = 'backend\components\\'.$rule['class'];
-    		$api 		= new $className;
-    		$affiliate  = models\Affiliates::findOne( ['id' => $rule['affiliate_id'] ] );
-
-    		try
-    		{
-    			$convData  = $api->requestAccountData( $affiliate->api_key, $affiliate->user_id );
-
-    			if ( $campaignsData && is_array($campaignsData) )
-    			{
-    				foreach ( $campaignsData AS $campaignData )
-    				{
-    					$campaign = models\Campaigns::findOne([ 
-    						'ext_id' 		=> $campaignData['ext_id'],
-    						'Affiliates_id' => $affiliate->id
-    					]);
-
-    					if  ( $campaign )
-    						$this->_checkChanges( $rule['class'], $campaign, $campaignData );
-    					else
-    						$campaign = new models\Campaigns;
-
-    					$campaign->Affiliates_id = $affiliate->id;
-    					$campaign->name    		 = $campaignData['name'];
-    					$campaign->status  		 = $campaignData['status'];
-    					$campaign->ext_id  		 = $campaignData['ext_id'];
-    					$campaign->payout  		 = (float)$campaignData['payout'];
-    					$campaign->landing_url   = $campaignData['landing_url'];
-
-    					if ( $campaignData['country'] )
-    						$campaign->country  	= json_encode($campaignData['country']);
-
-    					if ( $campaignData['device_type'] )
-    						$campaign->device_type  = json_encode($campaignData['device_type']);
-
-    					if ( $campaignData['os'] )
-    						$campaign->os 			= json_encode($campaignData['os']);		
-
-    					if ( $campaignData['os_version'] )
-    						$campaign->os_version	= json_encode($campaignData['os_version']);		    								
-
-    					if ( $campaignData['carrier'] )
-    						$campaign->carrier 		= json_encode($campaignData['carrier']);		    					
-
-    					if ( $campaignData['connection_type'] )
-    						$campaign->connection_type = json_encode($campaignData['connection_type']);    					
-
-    					//var_export($campaign);die();
-    					
-    					if ( !$campaign->save() )
-    						$this->_createAlert(  $rule['class'], $campaign->getErrors(), $api->getStatus(), json_encode($campaignData) );
-
-    					unset( $campaign );				
-    				}
-    			}
-    			else
-    			{
-    				$this->_createAlert( $rule['class'], $api->getMessages(), $api->getStatus() );
-    				continue;
-    			}
-    		}
-    		catch ( Exception $e )
-    		{
-    			$msg = 'exception';
-    			$this->_createAlert(  $rule['class'], $msg, $api->getStatus() );
-    			continue;
-    		}
-
-    		unset ( $api );
-    		unset ( $affiliate );
-    	}
-
-    	$this->_sendAlerts();
-    	$this->_sendNotifications();
-
-        //return $this->render('index');
-    }
 
 }
