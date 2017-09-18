@@ -41,6 +41,7 @@ $this->params['breadcrumbs'][] = $this->title;
 
             [
                 'class' => 'kartik\grid\EditableColumn',
+                'attribute' =>'delivery_freq',
                 'editableOptions'=> function ($model, $key, $index, $widget) {
                     return [
                         'id' => 'delivery_freq',
@@ -50,10 +51,10 @@ $this->params['breadcrumbs'][] = $this->title;
                         ]],
                     ];
                 },
-                'attribute' =>'delivery_freq',
-                'value'     =>function($model, $key, $index){
-                    return $model->getDeliveryFreq();
-                },
+                'refreshGrid' => true,
+                // 'value'     =>function($model, $key, $index){
+                //     return $model->getDeliveryFreq();
+                // },
             ],
 
             'payout',

@@ -226,7 +226,13 @@ class CampaignsSearch extends Campaigns
 
         $query = Campaigns::find();
         $query->joinWith(['clusters']);
-        $query->select(['Campaigns.*', 'Clusters.id as clusters_id']);
+        $query->select([
+            'Campaigns.*', 
+            'Clusters.id as clusters_id', 
+            'Clusters_has_Campaigns.delivery_freq as delivery_freq',
+        ]);
+
+        $query->orderBy('Clusters_has_Campaigns.delivery_freq DESC');
 
         $query->andFilterWhere(['Clusters.id'=>$clusterID]);
 
