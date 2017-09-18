@@ -328,7 +328,7 @@ class ClustersController extends Controller
 
             foreach ( $packageIds as $packageId )
             {
-                $cache->zadd( 'clusterlist:'.$id, $delivery_freq, $chc->campaigns->id.':'.$chc->campaigns->affiliates->id.':'.$packageId );
+                $cache->zadd( 'clusterlist:'.$Clusters_id, $delivery_freq, $chc->campaigns->id.':'.$chc->campaigns->affiliates->id.':'.$packageId );
             }
         }
 
