@@ -446,7 +446,7 @@ class AffiliatesapiController extends \yii\web\Controller
 
     protected function _clearCampaigns ( $affiliate_id, array $external_ids, $api_class )
     {
-        $campaigns = models\Campaigns::find()->where(['Affiliates_id' => $affiliate_id ])->andWhere(['<>', 'status', 'archived'])->andWhere(['<>', 'status', 'paused'])->andWhere( ['not in' , 'ext_id', $external_ids] )->all();
+        $campaigns = models\Campaigns::find()->where(['Affiliates_id' => $affiliate_id ])->andWhere(['<>', 'status', 'archived'])->andWhere(['<>', 'status', 'paused'])->andWhere(['<>', 'status', 'aff_paused'])->andWhere( ['not in' , 'ext_id', $external_ids] )->all();
 
         foreach ( $campaigns AS $campaign )
         {
@@ -463,6 +463,7 @@ class AffiliatesapiController extends \yii\web\Controller
                 }
 
                 $prevStatus =  $campaign->status;
+
                 $campaign->status = 'aff_paused';
                 $campaign->save();
 
