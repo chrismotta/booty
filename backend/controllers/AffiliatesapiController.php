@@ -459,7 +459,7 @@ class AffiliatesapiController extends \yii\web\Controller
                 {
                     $clusters[] = $assign['Clusters_id'];
                     $value = "[".$campaign->id.':'.$campaign->affiliates->id;
-                    $cache->zremrangebylex( 'clusterlist:'.$id, $value, $value."\xff" );
+                    $this->_redis->zremrangebylex( 'clusterlist:'.$assign['Clusters_id'], $value, $value."\xff" );
                 }
 
                 $prevStatus =  $campaign->status;
