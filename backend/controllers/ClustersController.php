@@ -261,11 +261,20 @@ class ClustersController extends Controller
             break;
         }
 
-        $cache->zadd( 'clusterlist:'.$id, $status, $campaign->id );
+        if ( $campaign->app_id )
+        {
+            $packageIds = json_decode($campaign->app_id);
+
+            foreach ( $packageIds as $packageId )
+            {
+                $cache->zadd( 'clusterlist:'.$id, 1, $campaign->id.':'.$campaign->affiliates->id.':'.$packageId );
+            }
+        }
+
         $cache->hmset( 'campaign:'.$campaign->id, [
             'callback'      => $campaign->landing_url,
             'click_macro'   => $campaign->affiliates->click_macro
-        ]);
+        ]);        
 
         // debug
         // echo $return;
@@ -279,7 +288,10 @@ class ClustersController extends Controller
         $return = $campaign->unassignToCluster($id);
 
         $cache = new \Predis\Client( \Yii::$app->params['predisConString'] );
-        $cache->zrem( 'clusterlist:'.$id, $campaign->id );
+
+        $value = "[".$campaign->id.':'.$campaign->affiliates->id;
+
+        $cache->zremrangebylex( 'clusterlist:'.$id, $value, $value."\xff" );
 
         // debug
         // echo $return;

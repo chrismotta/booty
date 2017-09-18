@@ -28,6 +28,13 @@
 
 			$this->_status = curl_getinfo( $curl, CURLINFO_HTTP_CODE );
 
+			if  ( isset($_GET['source']) && $_GET['source']==1 )
+			{
+				header('Content-Type: text/json');
+				echo json_encode( $response, JSON_PRETTY_PRINT );
+				die();
+			}				
+
 			if ( !$response )
 			{
 				$this->_msg = 'Response without body';
@@ -53,7 +60,18 @@
 						$countries[] = $cd['countryCode'];
 				}
 
-				$os 	  	= ApiHelper::getOs($campaign->targetPlatform);
+				$os = ApiHelper::getOs($campaign->targetPlatform);
+
+				if ( !empty($os) && $os[0]!='Other'  )
+				{
+					$packageIds = [
+						strtolower($os[0]) => $campaign->appId
+					];
+				}
+				else
+				{
+					$packageIds = [];
+				}				
 
 				switch ( strtolower($campaign->runningStatus) )
 				{
@@ -77,6 +95,7 @@
 					'carrier'			=> null,
 					'os'				=> empty($os) ? null : $os, 
 					'os_version'		=> null, 
+					'package_id'		=> empty($packageIds) ? null : $packageIds,
 					'status'			=> $status,
 					'currency'			=> $campaign->payoutCurrency
 				];
@@ -84,8 +103,16 @@
 				unset( $campaign );
 				unset( $os );
 				unset( $countries );
+				unset( $packageIds );
 				
 			}
+
+			if  ( isset($_GET['test']) && $_GET['test']==1 )
+			{
+				header('Content-Type: text/json');
+				echo json_encode( $result, JSON_PRETTY_PRINT );
+				die();
+			}	
 
 			return $result;
 		}

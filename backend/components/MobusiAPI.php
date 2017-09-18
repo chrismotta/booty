@@ -7,18 +7,17 @@
 	use app\models;
 	use yii\base\InvalidConfigException;
 	 
-	// no mandan package id
-	class AddictiveAdsAPI extends Component
+	class MobusiAPI extends Component
 	{
 		// uses hasoffers.com plattform
-		const URL = 'http://feed.addictiveads.com/v1?';
+		const URL = 'http://api.leadzu.com/offer.find?';
 
 		protected $_msg;
 		protected $_status;
 
 		public function requestCampaigns ( $api_key, $user_id = null  )
 		{
-			$url    = self::URL . 'api_key='.$api_key;
+			$url    = self::URL . 'user_id='.$user_id.'&api_key='.$api_key;
 			$curl   = curl_init();
 
 			curl_setopt($curl, CURLOPT_URL, $url);
@@ -37,42 +36,67 @@
 
 			$dbCarriers = models\Carriers::find()->all();
 
-			foreach ( $response->data AS $campaign )
+			foreach ( $response->answer AS $ext_id => $campaign )
 			{
-				$os       = [];
-				$osVer    = [];
-				$carriers = [];
-				$devices  = [];
+				$os        = [];
+				$osVer     = [];
+				$carriers  = [];
+				$devices   = [];
+				$connTypes = [];
 
-				foreach ( $campaign->targeting AS $rule )
+				switch ( strtolower($campaign->status) )
+				{
+					case 'active':
+						$status = 'active';
+					break;
+					default:
+						$status = 'paused';
+					break;
+				}
+				
+				switch( strtolower($campaign->device) )		
+				{
+					case 'mobile':
+						$connTypes[] = 'Carrier';
+					break;
+					case 'desktop':
+						$devices[]   = 'Desktop';
+					break;
+				}
+
+				foreach ( $campaign->os_version AS $os => $versions )
 				{
 					if ( $rule->action=='allow' )
 					{
-						$os[] 	    = $rule->rule->req_device_os; 
-						$osVer[] 	= $rule->rule->req_device_os_version; 
-						$carriers[] = $rule->rule->req_mobile_carrier;
-						$devices[]  = $rule->rule->req_device_model;		
+						$os[] 	    = $os;
+
+						if ( isset($versions->gt) ) 
+							$osVer[] 	= $versions->gt;
+
+						if ( isset($versions->ge) ) 
+							$osVer[] 	= $versions->ge;
+
+						if ( isset($versions->eq) ) 
+							$osVer[] 	= $versions->eq;
 					}
 	 			}
 
-	 			$d = ApiHelper::getDeviceTypes( $devices );
 	 			$o = ApiHelper::getOs( $os );
-	 			$c = ApiHelper::getCarriers( $carriers, $dbCarriers );
 	 			$v = ApiHelper::getValues( $osVer );
 
 				$result[] = [
 					'ext_id' 			=> $campaign->id, 
-					'name'				=> $campaign->name, 
-					'desc'				=> preg_replace('/[\xF0-\xF7].../s', '', $campaign->description), 
+					'name'				=> $campaign->title, 
+					'desc'				=> preg_replace('/[\xF0-\xF7].../s', '', $campaign->description),
 					'payout' 			=> (float)$campaign->payout, 
 					'landing_url'		=> $campaign->tracking_url, 
-					'country'			=> empty($campaign->geos) ? null : $campaign->geos,
-					'device_type'		=> empty($d) ? null : $d,
-					'connection_type'	=> null, 
-					'carrier'			=> empty($c) ? null : $c,
+					'country'			=> $country,
+					'device_type'		=> empty($devices) ? null : $devices,
+					'connection_type'	=> empty($connTypes) ? null : $connTypes, 
+					'carrier'			=> null,
 					'os'				=> empty($o) ? null : $o, 
 					'os_version'		=> empty($v) ? null : $v, 
-					'status'			=> 'active', 
+					'status'			=> $status, 
 					'currency'			=> 'USD'
 				];
 

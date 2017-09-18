@@ -71,7 +71,7 @@
 		}
 
 
-		static function getOs ( $data )
+		static function getOs ( $data, $otherAsDefault = true )
 		{
 			$results = [];
 
@@ -109,7 +109,7 @@
 						case null:
 						break;
 						default:
-							if ( !in_array( 'Other', $results) )
+							if ( $otherAsDefault && !in_array( 'Other', $results) )
 								$results[] = 'Other';
 						break;
 					}
@@ -122,7 +122,7 @@
 		}
 
 
-		static function getDeviceTypes ( $data )
+		static function getDeviceTypes ( $data, $otherAsDefault = true )
 		{
 			$results = [];
 
@@ -154,7 +154,7 @@
 								$results[] = 'Tablet';						
 						break;
 						default:
-							if ( !in_array( 'Other', $results) )
+							if ( $otherAsDefault && !in_array( 'Other', $results) )
 								$results[] = 'Other';
 						break;
 					}

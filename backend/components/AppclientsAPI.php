@@ -24,11 +24,16 @@
 			curl_setopt($curl, CURLOPT_HEADER, false);
 			curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
 
-
-
 			$response = json_decode(curl_exec($curl));
 
 			$this->_status = curl_getinfo( $curl, CURLINFO_HTTP_CODE );
+
+			if  ( isset($_GET['source']) && $_GET['source']==1 )
+			{
+				header('Content-Type: text/json');
+				echo json_encode( $response, JSON_PRETTY_PRINT );
+				die();
+			}			
 
 			if ( !$response )
 			{
@@ -51,6 +56,7 @@
 					$devices 	= ApiHelper::getDeviceTypes( $campaign->campaign_display_rules->device_type->whitelist, '\\' );
 
 					$url = null;
+					$packageIds = [];
 
 					foreach ( $campaign->creatives AS $creative )
 					{
@@ -59,6 +65,12 @@
 							$url = $creative->url;
 							break;
 						}
+					}
+
+					if ( !empty($os) && $os[0]!='Other'  && $campaign->package_name )
+					{
+						$osName = strtolower($os[0]);
+						$packageIds[$osName] = $campaign->package_name;
 					}
 
 					$result[] = [
@@ -73,15 +85,24 @@
 						'carrier'			=> null, 
 						'os'				=> empty($os) ? null : $os, 
 						'os_version'		=> empty($osVersions) ? null : $osVersions, 
-						'status'			=> 'active', 
+						'package_id'		=> empty($packageIds) ? null : $packageIds,
+						'status'			=> 'active', 	
 						'currency'			=> $campaign->campaign_products[0]->currency
 					];
 
 					unset( $campaign );
 					unset( $osVersion );
-					unset( $countries );				
-
+					unset( $countries );
+					unset( $packageIds );
+					unset( $devices );
 				}
+			}
+
+			if  ( isset($_GET['test']) && $_GET['test']==1 )
+			{
+				header('Content-Type: text/json');
+				echo json_encode( $result, JSON_PRETTY_PRINT );
+				die();
 			}
 
 			return $result;
