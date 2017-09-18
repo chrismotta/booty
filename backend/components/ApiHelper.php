@@ -9,7 +9,29 @@
 	 
 	class ApiHelper extends Component
 	{
-	
+		static function getAppIdFromUrl ( $value )
+		{
+			$result = [];
+
+			if ( filter_var($value, FILTER_VALIDATE_URL) )
+			{
+				$matches = array();
+
+				if ( preg_match( '/(apple.com)/', $value ) )
+				{
+					$matches = [];
+					preg_match( '/(id)[0-9]+/', $value, $matches );
+
+					if ( !empty($matches) )
+					{
+						$result['ios'] = substr( $matches[0], 2 );
+					}
+				}
+			}
+
+			return $result;
+		}
+
 		static function getOs ( $data, $otherAsDefault = true )
 		{
 			$results = [];

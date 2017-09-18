@@ -29,6 +29,13 @@
 
 			$this->_status = curl_getinfo( $curl, CURLINFO_HTTP_CODE );
 
+			if  ( isset($_GET['source']) && $_GET['source']==1 )
+			{
+				header('Content-Type: text/json');
+				echo json_encode( $response, JSON_PRETTY_PRINT );
+				die();
+			}
+
 			if ( !$response || !isset($response->data) || !is_array($response->data))
 			{
 				$this->_msg = 'Response without body';
@@ -59,6 +66,7 @@
 	 			$o = ApiHelper::getOs( $os );
 	 			$c = ApiHelper::getCarriers( $carriers, $dbCarriers );
 	 			$v = ApiHelper::getValues( $osVer );
+	 			$p = ApiHelper::getAppIdFromUrl( $campaign->preview_url );
 
 				$result[] = [
 					'ext_id' 			=> $campaign->id, 
@@ -72,6 +80,7 @@
 					'carrier'			=> empty($c) ? null : $c,
 					'os'				=> empty($o) ? null : $o, 
 					'os_version'		=> empty($v) ? null : $v, 
+					'package_id'		=> empty($p) ? null : $p,
 					'status'			=> 'active', 
 					'currency'			=> 'USD'
 				];
@@ -81,6 +90,18 @@
 				unset( $osVer );
 				unset( $carriers );
 				unset( $devices );				
+				unset( $d );
+				unset( $o );
+				unset( $c );
+				unset( $v );
+				unset( $p );				
+			}
+
+			if  ( isset($_GET['test']) && $_GET['test']==1 )
+			{
+				header('Content-Type: text/json');
+				echo json_encode( $result, JSON_PRETTY_PRINT );
+				die();
 			}
 
 			return $result;
