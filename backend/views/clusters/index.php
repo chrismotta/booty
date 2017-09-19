@@ -1,7 +1,7 @@
 <?php
 
 use yii\helpers\Html;
-use yii\grid\GridView;
+use kartik\grid\GridView;
 use yii\widgets\Pjax;
 use app\models;
 use kartik\select2\Select2;
@@ -60,7 +60,10 @@ $filterByCarrier = ArrayHelper::map(
                 ]),                
             ],
             [
-                'class' => 'yii\grid\ActionColumn',
+                'class' => '\kartik\grid\ActionColumn',
+                'width' => '90px',
+                // 'dropdown' => true,
+                // 'dropdownOptions' => ['class' => 'pull-right'],
                 'template' => '{view} {update} {assignment} {delete}',
                 'buttons' => [
                     'assignment' => function ($url, $model, $key) {

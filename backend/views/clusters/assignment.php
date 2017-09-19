@@ -30,7 +30,8 @@ $this->params['breadcrumbs'][] = $this->title;
         'id' => 'assigned',
         'dataProvider' => $assignedProvider,
         // 'filterModel' => $assignedModel,
-        'layout' => '{items}',
+        'layout' => '{pager}{items}',
+        'condensed' => true,
         'columns' => [
             'id',
             [
@@ -135,7 +136,10 @@ $this->params['breadcrumbs'][] = $this->title;
         'id' => 'available',
         'dataProvider' => $availableProvider,
         'filterModel' => $availableModel,
-        'layout' => '{items}{pager}',
+        'condensed' => true,
+        'showPageSummary' => true,
+        // 'layout' => '{pager}{items}',
+        'layout' => '<div style="float:left">{pager}</div><div style="float:right; margin:20px"><button>Assign All Selected</buton></div><div style="clear:left;">{items}</div>',
         'columns' => [
             'id',
             [
@@ -207,8 +211,27 @@ $this->params['breadcrumbs'][] = $this->title;
             ],
 
             [
-                'class' => 'yii\grid\ActionColumn',
+                'class' => '\kartik\grid\DataColumn',
+                'header' => '<span class="glyphicon glyphicon-alert text-warning"></span>',
+                'format'=>'html',
+                'value' => function($model, $key, $index){
+                    
+                    if(!isset($model->app_id))
+                        $return = '<span class="glyphicon glyphicon-alert text-warning" data-toggle="tooltip" title="NO APP_ID SET"></span>';
+                    else 
+                        $return = '';
+
+                    return $return;
+                },
+                'vAlign' => 'middle',
+                'mergeHeader' => true,
+            ],
+
+            [
+                'class' => '\kartik\grid\ActionColumn',
+                'width'  => '30px',
                 'template' => '{assigncampaign}',
+                'header' => '<span class="glyphicon glyphicon-plus"></span>',
 
                 'buttons' => [
                     'assigncampaign' => function ($url, $model, $key) use ($clusterID) {
@@ -218,7 +241,12 @@ $this->params['breadcrumbs'][] = $this->title;
                             );
                     },
                 ]
-            ]
+            ],
+
+            [
+                'class' => '\kartik\grid\CheckboxColumn',
+                'width'  => '30px',
+            ],
         ],
     ]); ?>
 <?php // Pjax::end(); ?>

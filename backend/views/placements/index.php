@@ -1,7 +1,7 @@
 <?php
 
 use yii\helpers\Html;
-use yii\grid\GridView;
+use kartik\grid\GridView;
 use yii\widgets\Pjax;
 use app\models;
 use kartik\select2\Select2;
@@ -90,7 +90,9 @@ $filterByCluster = ArrayHelper::map(
             // 'health_check_imps',
 
             [
-                'class' => 'yii\grid\ActionColumn',
+                'class' => '\kartik\grid\ActionColumn',
+                // 'dropdown' => true,
+                // 'dropdownOptions' => ['class' => 'pull-right'],
                 'template' => '{view} {update} {delete}',
                 'buttons' => [
                     'updateonside' => function ($url, $model, $key) {

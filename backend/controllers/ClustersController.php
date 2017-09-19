@@ -244,27 +244,35 @@ class ClustersController extends Controller
     }
 
     public function actionAssigncampaign($id){
+
         $campaignID = isset($_GET['cid']) ? $_GET['cid'] : null;
-
         $campaign = CampaignsSearch::findOne($campaignID);
-        $return = $campaign->assignToCluster($id);
-        $cache = new \Predis\Client( \Yii::$app->params['predisConString'] );
-
-        switch ( $campaign->status )
+        
+        // if app_id is set
+        if ( !isset($campaign->app_id) )
         {
-            case 'active':
-                $status = 1;
-            break;
-            default:
-                $status = 0;
-            break;
-        }
+            
+            // if app_id is a json
+            $packageIds = json_decode($campaign->app_id);
+            if(!isset($packageIds))
+                return 'app_id format is not json';
+
+
+            $return = $campaign->assignToCluster($id);
+            $cache = new \Predis\Client( \Yii::$app->params['predisConString'] );
+
+            switch ( $campaign->status )
+            {
+                case 'active':
+                    $status = 1;
+                break;
+                default:
+                    $status = 0;
+                break;
+            }
         
 
-        if ( $campaign->app_id )
-        {
 
-            $packageIds = json_decode($campaign->app_id);
 
             foreach ( $packageIds as $packageId )
             {
