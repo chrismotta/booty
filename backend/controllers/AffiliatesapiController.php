@@ -55,12 +55,11 @@ class AffiliatesapiController extends \yii\web\Controller
                 'class'         => 'MinimobAPI',
                 'affiliate_id'  => 10,
             ],
-            /*
             [
                 'class'         => 'AddictiveAdsAPI',
                 'affiliate_id'  => 11,
             ],
-            */
+
 		];
 	}
 
@@ -244,17 +243,25 @@ class AffiliatesapiController extends \yii\web\Controller
                                 $campaignData['landing_url']
                             );                  
                         }
+
+                        switch ( $campaign->status )
+                        {
+                            case 'archived':
+                            case 'paused':
+                            break;
+                                $campaign->status = $campaignData['status'];
+                            default:
+                        }                        
                     }
                     else
                     {
-                        $newCampaign = true;
-                        $campaign    = new models\Campaigns;         
-                    }
-
+                        $newCampaign      = true;
+                        $campaign         = new models\Campaigns;     
+                        $campaign->status = $campaignData['status'];    
+                    }                    
 
                     $campaign->Affiliates_id = $affiliate->id;
                     $campaign->name          = $campaignData['name'];
-                    $campaign->status        = $campaignData['status'];
                     $campaign->ext_id        = $campaignData['ext_id'];
                     $campaign->info          = $campaignData['desc'];
                     $campaign->payout        = (float)$campaignData['payout'];
@@ -384,7 +391,6 @@ class AffiliatesapiController extends \yii\web\Controller
             {
                 $clusters[] = $assign['Clusters_id'];
 
-
                 switch ( $campaignData['status'] )
                 {
                     case 'active':
@@ -439,7 +445,7 @@ class AffiliatesapiController extends \yii\web\Controller
 
     protected function _clearCampaigns ( $affiliate_id, array $external_ids, $api_class )
     {
-        $campaigns = models\Campaigns::find()->where(['Affiliates_id' => $affiliate_id ])->andWhere(['<>', 'status', 'archived'])->andWhere( ['not in' , 'ext_id', $external_ids] )->all();
+        $campaigns = models\Campaigns::find()->where(['Affiliates_id' => $affiliate_id ])->andWhere(['<>', 'status', 'archived'])->andWhere(['<>', 'status', 'paused'])->andWhere(['<>', 'status', 'aff_paused'])->andWhere( ['not in' , 'ext_id', $external_ids] )->all();
 
         foreach ( $campaigns AS $campaign )
         {
@@ -451,30 +457,35 @@ class AffiliatesapiController extends \yii\web\Controller
 
                 foreach ( $clustersHasCampaigns as $assign )
                 {
+                    $clusters[] = $assign['Clusters_id'];
                     $value = "[".$campaign->id.':'.$campaign->affiliates->id;
-                    $cache->zremrangebylex( 'clusterlist:'.$id, $value, $value."\xff" );
+                    $this->_redis->zremrangebylex( 'clusterlist:'.$assign['Clusters_id'], $value, $value."\xff" );
                 }
 
                 $prevStatus =  $campaign->status;
-                $campaign->status = 'archived';
+
+                $campaign->status = 'aff_paused';
                 $campaign->save();
 
-                $this->_changes .= '
-                    <tr>
-                        <td>'.$api_class.'</td>
-                        <td>'.$campaign->id.'</td>
-                        <td>'.$campaign->ext_id.'</td>
-                        <td>&nbsp;</td>
-                        <td>&nbsp;</td>
-                        <td>&nbsp;</td>
-                        <td>&nbsp;</td>
-                        <td>&nbsp;</td>
-                        <td>&nbsp;</td>
-                        <td>&nbsp;</td>
-                        <td>'.$prevStatus.' => archived</td>
-                        <td>'.implode( ',', $clusters ).'</td>
-                    </tr>
-                ';
+                if ( !empty($clusters) )
+                {
+                    $this->_changes .= '
+                        <tr>
+                            <td>'.$api_class.'</td>
+                            <td>'.$campaign->id.'</td>
+                            <td>'.$campaign->ext_id.'</td>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                            <td>'.$prevStatus.' => aff_paused</td>
+                            <td>'.implode( ',', $clusters ).'</td>
+                        </tr>
+                    ';                    
+                }
 
                 unset( $clusters );
                 unset( $clustersHasCampaigns );                   

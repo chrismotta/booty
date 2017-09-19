@@ -1151,26 +1151,21 @@ class EtlController extends \yii\web\Controller
 
             $this->_redis->del( 'clusterlist:'.$model->id );
 
-            $campaigns = $campaignsModel->getByCluster( $model->id );
+            $clustersHasCampaigns = models\ClustersHasCampaigns::findAll( ['Clusters_id' => $model->id] );
 
-            foreach ( $campaigns as $campaign )
+            foreach ( $clustersHasCampaigns as $assign )
             {
-                switch ( $campaign->status )
+                if ( $assign->campaigns->app_id && $assign->delivery_freq )
                 {
-                    case 'active':
-                        $status = 1;
-                    break;
-                    default:
-                        $status = 0;
-                    break;
+                    $cache = new \Predis\Client( \Yii::$app->params['predisConString'] );
+
+                    $packageIds = json_decode($assign->campaigns->app_id);
+
+                    foreach ( $packageIds as $packageId )
+                    {
+                        $cache->zadd( 'clusterlist:'.$model->id, $assign->delivery_freq, $assign->campaigns->id.':'.$assign->campaigns->affiliates->id.':'.$packageId );
+                    }
                 }
-
-                $this->_redis->zadd( 'clusterlist:'.$model->id, $status, $campaign->id );
-
-                $this->_redis->hmset( 'campaign:'.$campaign->id, [
-                    'callback'    => $campaign->landing_url,
-                    'click_macro' => $campaign->click_macro
-                ]);
             }
         }
 

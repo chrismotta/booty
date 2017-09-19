@@ -282,7 +282,9 @@ class ClustersController extends Controller
 
         $cache->hmset( 'campaign:'.$campaign->id, [
             'callback'      => $campaign->landing_url,
-            'click_macro'   => $campaign->affiliates->click_macro
+            'ext_id'        => $campaign->ext_id,
+            'click_macro'   => $campaign->affiliates->click_macro,
+            'placeholders'  => $campaign->affiliates->placeholders            
         ]);        
 
         // debug
@@ -334,7 +336,7 @@ class ClustersController extends Controller
 
             foreach ( $packageIds as $packageId )
             {
-                $cache->zadd( 'clusterlist:'.$id, $delivery_freq, $chc->campaigns->id.':'.$chc->campaigns->affiliates->id.':'.$packageId );
+                $cache->zadd( 'clusterlist:'.$Clusters_id, $delivery_freq, $chc->campaigns->id.':'.$chc->campaigns->affiliates->id.':'.$packageId );
             }
         }
 
