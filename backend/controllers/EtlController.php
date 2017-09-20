@@ -512,9 +512,9 @@ class EtlController extends \yii\web\Controller
                         $clusterLog['connection_type'] = 'NULL';
 
 
-                    if ( $clusterLog['idfa'] && $clusterLog['idfa']!='' )
+                    if ( isset($clusterLog['idfa']) && $clusterLog['idfa'] && $clusterLog['idfa']!='' )
                         $deviceId = '"'.$this->_escapeSql( $clusterLog['idfa'] ).'"';
-                    else if ( $clusterLog['gaid'] && $clusterLog['gaid']!='' )
+                    else if ( isset($clusterLog['gaid']) && $clusterLog['gaid'] && $clusterLog['gaid']!='' )
                         $deviceId = '"'.$this->_escapeSql( $clusterLog['gaid'] ).'"';
                     else if ( $clusterLog['device_id'] && $clusterLog['device_id']!='' )
                         $deviceId = '"'.$this->_escapeSql( $clusterLog['device_id'] ).'"';                    
