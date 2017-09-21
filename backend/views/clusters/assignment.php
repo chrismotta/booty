@@ -139,7 +139,7 @@ $this->params['breadcrumbs'][] = $this->title;
         'condensed' => true,
         'showPageSummary' => true,
         // 'layout' => '{pager}{items}',
-        'layout' => '<div style="float:left">{pager}</div><div style="float:right; 20px 20px 0 0">'.Html::button('Assign All Selected', ['class' => 'btn btn-info']).'</div><div style="clear:left;">{items}</div>',
+        'layout' => '<div style="float:left">{pager}</div><div style="float:right;margin: 20px 20px 0 0">'.Html::button('Assign All Selected', ['class' => 'btn btn-info']).'</div><div style="clear:left;">{items}</div>',
         'columns' => [
             'id',
             [
