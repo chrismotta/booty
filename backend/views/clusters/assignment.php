@@ -139,7 +139,7 @@ $this->params['breadcrumbs'][] = $this->title;
         'condensed' => true,
         'showPageSummary' => true,
         // 'layout' => '{pager}{items}',
-        'layout' => '<div style="float:left">{pager}</div><div style="float:right; margin:20px"><button>Assign All Selected</buton></div><div style="clear:left;">{items}</div>',
+        'layout' => '<div style="float:left">{pager}</div><div style="float:right; 20px 20px 0 0">'.Html::button('Assign All Selected', ['class' => 'btn btn-info']).'</div><div style="clear:left;">{items}</div>',
         'columns' => [
             'id',
             [
@@ -210,42 +210,56 @@ $this->params['breadcrumbs'][] = $this->title;
                 }
             ],
 
-            [
-                'class' => '\kartik\grid\DataColumn',
-                'header' => '<span class="glyphicon glyphicon-alert text-warning"></span>',
-                'format'=>'html',
-                'value' => function($model, $key, $index){
+            // [
+            //     'class' => '\kartik\grid\DataColumn',
+            //     'header' => '<span class="glyphicon glyphicon-alert text-warning"></span>',
+            //     'format'=>'html',
+            //     'value' => function($model, $key, $index){
                     
-                    if(!isset($model->app_id))
-                        $return = '<span class="glyphicon glyphicon-alert text-warning" data-toggle="tooltip" title="NO APP_ID SET"></span>';
-                    else 
-                        $return = '';
+            //         if(!isset($model->app_id))
+            //             $return = '<span class="glyphicon glyphicon-alert text-warning" data-toggle="tooltip" title="NO APP_ID SET"></span>';
+            //         else 
+            //             $return = '';
 
-                    return $return;
-                },
-                'vAlign' => 'middle',
-                'mergeHeader' => true,
-            ],
+            //         return $return;
+            //     },
+            //     'vAlign' => 'middle',
+            //     'mergeHeader' => true,
+            // ],
 
             [
                 'class' => '\kartik\grid\ActionColumn',
-                'width'  => '30px',
+                'width'  => '40px',
                 'template' => '{assigncampaign}',
                 'header' => '<span class="glyphicon glyphicon-plus"></span>',
 
                 'buttons' => [
                     'assigncampaign' => function ($url, $model, $key) use ($clusterID) {
-                        return Html::a(
-                            '<span class="glyphicon glyphicon-plus"></span>', 
-                            ['assigncampaign', 'cid'=>$key, 'id'=>$clusterID]
-                            );
+                            
+                        if(!isset($model->app_id)){
+                            
+                            return '<span class="glyphicon glyphicon-alert text-danger" data-toggle="tooltip" title="APP_ID NOT SET"></span>';
+
+                        
+                        }else if(!json_decode($model->app_id)){
+
+                            return '<span class="glyphicon glyphicon-alert text-warning" data-toggle="tooltip" title="APP_ID NOT VALID"></span>';
+
+                        }else{
+
+                            return Html::a(
+                                '<span class="glyphicon glyphicon-plus"></span>', 
+                                ['assigncampaign', 'cid'=>$key, 'id'=>$clusterID]
+                                );
+                       
+                        }
                     },
                 ]
             ],
 
             [
                 'class' => '\kartik\grid\CheckboxColumn',
-                'width'  => '30px',
+                'width'  => '40px',
             ],
         ],
     ]); ?>

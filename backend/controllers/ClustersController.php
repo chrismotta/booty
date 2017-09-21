@@ -247,38 +247,43 @@ class ClustersController extends Controller
 
         $campaignID = isset($_GET['cid']) ? $_GET['cid'] : null;
         $campaign = CampaignsSearch::findOne($campaignID);
+        $cache = new \Predis\Client( \Yii::$app->params['predisConString'] );
         
+
         // if app_id is set
-        if ( !isset($campaign->app_id) )
+        if ( isset($campaign->app_id) )
         {
             
             // if app_id is a json
             $packageIds = json_decode($campaign->app_id);
-            if(!isset($packageIds))
-                return 'app_id format is not json';
+            if(isset($packageIds)){
 
+                if($campaign->assignToCluster($id)){
 
-            $return = $campaign->assignToCluster($id);
-            $cache = new \Predis\Client( \Yii::$app->params['predisConString'] );
+                    foreach ( $packageIds as $packageId )
+                    {
+                        $cache->zadd( 'clusterlist:'.$id, 1, $campaign->id.':'.$campaign->affiliates->id.':'.$packageId );
+                    }
 
-            switch ( $campaign->status )
-            {
-                case 'active':
-                    $status = 1;
-                break;
-                default:
-                    $status = 0;
-                break;
+                    $return = 'assignation ok';
+
+                }else{
+                    $return = 'assignation error';
+                }
+
+            }else{
+
+                $return = 'app_id format is not json';
             }
-        
 
+        }else{
+            
+            $return = 'app_id is not set';
 
-
-            foreach ( $packageIds as $packageId )
-            {
-                $cache->zadd( 'clusterlist:'.$id, 1, $campaign->id.':'.$campaign->affiliates->id.':'.$packageId );
-            }
         }
+
+        // return $return;
+
 
         $cache->hmset( 'campaign:'.$campaign->id, [
             'callback'      => $campaign->landing_url,

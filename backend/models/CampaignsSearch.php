@@ -247,17 +247,33 @@ class CampaignsSearch extends Campaigns
 
 
     public function assignToCluster($clusterID){
-        $cluster = Clusters::findOne($clusterID);
-        $return = $this->link('clusters', $cluster);
+
+        try {
+
+            $cluster = Clusters::findOne($clusterID);
+            $this->link('clusters', $cluster);
+            return true;
+            
+        } catch (Exception $e) {
+            
+            return false;
+        }
+
         
-        return  $return;
     }
 
     public function unassignToCluster($clusterID){
-        $cluster = Clusters::findOne($clusterID);
-        $return = $this->unlink('clusters', $cluster, true);
-
-        return  $return;
+        
+        try {
+        
+            $cluster = Clusters::findOne($clusterID);
+            $this->unlink('clusters', $cluster, true);
+            return true;
+            
+        } catch (Exception $e) {
+            
+            return false;
+        }
     }
 
 }

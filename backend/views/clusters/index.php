@@ -77,8 +77,7 @@ $filterByCarrier = ArrayHelper::map(
                                 'os'=>$model->os,
                                 'connection_type'=>$model->connection_type,
                                 ],
-                            ],
-                            []
+                            ]
                             );
                     },
                 ],
