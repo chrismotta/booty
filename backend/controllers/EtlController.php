@@ -512,10 +512,14 @@ class EtlController extends \yii\web\Controller
                         $clusterLog['connection_type'] = 'NULL';
 
 
-                    if ( $clusterLog['device_id'] && $clusterLog['device_id']!='' )
-                        $clusterLog['device_id'] = '"'.$this->_escapeSql( $clusterLog['device_id'] ).'"';
+                    if ( isset($clusterLog['idfa']) && $clusterLog['idfa'] && $clusterLog['idfa']!='' )
+                        $deviceId = '"'.$this->_escapeSql( $clusterLog['idfa'] ).'"';
+                    else if ( isset($clusterLog['gaid']) && $clusterLog['gaid'] && $clusterLog['gaid']!='' )
+                        $deviceId = '"'.$this->_escapeSql( $clusterLog['gaid'] ).'"';
+                    else if ( $clusterLog['device_id'] && $clusterLog['device_id']!='' )
+                        $deviceId = '"'.$this->_escapeSql( $clusterLog['device_id'] ).'"';                    
                     else
-                        $clusterLog['device_id'] = 'NULL';
+                        $deviceId = 'NULL';
 
 
                     if ( !isset($clusterLog['device']) || !$clusterLog['device'] || $clusterLog['device']=='' )
@@ -576,7 +580,7 @@ class EtlController extends \yii\web\Controller
                         '.$clusterLog['country'].',
                         '.$clusterLog['connection_type'].',
                         '.$clusterLog['carrier'].',
-                        '.$clusterLog['device_id'].',
+                        '.$deviceId.',
                         '.$clusterLog['device'].',
                         '.$clusterLog['device_model'].',
                         '.$clusterLog['device_brand'].',

@@ -482,7 +482,7 @@ class AffiliatesapiController extends \yii\web\Controller
                             <td>&nbsp;</td>
                             <td>&nbsp;</td>
                             <td>'.$prevStatus.' => aff_paused</td>
-                            <td>'.implode( ',', $clusters ).'</td>
+                            <td>'.json_encode( $clusters ).'</td>
                         </tr>
                     ';                    
                 }
