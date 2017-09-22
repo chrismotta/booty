@@ -243,7 +243,7 @@ class ClustersController extends Controller
         }
     }
 
-    public function actionAssigncampaign($id){
+    public function actionAssigncampaign($id, $debug=false){
 
         if(!isset($_GET['cid']))
             return 'cid parameter not set';
@@ -305,7 +305,8 @@ class ClustersController extends Controller
         }
 
         // debug
-        // return var_export($return, true);
+        if($debug)
+            return var_export($return, true);
 
         return $this->redirect(Yii::$app->request->referrer);
     }
