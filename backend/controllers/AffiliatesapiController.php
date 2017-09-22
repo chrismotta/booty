@@ -12,12 +12,15 @@ class AffiliatesapiController extends \yii\web\Controller
     CONST FROM = 'Splad - API Controller<no-reply@spladx.co>';
 	const NOTIFY_INBOX = 'dev@splad.co,apastor@splad.co,tgonzalez@splad.co,mghio@splad.co,proman@splad.co';
 	const ALERTS_INBOX = 'dev@splad.co,apastor@splad.co';
+    const OPEN_EXRATES_APPID = '3ec50944b9564026a90c196286b3e810';
+
 
 	protected $_notifications;
 	protected $_redis;
 	protected $_changes;
 	protected $_alerts;
 	protected $_changed;
+    protected $_exchangeRates;
 
 
 	protected function _apiRules ( )
@@ -59,7 +62,12 @@ class AffiliatesapiController extends \yii\web\Controller
                 'class'         => 'AddictiveAdsAPI',
                 'affiliate_id'  => 11,
             ],
-
+            /*
+            [
+                'class'         => 'MobusiAPI',
+                'affiliate_id'  => 12,
+            ],
+            */
 		];
 	}
 
@@ -376,7 +384,7 @@ class AffiliatesapiController extends \yii\web\Controller
         $newPackageIds = $campaignData['package_id'] ? $campaignData['package_id'] : [];
         $oldPackageIds = $campaign->app_id ? (array)json_decode($campaign->app_id) : [];
 
-        $packagesDiff = array_diff ( $oldPackageIds, $newPackageIds ) + array_diff( $newPackageIds, $oldPackageIds );
+        $packagesDiff = array_diff_assoc ( $oldPackageIds, $newPackageIds ) + array_diff_assoc( $newPackageIds, $oldPackageIds );
       
         if ( !empty($packagesDiff) )
             $this->_changed = true;
@@ -394,8 +402,8 @@ class AffiliatesapiController extends \yii\web\Controller
                 switch ( $campaignData['status'] )
                 {
                     case 'active':
-                        $addPackageIds = array_diff( $newPackageIds, $oldPackageIds );
-                        $remPackageIds = array_diff( $oldPackageIds, $newPackageIds );
+                        $addPackageIds = array_diff_assoc( $newPackageIds, $oldPackageIds );
+                        $remPackageIds = array_diff_assoc( $oldPackageIds, $newPackageIds );
 
                         foreach ( $addPackageIds AS $os => $packageId )
                         {
@@ -423,7 +431,6 @@ class AffiliatesapiController extends \yii\web\Controller
                         }
                     break;
                 }
-
             }
 
             if ( !empty($clusters) )
@@ -688,6 +695,65 @@ class AffiliatesapiController extends \yii\web\Controller
         ';
 
         shell_exec( $command );
+    }
+
+    public function actionUpdatexchangerates ( )
+    {
+        $curl   = curl_init();
+
+        $url    = 'https://openexchangerates.org/api/latest.json?app_id='.self::OPEN_EXRATES_APPID.'&base=USD';
+
+        curl_setopt($curl, CURLOPT_URL, $url);
+        curl_setopt($curl, CURLOPT_HEADER, false);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+
+        $response = json_decode(curl_exec($curl));
+
+        if ( $response && $response->rates)
+        {
+            $sql = 'INSERT INTO Currency_Rates (code, date, rate) VALUES ';
+
+            $first = true;
+            foreach ( $response->rates AS $code => $rate )
+            {
+                switch ( $code )
+                {
+                    case 'EUR':
+                        if ( !$first ){
+                            $sql .= ',';
+                            $first = false;
+                        }
+
+                        $sql .= '("'.$code.'", "'.date('Y-m-d', $response->timestamp).'", '.(float)$rate.')';
+                    break;
+                }
+            }
+        }
+        $sql .= ' ON DUPLICATE KEY UPDATE rate=VALUES(rate);';
+
+        $rows    = \Yii::$app->db->createCommand( $sql )->execute();
+
+        echo 'Updated '.$rows.' rates<hr/>';            
+    }
+
+    public function getExchangeRate ( $currency )
+    {   
+        if ( $this->_exchangeRates && isset($this->_exchangeRates[$currency]))
+            return $this->_exchangeRates[$currency];
+
+        $sql = 'SELECT * FROM Currency_Rates WHERE code=:code';
+
+        $rows    = \Yii::$app->db->createCommand( $sql )->execute([':code'=>$currency]);
+
+        if ( isset( $rows[0] ) )
+        {
+            $this->_exchangeRates[$currency] = $rows[0]['rate'];
+            return $rows[0]['rate'];
+        }
+        else
+        {
+            return false;
+        }
     }    
 
 

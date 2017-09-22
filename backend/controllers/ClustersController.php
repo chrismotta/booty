@@ -259,7 +259,6 @@ class ClustersController extends Controller
         // init redis instance
         $cache = new \Predis\Client( \Yii::$app->params['predisConString'] );
 
-
         foreach ($campaignList as $campaignID) {
 
             $campaign = CampaignsSearch::findOne($campaignID);

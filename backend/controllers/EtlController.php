@@ -1159,7 +1159,7 @@ class EtlController extends \yii\web\Controller
 
             foreach ( $clustersHasCampaigns as $assign )
             {
-                if ( $assign->campaigns->app_id && $assign->delivery_freq )
+                if ( $assign->campaigns->status=='active' && $assign->campaigns->app_id && $assign->delivery_freq )
                 {
                     $cache = new \Predis\Client( \Yii::$app->params['predisConString'] );
 
