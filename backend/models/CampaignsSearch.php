@@ -235,6 +235,7 @@ class CampaignsSearch extends Campaigns
         $query->orderBy('Clusters_has_Campaigns.delivery_freq DESC');
 
         $query->andFilterWhere(['Clusters.id'=>$clusterID]);
+        $query->andWhere(['Campaigns.status'=>'active']);
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
