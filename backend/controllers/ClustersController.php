@@ -251,7 +251,7 @@ class ClustersController extends Controller
         
 
         // if app_id is set
-        if ( isset($campaign->app_id) )
+        if ( isset($campaign->app_id) && $campaign->status=='active' )
         {
             
             // if app_id is a json
