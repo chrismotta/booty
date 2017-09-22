@@ -245,55 +245,69 @@ class ClustersController extends Controller
 
     public function actionAssigncampaign($id){
 
-        $campaignID = isset($_GET['cid']) ? $_GET['cid'] : null;
-        $campaign = CampaignsSearch::findOne($campaignID);
+        if(!isset($_GET['cid']))
+            return 'cid parameter not set';
+
+        $cid = json_decode($_GET['cid']);
+        // var_export($cid);die();
+
+        if(is_array($cid))
+            $campaignList = $cid;
+        else
+            $campaignList[] = $cid;
+
+        // init redis instance
         $cache = new \Predis\Client( \Yii::$app->params['predisConString'] );
-        
 
-        // if app_id is set
-        if ( isset($campaign->app_id) )
-        {
-            
-            // if app_id is a json
-            $packageIds = json_decode($campaign->app_id);
-            if(isset($packageIds)){
 
-                if($campaign->assignToCluster($id)){
+        foreach ($campaignList as $campaignID) {
 
-                    foreach ( $packageIds as $packageId )
-                    {
-                        $cache->zadd( 'clusterlist:'.$id, 1, $campaign->id.':'.$campaign->affiliates->id.':'.$packageId );
+            $campaign = CampaignsSearch::findOne($campaignID);
+
+            // if app_id is set
+            if ( isset($campaign->app_id) && $campaign->status == 'active')
+            {
+                
+                // if app_id is a json
+                $packageIds = json_decode($campaign->app_id);
+                if(isset($packageIds)){
+
+                    if($campaign->assignToCluster($id)){
+
+                        foreach ( $packageIds as $packageId )
+                        {
+                            $cache->zadd( 'clusterlist:'.$id, 1, $campaign->id.':'.$campaign->affiliates->id.':'.$packageId );
+                        }
+
+                        $return[] = $campaignID.': assignation ok';
+
+                    }else{
+                        $return[] = $campaignID.': assignation error';
                     }
 
-                    $return = 'assignation ok';
-
                 }else{
-                    $return = 'assignation error';
+
+                    $return[] = $campaignID.': app_id format is not json';
                 }
 
             }else{
+                
+                $return[] = $campaignID.': app_id is not set';
 
-                $return = 'app_id format is not json';
             }
 
-        }else{
-            
-            $return = 'app_id is not set';
+            $cache->hmset( 'campaign:'.$campaign->id, [
+                'callback'      => $campaign->landing_url,
+                'ext_id'        => $campaign->ext_id,
+                'click_macro'   => $campaign->affiliates->click_macro,
+                'placeholders'  => $campaign->affiliates->placeholders            
+            ]);        
 
         }
 
-        // return $return;
-
-
-        $cache->hmset( 'campaign:'.$campaign->id, [
-            'callback'      => $campaign->landing_url,
-            'ext_id'        => $campaign->ext_id,
-            'click_macro'   => $campaign->affiliates->click_macro,
-            'placeholders'  => $campaign->affiliates->placeholders            
-        ]);        
-
         // debug
-        // echo $return;
+        // return var_export($return, true);
+
         return $this->redirect(Yii::$app->request->referrer);
     }
 

@@ -5,6 +5,8 @@ use yii\helpers\Html;
 use kartik\grid\GridView;
 use kartik\grid\EditableColumn;
 use yii\widgets\Pjax;
+use yii\web\View;
+use yii\helpers\Url;
 
 /* @var $this yii\web\View */
 /* @var $searchModel app\models\ClustersSearch */
@@ -14,6 +16,18 @@ $clusterID = $clustersModel->id;
 $this->title = 'Cluster #'.$clusterID.' "'.$clustersModel->name.'": Assignment';
 $this->params['breadcrumbs'][] = ['label' => 'Clusters', 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
+
+$this->registerJs(
+    '$("#bulkAssignment").on("click", function() { 
+        var selected = $("#available").yiiGridView("getSelectedRows");
+        var href = "assigncampaign?id='.$clusterID.'&cid=["+selected.toString()+"]";
+        // console.log(href);
+        window.location.href = href;
+    });',
+    View::POS_READY,
+    'bulkAssignment'
+);
+
 ?>
 
 <div class="box box-info">
@@ -136,10 +150,19 @@ $this->params['breadcrumbs'][] = $this->title;
         'id' => 'available',
         'dataProvider' => $availableProvider,
         'filterModel' => $availableModel,
+
         'condensed' => true,
         'showPageSummary' => true,
+        'layout' => '<div style="float:left;">{pager} &nbsp; </div>
+            <div style="float:right;margin: 20px">'.
+            Html::button('Assign All Selected', [
+                'class' => 'btn',
+                'id'    => 'bulkAssignment',
+            ]).'
+            </div>
+            <div style="clear:both;">{items}</div>',
         // 'layout' => '{pager}{items}',
-        'layout' => '<div style="float:left">{pager}</div><div style="float:right;margin: 20px 20px 0 0">'.Html::button('Assign All Selected', ['class' => 'btn']).'</div><div style="clear:left;">{items}</div>',
+        
         'columns' => [
             'id',
             [
@@ -260,6 +283,15 @@ $this->params['breadcrumbs'][] = $this->title;
             [
                 'class' => '\kartik\grid\CheckboxColumn',
                 'width'  => '40px',
+                'checkboxOptions' => 
+                function($model, $key, $index, $column){
+                    if(!isset($model->app_id))
+                        return ['disabled'=>'disabled'];           
+                    else if(!json_decode($model->app_id))
+                        return ['disabled'=>'disabled'];           
+                    else
+                        return [];
+                },
             ],
         ],
     ]); ?>
