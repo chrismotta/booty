@@ -38,6 +38,7 @@ class TesttrafficreportController extends Controller
         $campaignIds  = [];
         $data         = [];
         $c=0;
+
         foreach ( $clickIds AS $clickId )
         {
         	$click = $cache->hgetall( 'campaignlog:'.$clickId );
@@ -62,8 +63,7 @@ class TesttrafficreportController extends Controller
 					else
                         $counters[$campaignId]['convs'] = 1;            
                 }
-                else
-					$counters[$campaignId]['convs'] = 0;			
+	
 
 	        	if ( !in_array( $campaignId, $campaignIds ))
 	        		$campaignIds[] = (int)$campaignId;
@@ -79,8 +79,8 @@ class TesttrafficreportController extends Controller
         	$data[] = [
         		'affiliate'	=> $campaign->affiliates->name . ' ('.$campaign->affiliates->id.')',
         		'campaign'  => $campaign->name . ' ('.$cid.')',
-        		'clicks'	=> $counters[$cid]['clicks'],
-        		'convs'		=> $counters[$cid]['convs']
+        		'clicks'	=> isset($counters[$cid]['clicks']) ? $counters[$cid]['clicks'] : 0,
+        		'convs'		=> isset($counters[$cid]['convs']) ? $counters[$cid]['convs'] : 0
         	];        	
         }
 
