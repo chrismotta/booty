@@ -1118,6 +1118,52 @@ class EtlController extends \yii\web\Controller
     }
 
 
+    public function actionCheckclusterlist ( )
+    {
+       $this->_redis->select( 0 ); 
+
+       $clusterList = $this->_redis->zrange( 'clusterlist:'.$_GET['id'], 0, -1 );
+       $rc = 0;
+       $c = 0;
+
+        $clustersHasCampaigns = models\ClustersHasCampaigns::findAll( ['Clusters_id' => $_GET['id']] );
+
+        echo '<br><br><br><hr>REDIS<hr><br><br><br>';
+       foreach ( $clusterList as $value )
+       {
+            $data = explode( ':', $value );
+
+            $campaign = models\Campaigns::findOne($data[0]);
+
+            if ( $campaign )
+            {
+                $rc++;
+                echo 'ID     :'. $campaign->id . '<br>';
+                echo 'STATUS :'. $campaign->status . '<br>';
+                echo 'APP_ID :'. $campaign->app_id . '<br>';
+                echo '<hr>';                
+            }
+
+       }
+
+        echo '<br><br><br><hr>MYSQL<hr><br><br><br>';
+       foreach ( $clustersHasCampaigns as $assign )
+       {
+            if ( $assign->campaigns->status=='active' && $assign->campaigns->app_id ){
+                $c++;
+                echo 'ID     :'. $assign->campaigns->id . '<br>';
+                echo 'STATUS :'. $assign->campaigns->status . '<br>';
+                echo 'APP_ID :'. $assign->campaigns->app_id . '<br>';
+                echo '<hr>';  
+                
+            }
+       }       
+
+       echo 'REDIS COUNT: '.$rc;
+       echo 'MYSQL COUNT: '.$c;
+    }
+
+
     public function actionPopulateclusters ( )
     {
        $this->_redis->select( 0 );
@@ -1159,7 +1205,7 @@ class EtlController extends \yii\web\Controller
 
             foreach ( $clustersHasCampaigns as $assign )
             {
-                if ( $assign->campaigns->status=='active' && $assign->campaigns->app_id && $assign->delivery_freq )
+                if ( $assign->campaigns->status=='active' && isset($assign->campaigns->app_id) && isset($assign->delivery_freq) )
                 {
                     $cache = new \Predis\Client( \Yii::$app->params['predisConString'] );
 

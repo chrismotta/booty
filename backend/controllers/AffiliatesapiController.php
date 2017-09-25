@@ -384,10 +384,13 @@ class AffiliatesapiController extends \yii\web\Controller
         $newPackageIds = $campaignData['package_id'] ? $campaignData['package_id'] : [];
         $oldPackageIds = $campaign->app_id ? (array)json_decode($campaign->app_id) : [];
 
+
+
         $packagesDiff = array_diff_assoc ( $oldPackageIds, $newPackageIds ) + array_diff_assoc( $newPackageIds, $oldPackageIds );
       
-        if ( !empty($packagesDiff) )
+        if ( !empty($packagesDiff) ){
             $this->_changed = true;
+        }
 
 
     	if ( $this->_changed )
@@ -401,24 +404,21 @@ class AffiliatesapiController extends \yii\web\Controller
 
                 switch ( $campaignData['status'] )
                 {
-                    case 'active':
-                        $addPackageIds = array_diff_assoc( $newPackageIds, $oldPackageIds );
-                        $remPackageIds = array_diff_assoc( $oldPackageIds, $newPackageIds );
+                    case 'active':                    
+                        foreach ( $oldPackageIds AS $os => $packageId )
+                        {
+                            $this->_redis->zrem( 'clusterlist:'.$assign['Clusters_id'], 
+                                $campaign->id.':'.$campaign->affiliates->id.':'.$packageId
+                            );
+                        }      
 
-                        foreach ( $addPackageIds AS $os => $packageId )
+                        foreach ( $newPackageIds AS $os => $packageId )
                         {
                             $this->_redis->zadd( 'clusterlist:'.$assign['Clusters_id'], 
                                 $assign['delivery_freq'],
                                 $campaign->id.':'.$campaign->affiliates->id.':'.$packageId
                             );
                         } 
-
-                        foreach ( $remPackageIds AS $os => $packageId )
-                        {
-                            $this->_redis->zrem( 'clusterlist:'.$assign['Clusters_id'], 
-                                $campaign->id.':'.$campaign->affiliates->id.':'.$packageId
-                            );
-                        }                                                    
                     break;
                     default:
                         $packageIds = array_merge( $oldPackageIds, $newPackageIds );
