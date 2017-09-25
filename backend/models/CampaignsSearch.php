@@ -102,7 +102,7 @@ class CampaignsSearch extends Campaigns
             ->andFilterWhere(['like', 'device_type', $this->device_type])
             ->andFilterWhere(['like', 'connection_type', $this->connection_type]);
 
-        $query->andWhere(['!=', 'Campaigns.status', 'archived']);
+        $query->andWhere(['=', 'Campaigns.status', 'active']);
 
         return $dataProvider;
     }
