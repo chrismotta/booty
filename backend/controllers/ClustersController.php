@@ -177,12 +177,28 @@ class ClustersController extends Controller
     }
 
     /**
-     * Updates an existing Clusters model.
-     * If update is successful, the browser will be redirected to the 'view' page.
      * @param integer $id
      * @return mixed
      */
     public function actionAssignment($id)
+    {
+        $clustersModel = Clusters::findOne($id);
+
+        $assignedModel = new CampaignsSearch();
+        $assignedProvider = $assignedModel->searchAssigned(Yii::$app->request->queryParams, $id);
+
+        return $this->render('assignment', [
+            'assignedModel' => $assignedModel,
+            'assignedProvider' => $assignedProvider,
+            'clustersModel' => $clustersModel,
+        ]);
+    }
+
+    /**
+     * @param integer $id
+     * @return mixed
+     */
+    public function actionAvailable($id)
     {
         $clustersModel = Clusters::findOne($id);
 
@@ -197,14 +213,9 @@ class ClustersController extends Controller
 
         $availableProvider = $availableModel->searchAvailable(Yii::$app->request->queryParams, $id);
 
-        $assignedModel = new CampaignsSearch();
-        $assignedProvider = $assignedModel->searchAssigned($id);
-
-        return $this->render('assignment', [
+        return $this->render('available', [
             'availableModel' => $availableModel,
             'availableProvider' => $availableProvider,
-            'assignedModel' => $assignedModel,
-            'assignedProvider' => $assignedProvider,
             'clustersModel' => $clustersModel,
         ]);
     }

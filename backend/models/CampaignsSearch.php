@@ -119,11 +119,15 @@ class CampaignsSearch extends Campaigns
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
+            'pagination'=> [
+                'defaultPageSize' => 500,
+                'pageSizeLimit' => [1,500],
+            ],
         ]);
 
         $this->load($params);
 
-        // The key is the attribute name on our "TourSearch" instance
+        // The key is the attribute name on our instance
         $dataProvider->sort->attributes['affiliateName'] = [
             // The tables are the ones our relation are configured to
             // in my case they are prefixed with "tbl_"
@@ -173,24 +177,6 @@ class CampaignsSearch extends Campaigns
                 ['os' => null], 
                 ['like', 'os', $this->os]
                 ]);
-
-        /*
-        if(isset($this->os_version))
-            $query->andWhere([
-                'or', 
-                ['os_version' => null], 
-                ['>=', 'convert(os_version->"$[0]", decimal(11,2))', $this->os_version],
-                // ['>=', 'convert(os_version->"$[1]", decimal(11,2))', $this->os_version],
-                // ['>=', 'convert(os_version->"$[2]", decimal(11,2))', $this->os_version],
-                // ['>=', 'convert(os_version->"$[3]", decimal(11,2))', $this->os_version],
-                // ['>=', 'convert(os_version->"$[4]", decimal(11,2))', $this->os_version],
-                // ['>=', 'convert(os_version->"$[5]", decimal(11,2))', $this->os_version],
-                // ['>=', 'convert(os_version->"$[6]", decimal(11,2))', $this->os_version],
-                // ['>=', 'convert(os_version->"$[7]", decimal(11,2))', $this->os_version],
-                // ['>=', 'convert(os_version->"$[8]", decimal(11,2))', $this->os_version],
-                // ['>=', 'convert(os_version->"$[9]", decimal(11,2))', $this->os_version]
-                ]);
-        */
         
         if(isset($this->connection_type))
             $query->andWhere([
@@ -224,25 +210,92 @@ class CampaignsSearch extends Campaigns
     }
 
 
-    public function searchAssigned($clusterID){
+    public function searchAssigned($params, $clusterID=null){
 
         $query = Campaigns::find();
-        $query->joinWith(['clusters']);
+        $query->joinWith(['clusters', 'affiliates']);
         $query->select([
             'Campaigns.*', 
             'Clusters.id as clusters_id', 
             'Clusters_has_Campaigns.delivery_freq as delivery_freq',
         ]);
 
-        $query->orderBy('Clusters_has_Campaigns.delivery_freq DESC');
-
         $query->andFilterWhere(['Clusters.id'=>$clusterID]);
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
+            'pagination'=> [
+                'defaultPageSize' => 500,
+                'pageSizeLimit' => [1,500],
+            ],
+            'sort' => ['defaultOrder' => ['delivery_freq'=>SORT_DESC]],
         ]);
 
-        $dataProvider->sort = false;
+        $this->load($params);
+
+        $dataProvider->sort->attributes['affiliateName'] = [
+            'asc' => ['Affiliates.name' => SORT_ASC],
+            'desc' => ['Affiliates.name' => SORT_DESC],
+        ];
+
+        $dataProvider->sort->attributes['delivery_freq'] = [
+            'asc' => ['Clusters_has_Campaigns.delivery_freq' => SORT_ASC],
+            'desc' => ['Clusters_has_Campaigns.delivery_freq' => SORT_DESC],
+        ];
+
+        // grid filtering conditions
+        $query->andFilterWhere([
+            'Campaigns.id'  => $this->id,
+            'Affiliates_id' => $this->Affiliates_id,
+            'payout'        => $this->payout,
+        ]);
+
+        $query->andFilterWhere(['like', 'Campaigns.name', $this->name])
+            ->andFilterWhere(['like', 'landing_url', $this->landing_url])
+            ->andFilterWhere(['like', 'creative_320x50', $this->creative_320x50])
+            ->andFilterWhere(['like', 'creative_300x250', $this->creative_300x250])
+            ->andFilterWhere(['like', 'Affiliates.name', $this->affiliateName])
+            // ->andFilterWhere(['like', 'country', $this->country])
+            // ->andFilterWhere(['like', 'os', $this->os])
+            // ->andFilterWhere(['>=', 'os_version', $this->os_version])
+            // ->andFilterWhere(['like', 'device_type', $this->device_type])
+            //->andFilterWhere(['like', 'connection_type', $this->connection_type])
+            ;
+
+        if(isset($this->country))
+            $query->andWhere([
+                'or', 
+                ['Campaigns.country' => null], 
+                ['like', 'Campaigns.country', $this->country ]
+                ]);
+        
+        if(isset($this->os))
+            $query->andWhere([
+                'or', 
+                ['Campaigns.os' => null], 
+                ['like', 'Campaigns.os', $this->os]
+                ]);
+        
+        if(isset($this->connection_type))
+            $query->andWhere([
+                'or', 
+                ['Campaigns.connection_type' => null], 
+                ['like', 'Campaigns.connection_type', $this->connection_type]
+                ]);
+
+        if(isset($this->device_type))
+            $query->andWhere([
+                'or', 
+                ['Campaigns.device_type' => null], 
+                ['like', 'Campaigns.device_type', $this->device_type]
+                ]);
+
+        if(isset($this->carrier))
+            $query->andWhere([
+                'or', 
+                ['Campaigns.carrier' => null], 
+                ['like', 'Campaigns.carrier', $this->carrier]
+                ]);
 
         return $dataProvider;
     }
