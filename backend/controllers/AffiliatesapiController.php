@@ -21,6 +21,7 @@ class AffiliatesapiController extends \yii\web\Controller
 	protected $_alerts;
 	protected $_changed;
     protected $_exchangeRates;
+    protected $_currentRule;
 
 
 	protected function _apiRules ( )
@@ -74,6 +75,8 @@ class AffiliatesapiController extends \yii\web\Controller
 
     public function actionIndex( $affiliate_id = null )
     {
+        set_error_handler( array( $this, 'handleErrors' ), E_ALL );
+
         set_time_limit(0);
 
     	$this->_changes = '';
@@ -147,6 +150,7 @@ class AffiliatesapiController extends \yii\web\Controller
 
     public function actionPocketmedia( )
     {
+        set_error_handler( array( $this, 'handleErrors' ), E_ALL );
         set_time_limit(0);
 
         $this->_changes = '';
@@ -211,15 +215,27 @@ class AffiliatesapiController extends \yii\web\Controller
         ';        
     }
 
+    public function handleErrors ( $code, $message, $file, $line )
+    {
+        $message = json_encode([
+            'code'      => $code,
+            'message'   => $message,
+            'file'      => $file,
+            'line'      => $line
+        ]);
+
+        $this->_createAlert(  $this->_currentRule, 'PHP ERROR: '. $message, null );
+    }
+
 
     protected function _runAPI ( array $rule )
     {
-        $className  = 'backend\components\\'.$rule['class'];
-        $api        = new $className;
-        $affiliate  = models\Affiliates::findOne( ['id' => $rule['affiliate_id'] ] );
-
         try
         {
+            $className  = 'backend\components\\'.$rule['class'];
+            $api        = new $className;
+            $affiliate  = models\Affiliates::findOne( ['id' => $rule['affiliate_id'] ] );            
+
             $campaignsData  = $api->requestCampaigns( $affiliate->api_key, $affiliate->user_id );
 
             $externalIds = [];
@@ -334,10 +350,9 @@ class AffiliatesapiController extends \yii\web\Controller
 
             $this->_clearCampaigns( $rule['affiliate_id'], $externalIds,  $rule['class'] );            
         }
-        catch ( Exception $e )
+        catch ( Throwable $t )
         {
-            $msg = 'exception';
-            $this->_createAlert(  $rule['class'], $msg, $api->getStatus() );
+            $this->_createAlert(  $rule['class'], $t, $api->getStatus() );
         }
 
         unset ( $api );
