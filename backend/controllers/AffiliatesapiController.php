@@ -441,7 +441,7 @@ class AffiliatesapiController extends \yii\web\Controller
                         foreach ( $remPackageIds AS $packageId )
                         {
                              $value = $campaign->id.":".$campaign->affiliates->id.':'.$packageId;
-                             $this->_redis->zrem( 'clusterlist:'.$assign['Clusters_id'], $value );
+                             //$this->_redis->zrem( 'clusterlist:'.$assign['Clusters_id'], $value );
                         }
                     break;
                 }
@@ -533,11 +533,16 @@ class AffiliatesapiController extends \yii\web\Controller
        $this->_redis   = new \Predis\Client( \Yii::$app->params['predisConString'] );
        $this->_redis->select( 0 ); 
 
-       $clusterList = $this->_redis->zrange( 'clusterlist:'.$_GET['id'], 0, -1 );
+       $clusterId = isset($_GET['id']) ? $_GET['id'] : null;
+       
+       if ( !$clusterId )
+            die('Cluster ID required');
+
+       $clusterList = $this->_redis->zrange( 'clusterlist:'.$clusterId, 0, -1 );
        $redis = [];
        $sql   = [];
 
-        $clustersHasCampaigns = models\ClustersHasCampaigns::findAll( ['Clusters_id' => $_GET['id']] );
+        $clustersHasCampaigns = models\ClustersHasCampaigns::findAll( ['Clusters_id' => $clusterId] );
 
 
        foreach ( $clusterList as $value )
@@ -552,13 +557,12 @@ class AffiliatesapiController extends \yii\web\Controller
 
                 if ( !isset($redis[$id]) )
                 {    
-                    $redis[$id] = '
-                        ID     :'. $campaign->id . '<br>
-                        AFF    :'. $campaign->Affiliates_id.'<br>
-                        STATUS :'. $campaign->status . '<br>
-                        APP_ID :'. $campaign->app_id . '<br>
-                        <hr>
-                    ';
+                    $redis[$id] = [
+                        'id'     => $campaign->id,
+                        'aff'    => $campaign->Affiliates_id,
+                        'status' => $campaign->status,
+                        'app_id' => $campaign->app_id
+                    ];
                 }
             }
        }
@@ -570,35 +574,85 @@ class AffiliatesapiController extends \yii\web\Controller
                 $id = $assign->campaigns->id;
 
                 if ( !isset($sql[$id]) )
-                {                    
-                    $sql[$id] = '
-                        ID     :'. $assign->campaigns->id . '<br>
-                        AFF    :'. $assign->campaigns->Affiliates_id.'<br>
-                        STATUS :'. $assign->campaigns->status . '<br>
-                        APP_ID :'. $assign->campaigns->app_id . '<br>
-                        <hr>
-                    '; 
+                {        
+                    $sql[$id] = [
+                        'aff'    => $assign->campaigns->Affiliates_id,
+                        'status' => $assign->campaigns->status,
+                        'app_id' => $assign->campaigns->app_id,
+                        'freq'   => $assign->delivery_freq
+                    ];                            
                 }                
             }
        }       
 
-       $leftovers = array_diff_assoc($redis, $sql);
-       $missing   = array_diff_assoc($sql, $redis);
 
        echo 'REDIS CAMPAIGNS: '.count($redis).'<br>';
        echo 'MYSQL CAMPAIGNS: '.count($sql);       
        echo '<br><br><br><hr>LEFTOVER CAMPAIGNS<hr><br><br><br>';
 
-       foreach ( $leftovers as $id => $value )
+       foreach ( $redis as $id => $values )
        {
-            echo $value;
+            if ( !isset($sql[$id]) )
+            {
+                $fixed = 'no';
+
+                if ( isset($_GET['fix']) && $_GET['fix']==1 )
+                {
+                    $packageIds = json_decode($values['app_id'], true);
+
+                    foreach ( $packageIds AS $packageId )
+                    {
+                         $value = $id.":".$values['aff'].':'.$packageId;
+                         $this->_redis->zrem( 'clusterlist:'.$clusterId, $value );
+                    }
+
+                    $fixed = 'yes';
+                }
+
+                echo '
+                    ID     :'. $id . '<br>
+                    AFF    :'. $values['aff'] .'<br>
+                    STATUS :'. $values['status'] . '<br>
+                    APP_ID :'. $values['app_id'] . '<br>
+                    FIXED  :'. $fixed . '<br>
+                    <hr>
+                ';                  
+            }
+           
        }
 
        echo '<br><br><br><hr>MISSING CAMPAIGNS<hr><br><br><br>';
-       foreach ( $missing as $id => $value )
+       foreach ( $sql as $id => $values )
        {
-            echo $value;
+            if ( !isset($redis[$id]) )
+            {        
+                $fixed = 'no';
+
+                if ( isset($_GET['fix']) && $_GET['fix']==1 )
+                {
+                    $packageIds = json_decode($values['app_id'], true);
+
+                    foreach ( $packageIds AS $packageId )
+                    {
+                         $value = $id.":".$values['aff'].':'.$packageId;
+                         $this->_redis->zadd( 'clusterlist:'.$clusterId, $values['freq'], $value );
+                    }
+
+                    $fixed = 'yes';
+                }
+
+                echo '
+                    ID     :'. $id . '<br>
+                    AFF    :'. $values['aff'] .'<br>
+                    STATUS :'. $values['status'] . '<br>
+                    APP_ID :'. $values['app_id'] . '<br>
+                    FIXED  :'. $fixed . '<br>
+                    <hr>
+                '; 
+            }
        }
+
+
     }    
 
 
