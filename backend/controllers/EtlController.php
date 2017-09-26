@@ -1123,12 +1123,12 @@ class EtlController extends \yii\web\Controller
        $this->_redis->select( 0 ); 
 
        $clusterList = $this->_redis->zrange( 'clusterlist:'.$_GET['id'], 0, -1 );
-       $rc = 0;
-       $c = 0;
+       $redis = [];
+       $sql   = [];
 
         $clustersHasCampaigns = models\ClustersHasCampaigns::findAll( ['Clusters_id' => $_GET['id']] );
 
-        echo '<br><br><br><hr>REDIS<hr><br><br><br>';
+
        foreach ( $clusterList as $value )
        {
             $data = explode( ':', $value );
@@ -1137,30 +1137,56 @@ class EtlController extends \yii\web\Controller
 
             if ( $campaign )
             {
-                $rc++;
-                echo 'ID     :'. $campaign->id . '<br>';
-                echo 'STATUS :'. $campaign->status . '<br>';
-                echo 'APP_ID :'. $campaign->app_id . '<br>';
-                echo '<hr>';                
-            }
+                $id = $campaign->id;
 
+                if ( !isset($redis[$id]) )
+                {    
+                    $redis[$id] = '
+                        ID     :'. $campaign->id . '<br>
+                        STATUS :'. $campaign->status . '<br>
+                        APP_ID :'. $campaign->app_id . '<br>
+                        <hr>
+                    ';
+                }
+            }
        }
 
-        echo '<br><br><br><hr>MYSQL<hr><br><br><br>';
+
        foreach ( $clustersHasCampaigns as $assign )
        {
             if ( $assign->campaigns->status=='active' && $assign->campaigns->app_id ){
-                $c++;
-                echo 'ID     :'. $assign->campaigns->id . '<br>';
-                echo 'STATUS :'. $assign->campaigns->status . '<br>';
-                echo 'APP_ID :'. $assign->campaigns->app_id . '<br>';
-                echo '<hr>';  
+                
+                $id = $assign->campaigns->id;
+
+                if ( !isset($sql[$id]) )
+                {                    
+                    $sql[$id] = '
+                        ID     :'. $assign->campaigns->id . '<br>
+                        STATUS :'. $assign->campaigns->status . '<br>
+                        APP_ID :'. $assign->campaigns->app_id . '<br>
+                        <hr>
+                    '; 
+                }
                 
             }
        }       
 
-       echo 'REDIS COUNT: '.$rc;
-       echo 'MYSQL COUNT: '.$c;
+       echo 'REDIS CAMPAIGNS: '.count($redis).'<br>';
+       echo 'MYSQL CAMPAIGNS: '.count($sql);       
+       echo '<br><br><br><hr>REDIS<hr><br><br><br>';
+
+       foreach ( $redis as $id => $value )
+       {
+            echo $value;
+       }
+
+       echo '<br><br><br><hr>MYSQL<hr><br><br><br>';
+       foreach ( $sql as $id => $value )
+       {
+            echo $value;
+       }
+
+
     }
 
 
