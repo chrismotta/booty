@@ -1143,6 +1143,7 @@ class EtlController extends \yii\web\Controller
                 {    
                     $redis[$id] = '
                         ID     :'. $campaign->id . '<br>
+                        AFF    :'. $campaign->Affiliates_id.'<br>
                         STATUS :'. $campaign->status . '<br>
                         APP_ID :'. $campaign->app_id . '<br>
                         <hr>
@@ -1150,7 +1151,6 @@ class EtlController extends \yii\web\Controller
                 }
             }
        }
-
 
        foreach ( $clustersHasCampaigns as $assign )
        {
@@ -1162,6 +1162,7 @@ class EtlController extends \yii\web\Controller
                 {                    
                     $sql[$id] = '
                         ID     :'. $assign->campaigns->id . '<br>
+                        AFF    :'. $assign->campaigns->Affiliates_id.'<br>
                         STATUS :'. $assign->campaigns->status . '<br>
                         APP_ID :'. $assign->campaigns->app_id . '<br>
                         <hr>
@@ -1171,17 +1172,20 @@ class EtlController extends \yii\web\Controller
             }
        }       
 
+       $leftovers = array_diff_assoc($redis, $sql);
+       $missing   = array_diff_assoc($sql, $redis);
+
        echo 'REDIS CAMPAIGNS: '.count($redis).'<br>';
        echo 'MYSQL CAMPAIGNS: '.count($sql);       
-       echo '<br><br><br><hr>REDIS<hr><br><br><br>';
+       echo '<br><br><br><hr>LEFTOVER CAMPAIGNS<hr><br><br><br>';
 
-       foreach ( $redis as $id => $value )
+       foreach ( $leftovers as $id => $value )
        {
             echo $value;
        }
 
-       echo '<br><br><br><hr>MYSQL<hr><br><br><br>';
-       foreach ( $sql as $id => $value )
+       echo '<br><br><br><hr>MISSING CAMPAIGNS<hr><br><br><br>';
+       foreach ( $missing as $id => $value )
        {
             echo $value;
        }
