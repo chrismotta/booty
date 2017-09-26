@@ -273,8 +273,9 @@ class AffiliatesapiController extends \yii\web\Controller
                             case 'archived':
                             case 'paused':
                             break;
-                                $campaign->status = $campaignData['status'];
                             default:
+                                $campaign->status = $campaignData['status'];
+                            break;
                         }                        
                     }
                     else
@@ -356,7 +357,7 @@ class AffiliatesapiController extends \yii\web\Controller
         }
 
         unset ( $api );
-        unset ( $affiliate );    
+        unset ( $affiliate );
     }
 
 
@@ -369,7 +370,7 @@ class AffiliatesapiController extends \yii\web\Controller
 		{
 			$this->_changed = true;
 			$changes .= '<td>'.$campaign->payout.' => '. $campaignData['payout'].'</td>';
-		}   			
+		}
 		else
 		{
 			$changes .= '<td>&nbsp;</td>';
@@ -397,16 +398,13 @@ class AffiliatesapiController extends \yii\web\Controller
 		}
 
         $newPackageIds = $campaignData['package_id'] ? $campaignData['package_id'] : [];
-        $oldPackageIds = $campaign->app_id ? (array)json_decode($campaign->app_id) : [];
-
-
+        $oldPackageIds = $campaign->app_id ? json_decode($campaign->app_id, true) : [];
 
         $packagesDiff = array_diff_assoc ( $oldPackageIds, $newPackageIds ) + array_diff_assoc( $newPackageIds, $oldPackageIds );
       
         if ( !empty($packagesDiff) ){
             $this->_changed = true;
         }
-
 
     	if ( $this->_changed )
     	{
@@ -419,34 +417,36 @@ class AffiliatesapiController extends \yii\web\Controller
 
                 switch ( $campaignData['status'] )
                 {
-                    case 'active':                    
-                        foreach ( $oldPackageIds AS $os => $packageId )
+                    case 'active': 
+                        if ( !empty($packagesDiff) || $campaign->status!=$campaignData['status'] )
                         {
-                            $this->_redis->zrem( 'clusterlist:'.$assign['Clusters_id'], 
-                                $campaign->id.':'.$campaign->affiliates->id.':'.$packageId
-                            );
-                        }      
+                            foreach ( $oldPackageIds AS $packageId )
+                            {
+                                 $value = $campaign->id.":".$campaign->affiliates->id.':'.$packageId;
+                                 $this->_redis->zrem( 'clusterlist:'.$assign['Clusters_id'], $value );
+                            }
 
-                        foreach ( $newPackageIds AS $os => $packageId )
-                        {
-                            $this->_redis->zadd( 'clusterlist:'.$assign['Clusters_id'], 
-                                $assign['delivery_freq'],
-                                $campaign->id.':'.$campaign->affiliates->id.':'.$packageId
-                            );
-                        } 
+                            foreach ( $newPackageIds AS $packageId )
+                            {
+                                $this->_redis->zadd( 'clusterlist:'.$assign['Clusters_id'], 
+                                    $assign['delivery_freq'],
+                                    $campaign->id.':'.$campaign->affiliates->id.':'.$packageId
+                                );
+                            }                        
+                        }
                     break;
                     default:
-                        $packageIds = array_merge( $oldPackageIds, $newPackageIds );
+                        $remPackageIds = array_merge( $newPackageIds, $oldPackageIds );
 
-                        foreach ( $packageIds AS $os => $packageId )
+                        foreach ( $remPackageIds AS $packageId )
                         {
-                            $this->_redis->zrem( 'clusterlist:'.$assign['Clusters_id'], 
-                                $campaign->id.':'.$campaign->affiliates->id.':'.$packageId
-                            );
+                             $value = $campaign->id.":".$campaign->affiliates->id.':'.$packageId;
+                             $this->_redis->zrem( 'clusterlist:'.$assign['Clusters_id'], $value );
                         }
                     break;
                 }
             }
+                        
 
             if ( !empty($clusters) )
             {
@@ -467,7 +467,11 @@ class AffiliatesapiController extends \yii\web\Controller
 
     protected function _clearCampaigns ( $affiliate_id, array $external_ids, $api_class )
     {
+
         $campaigns = models\Campaigns::find()->where(['Affiliates_id' => $affiliate_id ])->andWhere(['<>', 'status', 'archived'])->andWhere(['<>', 'status', 'paused'])->andWhere(['<>', 'status', 'aff_paused'])->andWhere( ['not in' , 'ext_id', $external_ids] )->all();
+       
+        //var_export( $campaigns->createCommand()->getRawSql() );die();
+
 
         foreach ( $campaigns AS $campaign )
         {
@@ -480,16 +484,24 @@ class AffiliatesapiController extends \yii\web\Controller
                 foreach ( $clustersHasCampaigns as $assign )
                 {
                     $clusters[] = $assign['Clusters_id'];
-                    $value = "[".$campaign->id.':'.$campaign->affiliates->id;
-                    $this->_redis->zremrangebylex( 'clusterlist:'.$assign['Clusters_id'], $value, $value."\xff" );
+                    $value      = '['.$campaign->id.':'.$campaign->affiliates->id;
+
+                    $packageIds = json_decode($campaign->app_id, true);
+
+                    foreach ( $packageIds AS $packageId )
+                    {
+                         $value      = $campaign->id.":".$campaign->affiliates->id.':'.$packageId;
+                         $this->_redis->zrem( 'clusterlist:'.$assign['Clusters_id'], $value );
+                    }
                 }
+        
 
                 $prevStatus =  $campaign->status;
 
                 $campaign->status = 'aff_paused';
                 $campaign->save();
 
-                if ( !empty($clusters) )
+                if ( !empty($clusters) && $prevStatus!='aff_paused' )
                 {
                     $this->_changes .= '
                         <tr>
@@ -514,6 +526,80 @@ class AffiliatesapiController extends \yii\web\Controller
             }
         }
     }
+
+
+    public function actionCheckclusterlist ( )
+    {
+       $this->_redis   = new \Predis\Client( \Yii::$app->params['predisConString'] );
+       $this->_redis->select( 0 ); 
+
+       $clusterList = $this->_redis->zrange( 'clusterlist:'.$_GET['id'], 0, -1 );
+       $redis = [];
+       $sql   = [];
+
+        $clustersHasCampaigns = models\ClustersHasCampaigns::findAll( ['Clusters_id' => $_GET['id']] );
+
+
+       foreach ( $clusterList as $value )
+       {
+            $data = explode( ':', $value );
+
+            $campaign = models\Campaigns::findOne($data[0]);
+
+            if ( $campaign )
+            {
+                $id = $campaign->id;
+
+                if ( !isset($redis[$id]) )
+                {    
+                    $redis[$id] = '
+                        ID     :'. $campaign->id . '<br>
+                        AFF    :'. $campaign->Affiliates_id.'<br>
+                        STATUS :'. $campaign->status . '<br>
+                        APP_ID :'. $campaign->app_id . '<br>
+                        <hr>
+                    ';
+                }
+            }
+       }
+
+       foreach ( $clustersHasCampaigns as $assign )
+       {
+            if ( $assign->campaigns->status=='active' && $assign->campaigns->app_id ){
+                
+                $id = $assign->campaigns->id;
+
+                if ( !isset($sql[$id]) )
+                {                    
+                    $sql[$id] = '
+                        ID     :'. $assign->campaigns->id . '<br>
+                        AFF    :'. $assign->campaigns->Affiliates_id.'<br>
+                        STATUS :'. $assign->campaigns->status . '<br>
+                        APP_ID :'. $assign->campaigns->app_id . '<br>
+                        <hr>
+                    '; 
+                }                
+            }
+       }       
+
+       $leftovers = array_diff_assoc($redis, $sql);
+       $missing   = array_diff_assoc($sql, $redis);
+
+       echo 'REDIS CAMPAIGNS: '.count($redis).'<br>';
+       echo 'MYSQL CAMPAIGNS: '.count($sql);       
+       echo '<br><br><br><hr>LEFTOVER CAMPAIGNS<hr><br><br><br>';
+
+       foreach ( $leftovers as $id => $value )
+       {
+            echo $value;
+       }
+
+       echo '<br><br><br><hr>MISSING CAMPAIGNS<hr><br><br><br>';
+       foreach ( $missing as $id => $value )
+       {
+            echo $value;
+       }
+    }    
 
 
     protected function _listChanges ( array $list1 = null, array $list2 = null )
