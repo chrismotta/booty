@@ -674,7 +674,7 @@ class AffiliatesapiController extends \yii\web\Controller
 				$changes .= '<b>Added: </b>';
 			}
 			else
-				$changes .= ', ';
+				$changes .= '&#44;&nbsp;';
 
 			$changes .= $added;
 		}
@@ -690,7 +690,7 @@ class AffiliatesapiController extends \yii\web\Controller
 				$changes .= '<b>Removed: </b>';
 			}
 			else
-				$changes .= ', ';
+				$changes .= '&#44;&nbsp;';
 
 			$changes .= $removed;
 		}
