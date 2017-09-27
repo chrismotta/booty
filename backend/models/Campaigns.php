@@ -70,7 +70,7 @@ class Campaigns extends \yii\db\ActiveRecord
             'os_version'       => 'OS Version',
             'country'          => 'Country',
             'carrier'          => 'Carrier',
-            'device_type'      => 'Device Type',
+            'device_type'      => 'Dev. Type',
             'app_id'           => 'App ID',
             'delivery_freq'    => 'Freq.', 
         ];

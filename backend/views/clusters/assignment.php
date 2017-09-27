@@ -74,24 +74,6 @@ echo Tabs::widget([
             ],
             'name',
 
-            [
-                'class' => 'kartik\grid\EditableColumn',
-                'attribute' =>'delivery_freq',
-                'editableOptions'=> function ($model, $key, $index, $widget) {
-                    return [
-                        'id' => 'delivery_freq',
-                        'formOptions' => [
-                            'action' => ['changefreq', 
-                            'Clusters_id'   => $model->clusters_id,
-                        ]],
-                    ];
-                },
-                'refreshGrid' => true,
-                // 'value'     =>function($model, $key, $index){
-                //     return $model->getDeliveryFreq();
-                // },
-            ],
-
             'payout',
             [
                 'attribute'=>'country',
@@ -136,6 +118,25 @@ echo Tabs::widget([
                 }
             ],
 
+            [
+                'class' => 'kartik\grid\EditableColumn',
+                'attribute' =>'delivery_freq',
+                'editableOptions'=> function ($model, $key, $index, $widget) {
+                    return [
+                        'id' => 'delivery_freq',
+                        'formOptions' => [
+                            'action' => ['changefreq', 
+                            'Clusters_id'   => $model->clusters_id,
+                        ]],
+                    ];
+                },
+                'refreshGrid' => true,
+                'mergeHeader' => true,
+                // 'value'     =>function($model, $key, $index){
+                //     return $model->getDeliveryFreq();
+                // },
+            ],
+            
             [
                 'class' => '\kartik\grid\DataColumn',
                 'header' => '<span class="glyphicon glyphicon-alert text-success"></span>',
