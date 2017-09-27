@@ -111,7 +111,7 @@ $filterByAffiliate = ArrayHelper::map(
             // 'creative_300x250',
             [
                 'class' => 'yii\grid\ActionColumn',
-                'template' => '{view}',
+                'template' => '{view}{delete}',
             ]
         ],
     ]); ?>
