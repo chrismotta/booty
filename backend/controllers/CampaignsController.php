@@ -138,6 +138,8 @@ class CampaignsController extends Controller
         $model->status = 'archived';
         $model->save();
 
+        $model->unlinkAll('clusters', true);
+
         $cache = new \Predis\Client( \Yii::$app->params['predisConString'] );
         $cache->del( 'campaign:'.$id );
         return $this->redirect(['index']);
