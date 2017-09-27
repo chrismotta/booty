@@ -20,8 +20,8 @@ $this->params['breadcrumbs'][] = $this->title;
 
 $this->registerJs(
     '$("#bulkAssignment").on("click", function() { 
-        var selected = $("#available").yiiGridView("getSelectedRows");
-        var href = "assigncampaign?id='.$clusterID.'&cid=["+selected.toString()+"]";
+        var selected = $("#assigned").yiiGridView("getSelectedRows");
+        var href = "unassigncampaign?id='.$clusterID.'&cid=["+selected.toString()+"]";
         // console.log(href);
         window.location.href = href;
     });',
@@ -57,7 +57,14 @@ echo Tabs::widget([
         'id' => 'assigned',
         'dataProvider' => $assignedProvider,
         'filterModel' => $assignedModel,
-        'layout' => '{pager}{items}',
+        'layout' => '<div style="float:left;">{pager} &nbsp; </div>
+            <div style="float:right;margin: 20px">'.
+            Html::button('Unassign All Selected', [
+                'class' => 'btn',
+                'id'    => 'bulkAssignment',
+            ]).'
+            </div>
+            <div style="clear:both;">{items}</div>',
         'condensed' => true,
         'columns' => [
             'id',
@@ -147,8 +154,10 @@ echo Tabs::widget([
             ],
 
             [
-                'class' => 'yii\grid\ActionColumn',
+                'class' => '\kartik\grid\ActionColumn',
+                'width'  => '40px',
                 'template' => '{unassigncampaign}',
+                'header' => '<span class="glyphicon glyphicon-minus"></span>',
 
                 'buttons' => [
                     'unassigncampaign' => function ($url, $model, $key) use ($clusterID) {
@@ -158,7 +167,21 @@ echo Tabs::widget([
                             );
                     }
                 ]
-            ]
+            ],
+
+            [
+                'class' => '\kartik\grid\CheckboxColumn',
+                'width'  => '40px',
+                // 'checkboxOptions' => 
+                // function($model, $key, $index, $column){
+                //     if(!isset($model->app_id))
+                //         return ['disabled'=>'disabled'];           
+                //     else if(!json_decode($model->app_id))
+                //         return ['disabled'=>'disabled'];           
+                //     else
+                //         return [];
+                // },
+            ],
         ],
     ]); ?>
 <?php // Pjax::end(); ?>

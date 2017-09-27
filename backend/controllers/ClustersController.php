@@ -274,12 +274,13 @@ class ClustersController extends Controller
 
             $campaign = CampaignsSearch::findOne($campaignID);
 
-            // if app_id is set
-            if ( isset($campaign->app_id) && $campaign->status == 'active')
+            // if campaign exists and app_id is set and campaign is active
+            if ( isset($campaign) && isset($campaign->app_id) && $campaign->status == 'active')
             {
                 
                 // if app_id is a json
                 $packageIds = json_decode($campaign->app_id);
+
                 if(isset($packageIds)){
 
                     if($campaign->assignToCluster($id)){
@@ -302,7 +303,7 @@ class ClustersController extends Controller
 
             }else{
                 
-                $return[] = $campaignID.': app_id is not set';
+                $return[] = $campaignID.': not an active campaign or app_id is not set';
 
             }
 
@@ -322,20 +323,52 @@ class ClustersController extends Controller
         return $this->redirect(Yii::$app->request->referrer);
     }
 
-    public function actionUnassigncampaign($id){
-        $campaignID = isset($_GET['cid']) ? $_GET['cid'] : null;
+    public function actionUnassigncampaign($id, $debug=false){
 
-        $campaign = CampaignsSearch::findOne($campaignID);
-        $return = $campaign->unassignToCluster($id);
+        if(!isset($_GET['cid']))
+            return 'cid parameter not set';
 
+        $cid = json_decode($_GET['cid']);
+        // var_export($cid);die();
+
+        if(is_array($cid))
+            $campaignList = $cid;
+        else
+            $campaignList[] = $cid;
+
+        // init redis instance
         $cache = new \Predis\Client( \Yii::$app->params['predisConString'] );
 
-        $value = "[".$campaign->id.':'.$campaign->affiliates->id;
+        foreach ($campaignList as $campaignID) {
 
-        $cache->zremrangebylex( 'clusterlist:'.$id, $value, $value."\xff" );
+            $campaign = CampaignsSearch::findOne($campaignID);
+
+            // if campaign exists
+            if ( isset($campaign)){
+
+                if($campaign->unassignToCluster($id)){
+
+                    // FOR REVIEW
+                    $value = "[".$campaign->id.':'.$campaign->affiliates->id;
+                    $cache->zremrangebylex( 'clusterlist:'.$id, $value, $value."\xff" );
+
+                    $return[] = $campaignID.': assignation ok';
+
+                }else{
+                    $return[] = $campaignID.': assignation error';
+                }
+            }else{
+                
+                $return[] = $campaignID.': not valid campaign';
+
+            }
+
+        }
 
         // debug
-        // echo $return;
+        if($debug)
+            return var_export($return, true);
+
         return $this->redirect(Yii::$app->request->referrer);
     }
 
