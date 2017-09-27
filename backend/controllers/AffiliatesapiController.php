@@ -441,7 +441,7 @@ class AffiliatesapiController extends \yii\web\Controller
                         foreach ( $remPackageIds AS $packageId )
                         {
                              $value = $campaign->id.":".$campaign->affiliates->id.':'.$packageId;
-                             //$this->_redis->zrem( 'clusterlist:'.$assign['Clusters_id'], $value );
+                             $this->_redis->zrem( 'clusterlist:'.$assign['Clusters_id'], $value );
                         }
                     break;
                 }
