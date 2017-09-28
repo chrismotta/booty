@@ -36,12 +36,12 @@ $this->registerJs(
 echo Tabs::widget([
     'items' => [
         [
-            'label' => '<i class="glyphicon glyphicon-star"></i> Assigned',
+            'label' => '<i class="glyphicon glyphicon-star"></i><span class="tag-title">Assigned</span>',
             'encode' => false,
             'url' => ['assignment', 'id'=>$clusterID],
         ],
         [
-            'label' => '<i class="glyphicon glyphicon-star-empty"></i> Available',
+            'label' => '<i class="glyphicon glyphicon-star-empty"></i><span class="tag-title">Available</span>',
             'encode' => false,
             'active' => true,
         ],

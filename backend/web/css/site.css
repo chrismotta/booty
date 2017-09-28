@@ -179,3 +179,9 @@ td.testing {
 td.paused {
     color: grey;
 }
+
+.tag-title {
+    margin-left: 5px;
+    position: relative;
+    top: -1px;
+}
