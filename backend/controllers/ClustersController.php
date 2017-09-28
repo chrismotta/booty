@@ -343,17 +343,21 @@ class ClustersController extends Controller
 
             $campaign = CampaignsSearch::findOne($campaignID);
 
-            // if app_id is a json
-            $packageIds = json_decode($campaign->app_id, true);
-
             // if campaign exists
             if ( isset($campaign)){
 
+                // if app_id is a json
+                $packageIds = json_decode($campaign->app_id, true);
+
                 if($campaign->unassignToCluster($id)){
 
-                    foreach ( $packageIds as $packageId )
-                    {
-                        $cache->zrem( 'clusterlist:'.$id, $campaign->id.':'.$campaign->affiliates->id.':'.$packageId );
+                    if(isset($packageIds)){
+
+                        foreach ( $packageIds as $packageId )
+                        {
+                            $cache->zrem( 'clusterlist:'.$id, $campaign->id.':'.$campaign->affiliates->id.':'.$packageId );
+                        }
+
                     }
 
                     $return[] = $campaignID.': unassign ok';
