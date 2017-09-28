@@ -11,6 +11,7 @@ use yii\helpers\ArrayHelper;
 /* @var $dataProvider yii\data\ActiveDataProvider */
 
 $this->title = 'Campaigns';
+$this->params['breadcrumbs'][] = ['label' => 'Affiliates', 'url' => ['/affiliates']];
 $this->params['breadcrumbs'][] = $this->title;
 
 $affiliates = models\Affiliates::find()->asArray()->all();

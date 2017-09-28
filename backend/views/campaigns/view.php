@@ -7,6 +7,7 @@ use yii\widgets\DetailView;
 /* @var $model app\models\Campaigns */
 
 $this->title = 'Campaign #'.$model->id.': '.$model->name;
+$this->params['breadcrumbs'][] = ['label' => 'Affiliates', 'url' => ['/affiliates']];
 $this->params['breadcrumbs'][] = ['label' => 'Campaigns', 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
 ?>

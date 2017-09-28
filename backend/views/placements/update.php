@@ -6,6 +6,7 @@ use yii\helpers\Html;
 /* @var $model app\models\Placements */
 
 $this->title = 'Update Placement #'.$model->id.': ' . $model->name;
+$this->params['breadcrumbs'][] = ['label' => 'Publishers', 'url' => ['/publishers']];
 $this->params['breadcrumbs'][] = ['label' => 'Placements', 'url' => ['index']];
 $this->params['breadcrumbs'][] = ['label' => $model->name, 'url' => ['view', 'id' => $model->id]];
 $this->params['breadcrumbs'][] = 'Update';

@@ -7,6 +7,7 @@ use yii\helpers\Html;
 /* @var $model app\models\Campaigns */
 
 $this->title = 'Create Campaign';
+$this->params['breadcrumbs'][] = ['label' => 'Affiliates', 'url' => ['/affiliates']];
 $this->params['breadcrumbs'][] = ['label' => 'Campaigns', 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
 ?>
