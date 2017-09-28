@@ -259,7 +259,7 @@ else
       </div>
     <div class="box-body">
 
-    <dir class="col-md-6">
+    <div class="col-md-6">
     <?php
         echo DateRangePicker::widget([
             'model'=>$searchModel,    
@@ -280,7 +280,7 @@ else
         ]);
     ?>
     
-    </dir>
+    </div>
 
     </div><!-- box body end -->
     </div><!-- box end -->
@@ -355,7 +355,7 @@ else
         )->label('');
     ?>
 
-    </dir>
+    </div>
 
     </div><!-- box body end -->
     </div><!-- box end -->
@@ -413,7 +413,7 @@ else
       </div>
     <div class="box-body">
 
-    <dir class="col-md-4">
+    <div class="col-md-4">
 
     <?php 
     $publishersFilterUrl = Url::to(['publishers/getfilterlist']); 
@@ -548,8 +548,8 @@ else
         ]);           
     ?>
 
-    </dir>
-    <dir class="col-md-4">
+    </div>
+    <div class="col-md-4">
 
     <?=
         '<label class="control-label">Carrier</label>';
@@ -664,8 +664,8 @@ else
         ]);           
     ?>  
 
-    </dir>
-    <dir class="col-md-4">
+    </div>
+    <div class="col-md-4">
 
 
     <?=
@@ -748,7 +748,7 @@ else
         ]);           
     ?>          
 
-    </dir>
+    </div>
 
     </div><!-- box body end -->
     </div><!-- box end -->
