@@ -27,6 +27,18 @@
 						$result['ios'] = substr( $matches[0], 2 );
 					}
 				}
+
+				if ( preg_match( '/(google.com)/', $value ) )
+				{
+					$matches = [];
+					preg_match( '/(id=)[a-zA-Z0-9.]+/', $value, $matches );
+
+					if ( !empty($matches) )
+					{
+						$result['android'] = substr( $matches[0], 3 );
+
+					}
+				}				
 			}
 
 			return $result;
