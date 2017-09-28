@@ -29,6 +29,13 @@
 
 			$this->_status = curl_getinfo( $curl, CURLINFO_HTTP_CODE );
 
+			if  ( isset($_GET['source']) && $_GET['source']==1 )
+			{
+				header('Content-Type: text/json');
+				echo json_encode( $response, JSON_PRETTY_PRINT );
+				die();
+			}
+
 			if ( !$response || !isset( $response ) )
 			{
 				$this->_msg = 'Response without body';
@@ -133,23 +140,28 @@
 
 						if ( $rule['rule']['req_device_os_version'] )
 							$reqOsVer[]     = $rule['rule']['req_device_os_version'];	
-					}					
+					}	
+
+					switch ( strtolower($campaign['status']) )
+					{
+						case 'active':
+							$status = 'active';
+						break;
+						default:
+							$status = 'aff_paused';
+						break;
+					}									
 				}
-			
+				else
+				{
+					$status = 'aff_paused';
+				}			
 
 				$os 	  	= ApiHelper::getOs($reqOs);
 				$osVersions = ApiHelper::getValues($reqOsVer);
 				$carriers 	= ApiHelper::getCarriers( $reqCarriers, $dbCarriers );
+				$p = ApiHelper::getAppIdFromUrl( $campaign['preview_url'] );
 
-				switch ( strtolower($campaign['status']) )
-				{
-					case 'active':
-						$status = 'active';
-					break;					
-					default:
-						$status = 'aff_paused';
-					break;
-				}
 
 				$result[] = [
 					'ext_id' 			=> $ext_id,
@@ -163,6 +175,7 @@
 					'carrier'			=> empty($carriers) ? null : $carriers,
 					'os'				=> empty($os) ? null : $os, 
 					'os_version'		=> empty($osVersions) ? null : $osVersions, 
+					'package_id'		=> empty($p) ? null : $p,
 					'status'			=> $status,
 					'currency'			=> $campaign['currency']
 				];
@@ -178,6 +191,13 @@
 				unset( $targetData );
 				unset( $targetResponse );
 				
+			}
+
+			if  ( isset($_GET['test']) && $_GET['test']==1 )
+			{
+				header('Content-Type: text/json');
+				echo json_encode( $result, JSON_PRETTY_PRINT );
+				die();
 			}
 
 			return $result;

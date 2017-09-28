@@ -65,21 +65,8 @@
 					$countries = explode( ',' , $campaign->Countries );
 				}			
 
-				$oss		 = ApiHelper::getOs($campaign->Platforms);
-				$deviceTypes = ApiHelper::getDeviceTypes($campaign->Platforms, false);
-
-				if ( !empty($oss) && $oss[0]!='Other' )
-				{
-					$packageIds = [
-						strtolower($oss[0]) => $campaign->APP_ID
-					];
-				}
-				else
-				{
-					$packageIds = [];
-				}					
-				if ( $ext_id == 6175 )
-					$packageIds = [];
+				$oss		 = ApiHelper::getOs($campaign->Platforms, false);
+				$deviceTypes = ApiHelper::getDeviceTypes($campaign->Platforms, false);				
 
 				switch ( strtolower($campaign->Status) )
 				{
@@ -91,10 +78,52 @@
 					break;
 				}
 
+				if ( $campaign->Preview_url )
+				{
+					$packageIds = ApiHelper::getAppIdFromUrl( $campaign->Preview_url );
+
+					if ( $campaign->APP_ID )
+					{
+						if ( isset($packageIds['android']) )
+						{
+							$packageIds['android'] = $campaign->APP_ID;
+						}
+						else if ( isset($packageIds['ios']) )
+						{
+							$packageIds['ios'] = $campaign->APP_ID;
+						}
+						else if ( !in_array( 'Android', $oss ) )
+						{
+							$packageIds['android'] = $campaign->APP_ID;
+						}
+						else if ( !in_array( 'iOS', $oss ) )
+						{
+							$packageIds['ios'] = $campaign->APP_ID;
+						}
+					}					
+				}
+				else if ( in_array( 'Android', $oss ) && $campaign->APP_ID )
+				{
+					$packageIds = [
+						'android' => $campaign->APP_ID
+					];
+				}
+				else if ( in_array( 'iOS', $oss ) && $campaign->APP_ID )
+				{
+					$packageIds = [
+						'ios' => $campaign->APP_ID
+					];
+				}				
+				else
+				{
+					$packageIds = [];
+				}
+				
+
 				$result[] = [
 					'ext_id' 			=> $ext_id,
 					'name'				=> $campaign->Name,
-					'desc'				=> preg_replace('/[\xF0-\xF7].../s', '', $campaign->Description),		
+					'desc'				=> preg_replace('/[\xF0-\xF7].../s', '', $campaign->Description),
 					'payout' 			=> $campaign->Payout,
 					'landing_url'		=> $campaign->Tracking_url,
 					'country'			=> $countries,

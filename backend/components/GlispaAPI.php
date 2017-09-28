@@ -69,17 +69,26 @@
 				$os_version  = ApiHelper::getValues($campaign->mobile_min_version);
 				$os 		 = ApiHelper::getOs($campaign->mobile_platform);
 				$deviceTypes = ApiHelper::getDeviceTypes($campaign->mobile_platform, false);
+		
 
-				if ( !empty($os) && $os[0]!='Other'  )
+				if ( in_array( 'Android', $os ) && $campaign->mobile_app_id )
+				{
+					$packageIds = [
+						'android' => $campaign->mobile_app_id
+					];
+				}
+				else if ( in_array( 'iOS', $os ) && $campaign->mobile_app_id )
+				{
+					$packageIds = [
+						'ios' => $campaign->mobile_app_id
+					];
+				}				
+				else if ( $campaign->mobile_app_id )
 				{
 					$packageIds = [
 						strtolower($os[0]) => $campaign->mobile_app_id
 					];
-				}
-				else
-				{
-					$packageIds = [];
-				}				
+				}						
 
 				$result[] = [
 					'ext_id' 			=> $campaign->campaign_id,
