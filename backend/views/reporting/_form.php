@@ -230,6 +230,10 @@ if ( isset($params['exchange_id']) && $params['exchange_id'] ){
     }
 }
 
+if($afterSubmit)
+    $collapse = 'collapsed-box';
+else
+    $collapse = '';
 
 ?>
 
@@ -245,7 +249,7 @@ if ( isset($params['exchange_id']) && $params['exchange_id'] ){
         'method' => 'GET'
     ]); ?>
 
-    <div class="box box-info">
+    <div class="box box-info <?php echo $collapse ?>">
     <div class="box-header with-border">
         <h3 class="box-title">Date Range</h3>
         <div class="box-tools">
@@ -255,20 +259,23 @@ if ( isset($params['exchange_id']) && $params['exchange_id'] ){
       </div>
     <div class="box-body">
 
-    <dir class="col-md-12">
+    <dir class="col-md-6">
     <?php
         echo DateRangePicker::widget([
             'model'=>$searchModel,    
             'attribute' => 'date_range',
-            //'useWithAddon'=>true,
+            'useWithAddon'=>true,
             'convertFormat'=>true,
             'startAttribute' => 'date_start',
             'endAttribute' => 'date_end',
+            'presetDropdown'=>true,
+            'hideInput'=>true,
             'pluginOptions'=>[
                 'locale'=>[
                     'format' => 'd-m-Y',
-                    'separator' => ' - '
+                    'separator' => ' - ',
                 ],
+                'opens'=>'center',
             ]
         ]);
     ?>
@@ -278,9 +285,9 @@ if ( isset($params['exchange_id']) && $params['exchange_id'] ){
     </div><!-- box body end -->
     </div><!-- box end -->
 
-    <div class="box box-info">
+    <div class="box box-info <?php echo $collapse ?>">
     <div class="box-header with-border">
-        <h3 class="box-title">Data Columns</h3>
+        <h3 class="box-title">Group Columns</h3>
         <div class="box-tools">
           <!-- This will cause the box to collapse when clicked -->
           <button class="btn btn-box-tool" data-widget="collapse" data-toggle="tooltip" title="Collapse"><i class="fa fa-minus"></i></button>
@@ -348,6 +355,20 @@ if ( isset($params['exchange_id']) && $params['exchange_id'] ){
         )->label('');
     ?>
 
+    </dir>
+
+    </div><!-- box body end -->
+    </div><!-- box end -->
+
+    <div class="box box-info <?php echo $collapse ?>">
+    <div class="box-header with-border">
+        <h3 class="box-title">Sum Columns</h3>
+        <div class="box-tools">
+          <!-- This will cause the box to collapse when clicked -->
+          <button class="btn btn-box-tool" data-widget="collapse" data-toggle="tooltip" title="Collapse"><i class="fa fa-minus"></i></button>
+        </div>
+      </div>
+    <div class="box-body">
 
     <?= 
         $form->field($searchModel, 'fields_group3')->checkboxList(

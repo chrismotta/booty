@@ -90,6 +90,11 @@ foreach ( $columns as $column )
 $this->registerJs(
    '$("document").ready(function(){ '.$onloadJs.'});'
 );
+
+if(isset($dataProvider))
+    $afterSubmit = true;
+else
+    $afterSubmit = false;
 ?>
 
 <div class="campaign-logs-index">
@@ -115,13 +120,14 @@ $this->registerJs(
         'exchangeIds' => $exchangeIds,
         'subpubIds'   => $subpubIds,
         'deviceIds'   => $deviceIds,
-        'params'      => $params
+        'params'      => $params,
+        'afterSubmit' => $afterSubmit,
     ]) ?>
 
 
 <?php
 // only after submit
-if(isset($dataProvider)){
+if($afterSubmit){
     $totals = $totalsProvider->getModels();
 ?>
     
