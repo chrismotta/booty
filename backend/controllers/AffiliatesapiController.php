@@ -471,7 +471,7 @@ class AffiliatesapiController extends \yii\web\Controller
                         <td>'.$api_class.'</td>
                         <td>'.$campaign->id.'</td>
                         <td>'.$campaign->ext_id.'</td>
-                        '.$changes.',
+                        '.$changes.'
                         <td>'.json_encode( $clusters ).'</td>
                     </tr>
                 ';                          
