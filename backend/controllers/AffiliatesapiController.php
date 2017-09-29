@@ -444,10 +444,13 @@ class AffiliatesapiController extends \yii\web\Controller
 
                             foreach ( $newPackageIds AS $packageId )
                             {
-                                $this->_redis->zadd( 'clusterlist:'.$assign['Clusters_id'], 
-                                    $assign['delivery_freq'],
-                                    $campaign->id.':'.$campaign->affiliates->id.':'.$packageId
-                                );
+                                if ( $packageId )
+                                {
+                                    $this->_redis->zadd( 'clusterlist:'.$assign['Clusters_id'], 
+                                        $assign['delivery_freq'],
+                                        $campaign->id.':'.$campaign->affiliates->id.':'.$packageId
+                                    );                                    
+                                }
                             }                        
                         }
                     break;
@@ -579,6 +582,24 @@ class AffiliatesapiController extends \yii\web\Controller
                         'status' => $campaign->status,
                         'app_id' => $campaign->app_id
                     ];
+                }
+            }
+            else
+            {
+                $id = $data[0];
+
+                if ( isset($redis[$id]) )
+                {
+                    $redis[$id]['app_id'] .= $data[2];
+                }
+                else
+                {
+                    $redis[$id] = [
+                        'id'     => $id,
+                        'aff'    => $data[1],
+                        'status' => $campaign->status,
+                        'app_id' => $data[2]
+                    ];                    
                 }
             }
        }
