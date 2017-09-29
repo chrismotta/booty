@@ -622,7 +622,7 @@ class AffiliatesapiController extends \yii\web\Controller
             }
        }       
 
-
+       echo 'REDIS ROWS     : '.count($clusterList);
        echo 'REDIS CAMPAIGNS: '.count($redis).'<br>';
        echo 'MYSQL CAMPAIGNS: '.count($sql);       
        echo '<br><br><br><hr>LEFTOVER CAMPAIGNS<hr><br><br><br>';
