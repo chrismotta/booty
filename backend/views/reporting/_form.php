@@ -686,7 +686,14 @@ else
         ]);           
     ?>
 
-    <?=
+    <?php 
+    echo $form->field($model, 'pub_id')->textInput(['maxlength' => true]);
+    echo $form->field($model, 'subpub_id')->textInput(['maxlength' => true]);
+    echo $form->field($model, 'exchange_id')->textInput(['maxlength' => true]);
+    echo $form->field($model, 'pub_id')->textInput(['maxlength' => true]);
+
+    /*
+    <?
         '<label class="control-label">Pub ID</label>';
         echo Select2::widget( [
             'name' => 'pub_id',
@@ -748,7 +755,9 @@ else
                 'maximumInputLength' => 10
             ],
         ]);           
-    ?>          
+    ?> 
+    */ 
+   ?>      
 
     </div>
 

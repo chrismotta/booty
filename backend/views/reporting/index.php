@@ -25,11 +25,11 @@ $searchModel->date_start = isset($_GET['CampaignLogsSearch']['date_start']) ? $_
 $searchModel->date_end = isset($_GET['CampaignLogsSearch']['date_end']) ? $_GET['CampaignLogsSearch']['date_end'] : date( 'd-m-Y' );
 
 
-$clusters     = [];//components\MapHelper::filtersFromRedisToSelectWidget( \Yii::$app->redis->zrange( 'clusters', 0, \Yii::$app->redis->zcard('clusters') ) );
+$clusters     = components\MapHelper::filtersFromRedisToSelectWidget( \Yii::$app->redis->zrange( 'clusters', 0, \Yii::$app->redis->zcard('clusters') ) );
 
-$campaigns     = [];//components\MapHelper::filtersFromRedisToSelectWidget( \Yii::$app->redis->zrange( 'campaigns', 0, \Yii::$app->redis->zcard('campaigns') ) );
+$campaigns     = components\MapHelper::filtersFromRedisToSelectWidget( \Yii::$app->redis->zrange( 'campaigns', 0, \Yii::$app->redis->zcard('campaigns') ) );
 
-$affiliates     = [];//components\MapHelper::filtersFromRedisToSelectWidget( \Yii::$app->redis->zrange( 'affiliates', 0, \Yii::$app->redis->zcard('affiliates') ) );
+$affiliates     = components\MapHelper::filtersFromRedisToSelectWidget( \Yii::$app->redis->zrange( 'affiliates', 0, \Yii::$app->redis->zcard('affiliates') ) );
 
 // debugeando!
 
