@@ -25,11 +25,11 @@ $searchModel->date_start = isset($_GET['CampaignLogsSearch']['date_start']) ? $_
 $searchModel->date_end = isset($_GET['CampaignLogsSearch']['date_end']) ? $_GET['CampaignLogsSearch']['date_end'] : date( 'd-m-Y' );
 
 
-$clusters     = components\MapHelper::filtersFromRedisToSelectWidget( \Yii::$app->redis->zrange( 'clusters', 0, -1 ) );
+$clusters     = [];//components\MapHelper::filtersFromRedisToSelectWidget( \Yii::$app->redis->zrange( 'clusters', 0, -1 ) );
 
-$campaigns     = components\MapHelper::filtersFromRedisToSelectWidget( \Yii::$app->redis->zrange( 'campaigns', 0, -1 ) );
+$campaigns     = [];//components\MapHelper::filtersFromRedisToSelectWidget( \Yii::$app->redis->zrange( 'campaigns', 0, -1 ) );
 
-$affiliates     = components\MapHelper::filtersFromRedisToSelectWidget( \Yii::$app->redis->zrange( 'affiliates', 0, -1 ) );
+$affiliates     = [];//components\MapHelper::filtersFromRedisToSelectWidget( \Yii::$app->redis->zrange( 'affiliates', 0, -1 ) );
 
 // debugeando!
 
