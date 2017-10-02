@@ -62,7 +62,7 @@
 					if ( in_array( '3G', $campaign->Networks ) )
 						$connTypes[] = 'Carrier';
 
-					if ( in_array( '3G', $campaign->Networks ) )
+					if ( in_array( 'WIFI', $campaign->Networks ) )
 						$connTypes[] = 'WiFi';
 				}
 
@@ -76,6 +76,9 @@
 					$os      = [];
 					$devices = [];	 				
 	 			}
+
+	 			if ( isset( $campaign->MinOsVersion ) )
+	 				$osVer[] = $campaign->MinOsVersion;
 
 				if ( isset($campaign->PreviewLink) )
 				{
