@@ -67,16 +67,46 @@
 				$oss		 = ApiHelper::getOs($campaign->Platforms);
 				$deviceTypes = ApiHelper::getDeviceTypes($campaign->Platforms, false);
 
-				if ( !empty($oss) && $oss[0]!='Other' )
+				if ( $campaign->Preview_url )
+				{
+					$packageIds = ApiHelper::getAppIdFromUrl( $campaign->Preview_url );
+
+					if ( $campaign->APP_ID )
+					{
+						if ( isset($packageIds['android']) )
+						{
+							$packageIds['android'] = $campaign->APP_ID;
+						}
+						else if ( isset($packageIds['ios']) )
+						{
+							$packageIds['ios'] = $campaign->APP_ID;
+						}
+						else if ( !in_array( 'Android', $oss ) )
+						{
+							$packageIds['android'] = $campaign->APP_ID;
+						}
+						else if ( !in_array( 'iOS', $oss ) )
+						{
+							$packageIds['ios'] = $campaign->APP_ID;
+						}
+					}					
+				}
+				else if ( in_array( 'Android', $oss ) && $campaign->APP_ID )
 				{
 					$packageIds = [
-						strtolower($oss[0]) => $campaign->APP_ID
+						'android' => $campaign->APP_ID
 					];
 				}
+				else if ( in_array( 'iOS', $oss ) && $campaign->APP_ID )
+				{
+					$packageIds = [
+						'ios' => $campaign->APP_ID
+					];
+				}				
 				else
 				{
 					$packageIds = [];
-				}	
+				}
 
 				switch ( strtolower($campaign->Status) )
 				{

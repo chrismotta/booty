@@ -68,6 +68,11 @@
 	 			$v = ApiHelper::getValues( $osVer );
 	 			$p = ApiHelper::getAppIdFromUrl( $campaign->preview_url );
 
+	 			if ( !empty($c) )
+	 				$connTypes = [ 'Carrier' ];
+	 			else
+	 				$connTypes = [];
+
 				$result[] = [
 					'ext_id' 			=> $campaign->id, 
 					'name'				=> $campaign->name, 
@@ -76,7 +81,7 @@
 					'landing_url'		=> $campaign->tracking_url, 
 					'country'			=> empty($campaign->geos) ? null : $campaign->geos,
 					'device_type'		=> empty($d) ? null : $d,
-					'connection_type'	=> null, 
+					'connection_type'	=> empty($connTypes) ? null : $connTypes,
 					'carrier'			=> empty($c) ? null : $c,
 					'os'				=> empty($o) ? null : $o, 
 					'os_version'		=> empty($v) ? null : $v, 

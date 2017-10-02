@@ -54,12 +54,18 @@
 
 					if ( isset($campaign->campaign_display_rules->min_device_os_version) )
 						$osVersion  = ApiHelper::getValues($campaign->campaign_display_rules->min_device_os_version);
+					else
+						$osVersion = [];
 
 					if ( isset($campaign->campaign_display_rules->device_os) )
-						$os 		= ApiHelper::getOs($campaign->campaign_display_rules->device_os);
+						$os 		= ApiHelper::getOs($campaign->campaign_display_rules->device_os, false);
+					else
+						$os = [];
 
 					if ( isset($campaign->campaign_display_rules->device_type->whitelist) )
-						$devices 	= ApiHelper::getDeviceTypes( $campaign->campaign_display_rules->device_type->whitelist, '\\' );
+						$devices 	= ApiHelper::getDeviceTypes( $campaign->campaign_display_rules->device_type->whitelist );
+					else
+						$devices = [];
 
 					$url = null;
 					$packageIds = [];
@@ -73,11 +79,48 @@
 						}
 					}
 
-					if ( !empty($os) && $os[0]!='Other'  && $campaign->package_name )
+					if ( $campaign->preview_url )
 					{
-						$osName = strtolower($os[0]);
-						$packageIds[$osName] = $campaign->package_name;
+						$packageIds = ApiHelper::getAppIdFromUrl( $campaign->preview_url );
+
+						if ( $campaign->package_name )
+						{
+							if ( isset($packageIds['android']) )
+							{
+								$packageIds['android'] = $campaign->package_name;
+							}
+							else if ( isset($packageIds['ios']) )
+							{
+								$packageIds['ios'] = $campaign->package_name;
+							}
+							else if ( !in_array( 'Android', $os ) )
+							{
+								$packageIds['android'] = $campaign->package_name;
+							}
+							else if ( !in_array( 'iOS', $os ) )
+							{
+								$packageIds['ios'] = $campaign->package_name;
+							}
+						}					
 					}
+					else if ( in_array( 'Android', $os ) && $campaign->package_name )
+					{
+						$packageIds = [
+							'android' => $campaign->package_name
+						];
+					}
+					else if ( in_array( 'iOS', $os ) && $campaign->package_name )
+					{
+						$packageIds = [
+							'ios' => $campaign->package_name
+						];
+					}				
+					else if ( $campaign->package_name )
+					{
+						$packageIds = [
+							strtolower($os[0]) => $campaign->package_name
+						];
+					}					
 
 					$result[] = [
 						'ext_id' 			=> $campaign->campaign_id, 

@@ -63,12 +63,14 @@ class AffiliatesapiController extends \yii\web\Controller
                 'class'         => 'AddictiveAdsAPI',
                 'affiliate_id'  => 11,
             ],
-            /*
             [
                 'class'         => 'MobusiAPI',
                 'affiliate_id'  => 12,
             ],
-            */
+            [
+                'class'         => 'TapticaAPI',
+                'affiliate_id'  => 13,
+            ],
 		];
 	}
 
@@ -120,7 +122,7 @@ class AffiliatesapiController extends \yii\web\Controller
                             <td>MESSAGE</td>
                             <td>PARAMS</td>
                         </thead>
-                        <tbody>'.$this->_sendAlerts().'</tbody>
+                        <tbody>'.utf8_encode($this->_sendAlerts()).'</tbody>
                     </table>   
                     <br>
                     <hr>
@@ -140,7 +142,7 @@ class AffiliatesapiController extends \yii\web\Controller
                             <td>STATUS</td>
                             <td>AFFECTED CLUSTERS</td>
                         </thead>
-                        <tbody>'.$this->_sendNotifications().'</tbody>
+                        <tbody>'.utf8_encode($this->_sendNotifications()).'</tbody>
                     </table>                    
                 </body>
             </html>         
@@ -237,7 +239,7 @@ class AffiliatesapiController extends \yii\web\Controller
             $affiliate  = models\Affiliates::findOne( ['id' => $rule['affiliate_id'] ] );            
 
             $campaignsData  = $api->requestCampaigns( $affiliate->api_key, $affiliate->user_id );
-
+            
             $externalIds = [];
 
             if ( $campaignsData && is_array($campaignsData) )
@@ -280,6 +282,13 @@ class AffiliatesapiController extends \yii\web\Controller
                     }
                     else
                     {
+                        if ( 
+                            !$campaignData['package_id'] 
+                            || !$campaignData['landing_url'] 
+                            || !$campaignData['payout']  
+                        )
+                            continue;
+
                         $newCampaign      = true;
                         $campaign         = new models\Campaigns;     
                         $campaign->status = $campaignData['status'];    
@@ -289,7 +298,17 @@ class AffiliatesapiController extends \yii\web\Controller
                     $campaign->name          = $campaignData['name'];
                     $campaign->ext_id        = $campaignData['ext_id'];
                     $campaign->info          = $campaignData['desc'];
-                    $campaign->payout        = (float)$campaignData['payout'];
+
+                    if ( $campaignData['currency']=='USD' )
+                        $campaign->payout        = (float)$campaignData['payout'];
+                    else
+                    {
+                        $rate = $this->getExchangeRate( $campaignData['currency'] );
+
+                        if ( $rate )
+                            $campaign->payout        = (float)$campaignData['payout']/$rate;
+                    }
+
                     $campaign->landing_url   = $campaignData['landing_url'];
 
                     if ( $campaignData['package_id'] )
@@ -373,7 +392,7 @@ class AffiliatesapiController extends \yii\web\Controller
 		}
 		else
 		{
-			$changes .= '<td>&nbsp;</td>';
+			$changes .= '<td></td>';
 		}
 
 
@@ -394,7 +413,7 @@ class AffiliatesapiController extends \yii\web\Controller
 		}
 		else
 		{
-			$changes .= '<td>&nbsp;</td>';
+			$changes .= '<td></td>';
 		}
 
         $newPackageIds = $campaignData['package_id'] ? $campaignData['package_id'] : [];
@@ -428,10 +447,13 @@ class AffiliatesapiController extends \yii\web\Controller
 
                             foreach ( $newPackageIds AS $packageId )
                             {
-                                $this->_redis->zadd( 'clusterlist:'.$assign['Clusters_id'], 
-                                    $assign['delivery_freq'],
-                                    $campaign->id.':'.$campaign->affiliates->id.':'.$packageId
-                                );
+                                if ( $packageId )
+                                {
+                                    $this->_redis->zadd( 'clusterlist:'.$assign['Clusters_id'], 
+                                        $assign['delivery_freq'],
+                                        $campaign->id.':'.$campaign->affiliates->id.':'.$packageId
+                                    );                                    
+                                }
                             }                        
                         }
                     break;
@@ -455,7 +477,7 @@ class AffiliatesapiController extends \yii\web\Controller
                         <td>'.$api_class.'</td>
                         <td>'.$campaign->id.'</td>
                         <td>'.$campaign->ext_id.'</td>
-                        '.$changes.',
+                        '.$changes.'
                         <td>'.json_encode( $clusters ).'</td>
                     </tr>
                 ';                          
@@ -508,13 +530,13 @@ class AffiliatesapiController extends \yii\web\Controller
                             <td>'.$api_class.'</td>
                             <td>'.$campaign->id.'</td>
                             <td>'.$campaign->ext_id.'</td>
-                            <td>&nbsp;</td>
-                            <td>&nbsp;</td>
-                            <td>&nbsp;</td>
-                            <td>&nbsp;</td>
-                            <td>&nbsp;</td>
-                            <td>&nbsp;</td>
-                            <td>&nbsp;</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
                             <td>'.$prevStatus.' => aff_paused</td>
                             <td>'.json_encode( $clusters ).'</td>
                         </tr>
@@ -565,6 +587,24 @@ class AffiliatesapiController extends \yii\web\Controller
                     ];
                 }
             }
+            else
+            {
+                $id = $data[0];
+
+                if ( isset($redis[$id]) )
+                {
+                    $redis[$id]['app_id'] .= $data[2];
+                }
+                else
+                {
+                    $redis[$id] = [
+                        'id'     => $id,
+                        'aff'    => $data[1],
+                        'status' => $campaign->status,
+                        'app_id' => $data[2]
+                    ];                    
+                }
+            }
        }
 
        foreach ( $clustersHasCampaigns as $assign )
@@ -585,7 +625,7 @@ class AffiliatesapiController extends \yii\web\Controller
             }
        }       
 
-
+       echo 'REDIS ROWS     : '.count($clusterList).'<br>';
        echo 'REDIS CAMPAIGNS: '.count($redis).'<br>';
        echo 'MYSQL CAMPAIGNS: '.count($sql);       
        echo '<br><br><br><hr>LEFTOVER CAMPAIGNS<hr><br><br><br>';
@@ -674,7 +714,7 @@ class AffiliatesapiController extends \yii\web\Controller
 				$changes .= '<b>Added: </b>';
 			}
 			else
-				$changes .= '&#44;&nbsp;';
+				$changes .= ', ';
 
 			$changes .= $added;
 		}
@@ -690,7 +730,7 @@ class AffiliatesapiController extends \yii\web\Controller
 				$changes .= '<b>Removed: </b>';
 			}
 			else
-				$changes .= '&#44;&nbsp;';
+				$changes .= ', ';
 
 			$changes .= $removed;
 		}
@@ -759,7 +799,7 @@ class AffiliatesapiController extends \yii\web\Controller
 	                            <td>MESSAGE</td>
 	                            <td>PARAMS</td>
 	                        </thead>
-	                        <tbody>'.$this->_alerts.'</tbody>
+	                        <tbody>'.utf8_encode($this->_alerts).'</tbody>
 	                    </table>
 	                </body>
 	            </html>		
@@ -813,7 +853,7 @@ class AffiliatesapiController extends \yii\web\Controller
 	                            <td>STATUS</td>
 	                           	<td>AFFECTED CLUSTERS</td>
 	                        </thead>
-	                        <tbody>'.$this->_changes.'</tbody>
+	                        <tbody>'.utf8_encode($this->_changes).'</tbody>
 	                    </table>
 	                </body>
 	            </html>		
@@ -888,7 +928,7 @@ class AffiliatesapiController extends \yii\web\Controller
 
         $rows    = \Yii::$app->db->createCommand( $sql )->execute();
 
-        echo 'Updated '.$rows.' rates<hr/>';            
+        echo 'Updated '.$rows.' rates<hr/>';
     }
 
     public function getExchangeRate ( $currency )
@@ -896,14 +936,14 @@ class AffiliatesapiController extends \yii\web\Controller
         if ( $this->_exchangeRates && isset($this->_exchangeRates[$currency]))
             return $this->_exchangeRates[$currency];
 
-        $sql = 'SELECT * FROM Currency_Rates WHERE code=:code';
+        $sql = 'SELECT * FROM Currency_Rates WHERE code=:code ORDER BY date(date) DESC';
 
-        $rows    = \Yii::$app->db->createCommand( $sql )->execute([':code'=>$currency]);
+        $row    = \Yii::$app->db->createCommand( $sql )->bindValues([':code'=>$currency])->queryOne();
 
-        if ( isset( $rows[0] ) )
+        if ( $row )
         {
-            $this->_exchangeRates[$currency] = $rows[0]['rate'];
-            return $rows[0]['rate'];
+            $this->_exchangeRates[$currency] = $row['rate'];
+            return $row['rate'];
         }
         else
         {
