@@ -64,6 +64,9 @@
 					switch ( strtolower($p) )
 					{
 						case 'ios':
+						case 'ipod':
+						case 'ipad':
+						case 'iphone':
 							if ( !in_array( 'iOS', $results) )
 								$results[] = 'iOS';
 						break;

@@ -67,7 +67,10 @@ class AffiliatesapiController extends \yii\web\Controller
                 'class'         => 'MobusiAPI',
                 'affiliate_id'  => 12,
             ],
-
+            [
+                'class'         => 'TapticaAPI',
+                'affiliate_id'  => 13,
+            ],
 		];
 	}
 
@@ -119,7 +122,7 @@ class AffiliatesapiController extends \yii\web\Controller
                             <td>MESSAGE</td>
                             <td>PARAMS</td>
                         </thead>
-                        <tbody>'.$this->_sendAlerts().'</tbody>
+                        <tbody>'.utf8_encode($this->_sendAlerts()).'</tbody>
                     </table>   
                     <br>
                     <hr>
@@ -139,7 +142,7 @@ class AffiliatesapiController extends \yii\web\Controller
                             <td>STATUS</td>
                             <td>AFFECTED CLUSTERS</td>
                         </thead>
-                        <tbody>'.$this->_sendNotifications().'</tbody>
+                        <tbody>'.utf8_encode($this->_sendNotifications()).'</tbody>
                     </table>                    
                 </body>
             </html>         
