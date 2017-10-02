@@ -42,15 +42,15 @@ $placements     = [];//components\MapHelper::filtersFromRedisToSelectWidget( \Yi
 
 // redis
 
-$devices          = [];//\Yii::$app->redis->zrange( 'devices', 0, \Yii::$app->redis->zcard('devices') );
-$deviceBrands     = [];//\Yii::$app->redis->zrange( 'device_brands', 0, \Yii::$app->redis->zcard('device_brands') );
-$deviceModels     = [];//\Yii::$app->redis->zrange( 'device_models', 0, \Yii::$app->redis->zcard('device_models') );
-$os               = [];//\Yii::$app->redis->zrange( 'os', 0, \Yii::$app->redis->zcard('os') );
-$osVersions       = [];//\Yii::$app->redis->zrange( 'os_versions', 0, \Yii::$app->redis->zcard('os_versions') );
-$browsers         = [];//\Yii::$app->redis->zrange( 'browsers', 0, \Yii::$app->redis->zcard('browsers') );
-$browserVersions  = [];//\Yii::$app->redis->zrange( 'browser_versions', 0, \Yii::$app->redis->zcard('browser_versions') );
-$countries        = [];//\Yii::$app->redis->zrange( 'countries', 0, \Yii::$app->redis->zcard('countries') );
-$carriers         = [];//\Yii::$app->redis->zrange( 'carriers', 0, \Yii::$app->redis->zcard('carriers') );
+$devices          = \Yii::$app->redis->zrange( 'devices', 0, \Yii::$app->redis->zcard('devices') );
+$deviceBrands     = \Yii::$app->redis->zrange( 'device_brands', 0, \Yii::$app->redis->zcard('device_brands') );
+$deviceModels     = \Yii::$app->redis->zrange( 'device_models', 0, \Yii::$app->redis->zcard('device_models') );
+$os               = \Yii::$app->redis->zrange( 'os', 0, \Yii::$app->redis->zcard('os') );
+$osVersions       = \Yii::$app->redis->zrange( 'os_versions', 0, \Yii::$app->redis->zcard('os_versions') );
+$browsers         = \Yii::$app->redis->zrange( 'browsers', 0, \Yii::$app->redis->zcard('browsers') );
+$browserVersions  = \Yii::$app->redis->zrange( 'browser_versions', 0, \Yii::$app->redis->zcard('browser_versions') );
+$countries        = \Yii::$app->redis->zrange( 'countries', 0, \Yii::$app->redis->zcard('countries') );
+$carriers         = \Yii::$app->redis->zrange( 'carriers', 0, \Yii::$app->redis->zcard('carriers') );
 $pubIds           = [];//\Yii::$app->redis->zrange( 'pub_ids', 0, \Yii::$app->redis->zcard('pub_ids') );
 $exchangeIds      = [];//\Yii::$app->redis->zrange( 'exchange_ids', 0, \Yii::$app->redis->zcard('exchange_ids') );
 $subpubIds        = [];//\Yii::$app->redis->zrange( 'subpub_ids', 0, \Yii::$app->redis->zcard('subpub_ids') );
