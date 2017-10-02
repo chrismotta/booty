@@ -418,6 +418,8 @@ else
     <?php 
     $publishersFilterUrl = Url::to(['publishers/getfilterlist']); 
     $placementsFilterUrl = Url::to(['placements/getfilterlist']); 
+    $affiliatesFilterUrl = Url::to(['publishers/getfilterlist']); 
+    $campaignsFilterUrl = Url::to(['placements/getfilterlist']); 
     ?>
 
     <?= 
