@@ -420,4 +420,19 @@ class ClustersController extends Controller
         else
             return 'error:3';
     }
+
+    public function actionGetfilterlist($q=null){
+
+        \Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+        $list = ClustersSearch::searchForFilter($q);
+
+        foreach ($list as $value) {
+            $formatedList['results'][] = [
+                'id'   => $value['name_id'],
+                'text' => $value['name_id'],
+                ];
+        }
+
+        return $formatedList;
+    }
 }

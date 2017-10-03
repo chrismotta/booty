@@ -418,8 +418,9 @@ else
     <?php 
     $publishersFilterUrl = Url::to(['publishers/getfilterlist']); 
     $placementsFilterUrl = Url::to(['placements/getfilterlist']); 
-    $affiliatesFilterUrl = Url::to(['publishers/getfilterlist']); 
-    $campaignsFilterUrl = Url::to(['placements/getfilterlist']); 
+    $affiliatesFilterUrl = Url::to(['affiliates/getfilterlist']); 
+    $campaignsFilterUrl = Url::to(['campaigns/getfilterlist']); 
+    $clustersFilterUrl = Url::to(['clusters/getfilterlist']); 
     ?>
 
     <?= 
@@ -432,6 +433,7 @@ else
             'options' => ['multiple' => true],
             'pluginOptions' => [
                 'maximumInputLength' => 50,
+                'tokenSeparators' => [',', ' '],
                 'ajax' => [
                     'url' => $publishersFilterUrl,
                     'dataType' => 'json',
@@ -452,7 +454,7 @@ else
             'options' => ['multiple' => true],
             'pluginOptions' => [
                 //'tags' => true,
-                // 'tokenSeparators' => [',', ' '],
+                'tokenSeparators' => [',', ' '],
                 'maximumInputLength' => 10,
                 'ajax' => [
                     'url' => $placementsFilterUrl,
@@ -468,7 +470,7 @@ else
         '<label class="control-label">Affiliate</label>';
         echo Select2::widget( [
             'name' => 'affiliate',
-            'data' => $affiliates,
+            // 'data' => $affiliates,
             'value' => $r_affiliates,
             'changeOnReset' => true,
             'language' => 'us',
@@ -476,7 +478,13 @@ else
             'pluginOptions' => [
                 //'tags' => true,
                 'tokenSeparators' => [',', ' '],
-                'maximumInputLength' => 10
+                'maximumInputLength' => 10,
+                'ajax' => [
+                    'url' => $affiliatesFilterUrl,
+                    'dataType' => 'json',
+                    'data' => new JsExpression('function(params) { 
+                        return {q:params.term}; }')
+                ],
             ],
         ]);           
     ?>
@@ -497,7 +505,13 @@ else
             'pluginOptions' => [
                 //'tags' => true,
                 'tokenSeparators' => [',', ' '],
-                'maximumInputLength' => 10
+                'maximumInputLength' => 10,
+                'ajax' => [
+                    'url' => $campaignsFilterUrl,
+                    'dataType' => 'json',
+                    'data' => new JsExpression('function(params) { 
+                        return {q:params.term}; }')
+                ],
             ],
         ]);           
     ?>
@@ -513,7 +527,13 @@ else
             'pluginOptions' => [
                 //'tags' => true,
                 'tokenSeparators' => [',', ' '],
-                'maximumInputLength' => 10
+                'maximumInputLength' => 10,
+                'ajax' => [
+                    'url' => $clustersFilterUrl,
+                    'dataType' => 'json',
+                    'data' => new JsExpression('function(params) { 
+                        return {q:params.term}; }')
+                ],
             ],
         ]);           
     ?>

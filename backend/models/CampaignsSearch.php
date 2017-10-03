@@ -331,4 +331,26 @@ class CampaignsSearch extends Campaigns
         }
     }
 
+    public static function searchForFilter($q=null)
+    {
+        $name_id = 'CONCAT( name, " (", id, ")" )';
+
+        $query = Campaigns::find();
+        $query->select([$name_id . ' as name_id']);
+
+        // role filter
+        // $userroles = User::getRolesByID(Yii::$app->user->getId());
+        // if(in_array('Advisor', $userroles)){
+        //     $assignedPublishers = Publishers::getPublishersByUser(Yii::$app->user->getId());
+        //     $query->andWhere( ['in', 'id', $assignedPublishers] );
+        // }
+
+        if(isset($q))
+            $query->andWhere( ['like', $name_id, $q] );
+        
+        $query->andWhere(['!=', 'status', 'archived']);
+        
+        return $query->asArray()->all();
+    }
+
 }
