@@ -35,6 +35,8 @@ class ReportingController extends Controller
      */
     public function actionIndex()
     {
+        ini_set('memory_limit','3000M');
+        
         $model        = new CampaignLogs();
         $searchModel  = new CampaignLogsSearch();
 
