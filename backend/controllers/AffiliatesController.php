@@ -96,7 +96,8 @@ class AffiliatesController extends Controller
                     'callback'      => $campaign->landing_url,
                     'ext_id'        => $campaign->ext_id,
                     'click_macro'   => $campaign->affiliates->click_macro,
-                    'placeholders'  => $campaign->affiliates->placeholders
+                    'placeholders'  => $campaign->affiliates->placeholders,
+                    'macros'        => $campaign->affiliates->macros,
                 ]);                
             }   
 

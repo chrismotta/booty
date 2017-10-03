@@ -354,10 +354,11 @@ class AffiliatesapiController extends \yii\web\Controller
                     }
 
                     $this->_redis->hmset( 'campaign:'.$campaign->id, [
-                        'callback'    => $campaign->landing_url,
-                        'click_macro' => $affiliate->click_macro,
+                        'callback'     => $campaign->landing_url,
+                        'click_macro'  => $affiliate->click_macro,
                         'placeholders' => $affiliate->placeholders,
-                        'ext_id'      => $campaign->ext_id
+                        'macros'       => $affiliate->macros,
+                        'ext_id'       => $campaign->ext_id
                     ]);
 
                     unset( $campaign );

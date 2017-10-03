@@ -34,6 +34,7 @@ $this->params['breadcrumbs'][] = $this->title;
             'api_key',
             'click_macro',
             'placeholders',
+            'macros',
             [
                 'label'     => 'Admin User',
                 'attribute' => 'adminUser.username'
