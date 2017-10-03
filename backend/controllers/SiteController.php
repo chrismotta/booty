@@ -59,8 +59,12 @@ class SiteController extends Controller
      *
      * @return string
      */
-    public function actionIndex()
+    public function actionIndex($maintenance=false)
     {
+        if($maintenance){
+            return $this->renderPartial('maintenance');
+        }
+
         $model             = new models\Dashboard;
 
         $totalsProvider    = $model->loadData( 
