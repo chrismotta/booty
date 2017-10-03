@@ -33,6 +33,7 @@ $users = User::find()->asArray()->all();
 
     <?= $form->field($model, 'click_macro')->textInput(['maxlength' => true]) ?>
     <?= $form->field($model, 'placeholders')->textInput(['maxlength' => true]) ?>
+    <?= $form->field($model, 'macros')->textInput(['maxlength' => true]) ?>
 
     <?= 
         '<label class="control-label">Admin User</label>';
