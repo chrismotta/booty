@@ -18,10 +18,6 @@ use yii\helpers\ArrayHelper;
 
 $this->title = 'Reporting';
 $this->params['breadcrumbs'][] = $this->title;
-// var_dump($model->userroles);
-// var_dump($searchModel->userroles);
-// die();
-
 
 $searchModel->date_start = isset($_GET['CampaignLogsSearch']['date_start']) ? $_GET['CampaignLogsSearch']['date_start'] : date( 'd-m-Y' );
 $searchModel->date_end = isset($_GET['CampaignLogsSearch']['date_end']) ? $_GET['CampaignLogsSearch']['date_end'] : date( 'd-m-Y' );
@@ -165,7 +161,9 @@ if($afterSubmit){
                     $columns[$p] = [
                         'attribute' => $column,
                         'value' => function($model, $key, $index, $widget) {
+var_dump($searchModel->userroles);die();
                             if($model->publisher){
+                                
                                 if(in_array('Stakeholder', $model->userroles)){
                                     $value = $model->publisher_id;
                                 }else
