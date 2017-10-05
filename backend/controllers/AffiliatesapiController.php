@@ -10,7 +10,7 @@ use backend\components;
 class AffiliatesapiController extends \yii\web\Controller
 {
     CONST FROM = 'Splad - API Controller<no-reply@spladx.co>';
-	const NOTIFY_INBOX = 'dev@splad.co,apastor@splad.co,tgonzalez@splad.co,mghio@splad.co,proman@splad.co';
+	const NOTIFY_INBOX = 'dev@splad.co,apastor@splad.co,tgonzalez@splad.co,proman@splad.co';
 	const ALERTS_INBOX = 'dev@splad.co,apastor@splad.co';
     const OPEN_EXRATES_APPID = '3ec50944b9564026a90c196286b3e810';
 
@@ -71,6 +71,16 @@ class AffiliatesapiController extends \yii\web\Controller
                 'class'         => 'TapticaAPI',
                 'affiliate_id'  => 13,
             ],
+            /*
+            [
+                'class'         => 'KimiaAPI',
+                'affiliate_id'  => 14,
+            ],  
+            [
+                'class'         => 'MobvistaAPI',
+                'affiliate_id'  => 15,
+            ],
+            */                       
 		];
 	}
 
