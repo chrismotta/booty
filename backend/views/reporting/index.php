@@ -186,13 +186,8 @@ if($afterSubmit){
                     $columns[$p] = [
                         'attribute' => $column,
                         'value' => function($model, $key, $index, $widget) {
-                            if($model->placement){
-                                if(in_array('Stakeholder', $model->userroles)){
-                                    $value = $model->placement_id;
-                                }else
-                                    $value = $model->placement . ' ('.$model->placement_id.')';
-                            }else
-                                $value = null;
+                            $value = $model->placement ? $model->placement . ' ('.$model->placement_id.')' : null;
+                            return $value;
                         },
                     ];                
                 break;                
