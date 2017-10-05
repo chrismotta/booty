@@ -163,11 +163,11 @@ if($afterSubmit){
                     $columns[$p] = [
                         'attribute' => $column,
                         'value' => function($model, $key, $index, $widget) {
-                            if($model->cluster){
+                            if($model->publisher){
                                 if($userrole=='Stakeholder')
                                     $value = $model->publisher_id;
                                 else
-                                    $value = $model->publisher;
+                                    $value = $model->publisher . ' ('.$model->publisher_id.')';
                             }else{
                                 $value = null;
 
