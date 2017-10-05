@@ -166,12 +166,11 @@ if($afterSubmit){
                             if($model->publisher){
                                 if(in_array('Stakeholder', $userroles)){
                                     $value = $model->publisher_id;
-                                else
+                                }else
                                     $value = $model->publisher . ' ('.$model->publisher_id.')';
-                            }else{
+                            }else
                                 $value = null;
 
-                            }
                             return $value;
                         },
                     ];  
