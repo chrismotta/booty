@@ -3,6 +3,7 @@
 namespace backend\models;
 
 use Yii;
+use common\models\User;
 
 /**
  * This is the model class for table "F_CampaignLogs".
@@ -55,7 +56,13 @@ class CampaignLogs extends \yii\db\ActiveRecord
     public $column;
     public $date;
     public $unique_imps;
-    
+    public $userroles;
+
+    public function __construct($config=[]){
+
+        parent::__construct($config);
+        $this->userroles = User::getRolesByID(Yii::$app->user->getId());
+    }    
 
     /**
      * @inheritdoc

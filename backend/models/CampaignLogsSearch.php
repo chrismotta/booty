@@ -8,7 +8,7 @@ use yii\db\Expression;
 use yii\data\ActiveDataProvider;
 use backend\models\CampaignLogs;
 use app\models\Affiliates;
-use common\models\User;
+// use common\models\User;
 
 /**
  * CampaignLogsSearch represents the model behind the search form about `backend\models\CampaignLogs`.
@@ -24,7 +24,6 @@ class CampaignLogsSearch extends CampaignLogs
     public $fields_group2;
     public $fields_group3;
     public $column;
-    public $userroles;
 
 
     /**
@@ -65,7 +64,7 @@ class CampaignLogsSearch extends CampaignLogs
         ]);
 
         // role detection
-        $this->userroles = User::getRolesByID(Yii::$app->user->getId());
+        // $this->userroles = User::getRolesByID(Yii::$app->user->getId());
         $userroles = $this->userroles;
         //
 

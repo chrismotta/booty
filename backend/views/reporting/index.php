@@ -165,7 +165,6 @@ if($afterSubmit){
                         'value' => function($model, $key, $index, $widget) {
 var_dump($model->userroles);die();
                             if($model->publisher){
-
                                 if(in_array('Stakeholder', $model->userroles)){
                                     $value = $model->publisher_id;
                                 }else
