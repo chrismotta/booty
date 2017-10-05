@@ -8,6 +8,7 @@ use app\models\PublishersSearch;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
+use common\models\User;
 
 /**
  * PublishersController implements the CRUD actions for Publishers model.
@@ -129,10 +130,12 @@ class PublishersController extends Controller
         \Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
         $list = PublishersSearch::searchForFilter($q);
 
+        $userroles = User::getRolesByID(Yii::$app->user->getId());
+
         foreach ($list as $value) {
             $formatedList['results'][] = [
                 'id'   => $value['id'],
-                'text' => $value['name_id'],
+                'text' => in_array('Stakeholder', $userroles) ? $value['id'] : $value['name_id'],
                 ];
         }
 
