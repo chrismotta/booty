@@ -87,13 +87,28 @@
 						$deviceTypes = ApiHelper::getDeviceTypes($payout->platforms->platform, false);
 						$oss 		 = ApiHelper::getOs($payout->platforms->platform, false);
 
+						$country = [];
+
+						foreach  ( $countries as $code )
+						{
+							switch ( $code )
+							{
+								case 'UK':
+									$country[] = 'GB';
+								break;
+								default:
+									$country[] = $code;
+								break;
+							}
+						}
+
 						$result[] = [
 							'ext_id' 			=> $payout->id,
 							'name'				=> $campaign->offerName,
 							'desc'				=> preg_replace('/[\xF0-\xF7].../s', '', $campaign->description),
 							'payout' 			=> $payout->payout,
 							'landing_url'		=> $campaign->targetURL,
-							'country'			=> $countries,
+							'country'			=> $country,
 							'device_type'		=> empty($deviceTypes) ? null : $deviceTypes,
 							'connection_type'	=> empty($connectionType) ? null : $connectionType,
 							'carrier'			=> null,
@@ -106,6 +121,7 @@
 
 						unset ( $oss );
 						unset ( $deviceTypes);
+						unset ( $country );
 					}
 				}
 			}

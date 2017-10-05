@@ -90,13 +90,28 @@
 					];
 				}						
 
+				$country = [];
+
+				foreach  ( $countries as $code )
+				{
+					switch ( $code )
+					{
+						case 'UK':
+							$country[] = 'GB';
+						break;
+						default:
+							$country[] = $code;
+						break;
+					}
+				}
+
 				$result[] = [
 					'ext_id' 			=> $campaign->campaign_id,
 					'name'				=> $campaign->name,
 					'desc'				=> preg_replace('/[\xF0-\xF7].../s', '', $campaign->description), //extract utf8mb4 characters
 					'payout' 			=> $campaign->payout_amount,
 					'landing_url'		=> $campaign->click_url,
-					'country'			=> $countries,
+					'country'			=> $country,
 					'device_type'		=> null,
 					'connection_type'	=> null,
 					'carrier'			=> null,
@@ -109,7 +124,8 @@
 				];
 
 				unset ( $countries );
-				unset ( $packageIds );				
+				unset ( $packageIds );
+				unset ( $country );				
 			}
 
 			if  ( isset($_GET['test']) && $_GET['test']==1 )

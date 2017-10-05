@@ -119,6 +119,20 @@
 					$packageIds = [];
 				}
 				
+				$country = [];
+
+				foreach  ( $countries as $code )
+				{
+					switch ( $code )
+					{
+						case 'UK':
+							$country[] = 'GB';
+						break;
+						default:
+							$country[] = $code;
+						break;
+					}
+				}
 
 				$result[] = [
 					'ext_id' 			=> $ext_id,
@@ -126,7 +140,7 @@
 					'desc'				=> preg_replace('/[\xF0-\xF7].../s', '', $campaign->Description),
 					'payout' 			=> $campaign->Payout,
 					'landing_url'		=> $campaign->Tracking_url,
-					'country'			=> $countries,
+					'country'			=> $country,
 					'device_type'		=> $deviceTypes,
 					'connection_type'	=> null,
 					'carrier'			=> null,
@@ -136,6 +150,13 @@
 					'status'			=> $status,
 					'currency'			=> $campaign->Currency
 				];
+
+				unset( $campaign );
+				unset( $country );
+				unset( $deviceTypes );
+				unset( $oss );
+				unset( $countries );
+				unset( $packageIds );				
 			}
 
 			if  ( isset($_GET['test']) && $_GET['test']==1 )

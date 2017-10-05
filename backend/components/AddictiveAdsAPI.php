@@ -73,13 +73,31 @@
 	 			else
 	 				$connTypes = [];
 
+				$country = [];
+
+	 			if ( $campaign->geos )
+	 			{
+					foreach  ( $campaign->geos as $code )
+					{
+						switch ( $code )
+						{
+							case 'UK':
+								$country[] = 'GB';
+							break;
+							default:
+								$country[] = $code;
+							break;
+						}
+					}
+	 			}
+
 				$result[] = [
 					'ext_id' 			=> $campaign->id, 
 					'name'				=> $campaign->name, 
 					'desc'				=> preg_replace('/[\xF0-\xF7].../s', '', $campaign->description), 
 					'payout' 			=> (float)$campaign->payout, 
 					'landing_url'		=> $campaign->tracking_url, 
-					'country'			=> empty($campaign->geos) ? null : $campaign->geos,
+					'country'			=> empty($country) ? null : $country,
 					'device_type'		=> empty($d) ? null : $d,
 					'connection_type'	=> empty($connTypes) ? null : $connTypes,
 					'carrier'			=> empty($c) ? null : $c,
@@ -95,6 +113,7 @@
 				unset( $osVer );
 				unset( $carriers );
 				unset( $devices );				
+				unset( $country );				
 				unset( $d );
 				unset( $o );
 				unset( $c );

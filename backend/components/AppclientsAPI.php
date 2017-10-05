@@ -122,13 +122,31 @@
 						];
 					}					
 
+					$country = [];
+
+					if ( $campaign->campaign_country_target )
+					{
+						foreach  ( $campaign->campaign_country_target as $code )
+						{
+							switch ( $code )
+							{
+								case 'UK':
+									$country[] = 'GB';
+								break;
+								default:
+									$country[] = $code;
+								break;
+							}
+						}						
+					}
+
 					$result[] = [
 						'ext_id' 			=> $campaign->campaign_id, 
 						'name'				=> $campaign->name, 
 						'desc'				=> preg_replace('/[\xF0-\xF7].../s', '', $campaign->instructions), 
 						'payout' 			=> (float)$campaign->campaign_products[0]->pay_rate, 
 						'landing_url'		=> $url, 
-						'country'			=> $campaign->campaign_country_target, 
+						'country'			=> $country, 
 						'device_type'		=> $devices, 
 						'connection_type'	=> null, 
 						'carrier'			=> null, 
@@ -141,7 +159,7 @@
 
 					unset( $campaign );
 					unset( $osVersion );
-					unset( $countries );
+					unset( $country );
 					unset( $packageIds );
 					unset( $devices );
 				}

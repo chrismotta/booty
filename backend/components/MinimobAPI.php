@@ -113,13 +113,28 @@
 					break;
 				}
 
+				$country = [];
+
+				foreach  ( $countries as $code )
+				{
+					switch ( $code )
+					{
+						case 'UK':
+							$country[] = 'GB';
+						break;
+						default:
+							$country[] = $code;
+						break;
+					}
+				}
+
 				$result[] = [
 					'ext_id' 			=> $campaign->id,
 					'name'				=> $campaign->name,
 					'desc'				=> preg_replace('/[\xF0-\xF7].../s', '', $campaign->description),
 					'payout' 			=> $campaign->payout,
 					'landing_url'		=> $campaign->objectiveUrl,
-					'country'			=> empty($countries) ? null : $countries,
+					'country'			=> empty($country) ? null : $country,
 					'device_type'		=> null,
 					'connection_type'	=> null,
 					'carrier'			=> null,

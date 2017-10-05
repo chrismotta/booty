@@ -121,8 +121,13 @@
 	 					$connTypes[] = 'WiFi';
 	 				}
 
+	 				$ext_id = $campaign->id.':'.$code;
+
+	 				if ( $code=='UK' )
+	 					$code = 'GB';
+
 					$result[] = [
-						'ext_id' 			=> $campaign->id.':'.$code, 
+						'ext_id' 			=> $ext_id, 
 						'name'				=> $campaign->title, 
 						'desc'				=> preg_replace('/[\xF0-\xF7].../s', '', $campaign->description),
 						'payout' 			=> isset( $data ) ? (float)$data->payout : null, 
