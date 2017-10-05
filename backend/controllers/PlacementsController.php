@@ -170,7 +170,7 @@ class PlacementsController extends Controller
 
         foreach ($list as $value) {
             $formatedList['results'][] = [
-                'id'   => $value['name_id'],
+                'id'   => $value['id'],
                 'text' => $value['name_id'],
                 ];
         }

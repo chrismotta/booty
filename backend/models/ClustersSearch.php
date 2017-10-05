@@ -101,7 +101,8 @@ class ClustersSearch extends Clusters
         $name_id = 'CONCAT( name, " (", id, ")" )';
 
         $query = Clusters::find();
-        $query->select([$name_id . ' as name_id']);
+        $query->select([$name_id . ' as name_id', 'id']);
+        $query->orderBy( [ 'name_id' => SORT_ASC ] );
 
         // role filter
         // $userroles = User::getRolesByID(Yii::$app->user->getId());

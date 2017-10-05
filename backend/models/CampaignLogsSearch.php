@@ -359,7 +359,6 @@ class CampaignLogsSearch extends CampaignLogs
         $query->andFilterWHere( ['<=', 'date(F_ClusterLogs.imp_time)', $dateEnd] );
         */
 
-
         if ( isset($params['publisher']) && $params['publisher'] ){
             $first = true;
             foreach ( $params['publisher'] as $id )
@@ -709,6 +708,7 @@ class CampaignLogsSearch extends CampaignLogs
         $query->andFilterWhere( ['>=', 'date(F_ClusterLogs.imp_time)', $dateStart] );
         $query->andFilterWHere( ['<=', 'date(F_ClusterLogs.imp_time)', $dateEnd] );
         */
+       
         if ( isset($params['publisher']) && $params['publisher'] ){
             $first = true;
             foreach ( $params['publisher'] as $id )

@@ -92,7 +92,8 @@ class AffiliatesSearch extends Affiliates
         $name_id = 'CONCAT( name, " (", id, ")" )';
 
         $query = Affiliates::find();
-        $query->select([$name_id . ' as name_id']);
+        $query->select([$name_id . ' as name_id', 'id']);
+        $query->orderBy( [ 'name_id' => SORT_ASC ] );
 
         // role filter
         // $userroles = User::getRolesByID(Yii::$app->user->getId());
