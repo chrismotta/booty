@@ -16,8 +16,6 @@ use yii\helpers\ArrayHelper;
 /* @var $searchModel backend\models\CampaignLogsSearch */
 /* @var $dataProvider yii\data\ActiveDataProvider */
 
-var_dump($searchModel->userroles);echo '<hr>';
-
 $this->title = 'Reporting';
 $this->params['breadcrumbs'][] = $this->title;
 
@@ -163,7 +161,6 @@ if($afterSubmit){
                     $columns[$p] = [
                         'attribute' => $column,
                         'value' => function($model, $key, $index, $widget) {
-var_dump($model->userroles);die();
                             if($model->publisher){
                                 if(in_array('Stakeholder', $model->userroles)){
                                     $value = $model->publisher_id;
