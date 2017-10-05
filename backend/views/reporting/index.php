@@ -163,7 +163,15 @@ if($afterSubmit){
                     $columns[$p] = [
                         'attribute' => $column,
                         'value' => function($model, $key, $index, $widget) {
-                            $value = $model->publisher ? $model->publisher . ' ('.$model->publisher_id.')' : null;
+                            if($model->cluster){
+                                if($userrole=='Stakeholder')
+                                    $value = $model->publisher_id;
+                                else
+                                    $value = $model->publisher;
+                            }else{
+                                $value = null;
+
+                            }
                             return $value;
                         },
                     ];  

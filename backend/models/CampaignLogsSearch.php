@@ -63,6 +63,9 @@ class CampaignLogsSearch extends CampaignLogs
             'query' => $query,
         ]);
 
+        // role detection
+        $userroles = User::getRolesByID(Yii::$app->user->getId());
+        //
 
         // relations
 
@@ -310,15 +313,13 @@ class CampaignLogsSearch extends CampaignLogs
         ];
 
         // role filter
-        $userroles = User::getRolesByID(Yii::$app->user->getId());
         if(in_array('Advisor', $userroles)){
             $assignedPublishers = Publishers::getPublishersByUser(Yii::$app->user->getId());
             $query->andWhere( ['in', 'D_Placement.Publishers_id', $assignedPublishers] );
             // var_dump($assignedAffiliates);
             // die('advisor');
         } 
-
-        // filters
+        // 
         
         if ( isset($params['CampaignLogsSearch']['date_start']) )
             $dateStart = date( 'Y-m-d', strtotime($params['CampaignLogsSearch']['date_start']) );
