@@ -18,6 +18,9 @@ use yii\helpers\ArrayHelper;
 
 $this->title = 'Reporting';
 $this->params['breadcrumbs'][] = $this->title;
+// var_dump($model->userroles);
+// var_dump($searchModel->userroles);
+// die();
 
 
 $searchModel->date_start = isset($_GET['CampaignLogsSearch']['date_start']) ? $_GET['CampaignLogsSearch']['date_start'] : date( 'd-m-Y' );

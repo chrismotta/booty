@@ -64,7 +64,8 @@ class CampaignLogsSearch extends CampaignLogs
         ]);
 
         // role detection
-        $userroles = User::getRolesByID(Yii::$app->user->getId());
+        $this->userroles = User::getRolesByID(Yii::$app->user->getId());
+        $userroles = $this->userroles;
         //
 
         // relations

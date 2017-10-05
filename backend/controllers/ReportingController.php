@@ -42,7 +42,6 @@ class ReportingController extends Controller
         
         $model        = new CampaignLogs();
         $searchModel  = new CampaignLogsSearch();
-        $searchModel->userroles = User::getRolesByID(Yii::$app->user->getId());
 
         $queryParams = Yii::$app->request->queryParams;
 
