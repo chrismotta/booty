@@ -20,6 +20,7 @@ use yii\helpers\ArrayHelper;
 class Publishers extends \yii\db\ActiveRecord
 {
     public $username;
+    public $userroles;
     /**
      * @inheritdoc
      */

@@ -46,6 +46,7 @@ class PublishersSearch extends Publishers
     {
         $query = Publishers::find();
         $query->joinWith(['adminUser']);
+        $this->userroles = User::getRolesByID(Yii::$app->user->getId());
 
         
         // add conditions that should always apply here
@@ -79,8 +80,7 @@ class PublishersSearch extends Publishers
 
 
         // role filter
-        $userroles = User::getRolesByID(Yii::$app->user->getId());
-        if(in_array('Advisor', $userroles)){
+        if(in_array('Advisor', $this->userroles)){
             $assignedPublishers = Publishers::getPublishersByUser(Yii::$app->user->getId());
             $query->andWhere( ['in', 'Publishers.id', $assignedPublishers] );
         } 
@@ -95,6 +95,8 @@ class PublishersSearch extends Publishers
 
     public static function searchForFilter($q=null)
     {
+        $this->userroles = User::getRolesByID(Yii::$app->user->getId());
+        
         $name_id = 'CONCAT( name, " (", id, ")" )';
 
         $query = Publishers::find();
@@ -102,8 +104,7 @@ class PublishersSearch extends Publishers
         $query->orderBy( [ 'name_id' => SORT_ASC ] );
 
         // role filter
-        $userroles = User::getRolesByID(Yii::$app->user->getId());
-        if(in_array('Advisor', $userroles)){
+        if(in_array('Advisor', $this->userroles)){
             $assignedPublishers = Publishers::getPublishersByUser(Yii::$app->user->getId());
             $query->andWhere( ['in', 'id', $assignedPublishers] );
         }

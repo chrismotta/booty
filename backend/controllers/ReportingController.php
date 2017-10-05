@@ -8,7 +8,6 @@ use backend\models\CampaignLogsSearch;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
-use common\models\User;
 
 /**
  * ReportingController implements the CRUD actions for CampaignLogs model.
@@ -39,8 +38,6 @@ class ReportingController extends Controller
         ini_set('memory_limit','3000M');
         set_time_limit(0);
 
-        $userroles = User::getRolesByID(Yii::$app->user->getId());
-        
         $model        = new CampaignLogs();
         $searchModel  = new CampaignLogsSearch();
 
@@ -59,7 +56,6 @@ class ReportingController extends Controller
             'searchModel'    => $searchModel,
             'dataProvider'   => $dataProvider,
             'totalsProvider' => $totalsProvider,
-            'userroles'      => $userroles
         ]);
     }
 
