@@ -14,14 +14,6 @@ $this->title = 'Placements';
 $this->params['breadcrumbs'][] = ['label' => 'Publishers', 'url' => ['/publishers']];
 $this->params['breadcrumbs'][] = $this->title;
 
-$publishers = models\Publishers::find()->asArray()->all();
-
-$filterByPublisher = ArrayHelper::map( 
-    $publishers, 
-    'id', 
-    'name' 
-);
-
 $clusters = models\Clusters::find()->asArray()->all();
 
 $filterByCluster = ArrayHelper::map( 

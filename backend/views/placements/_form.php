@@ -9,7 +9,7 @@ use yii\helpers\ArrayHelper;
 /* @var $model app\models\Placements */
 /* @var $form yii\widgets\ActiveForm */
 
-$publishers       = models\Publishers::find()->asArray()->all();
+// $publishers       = models\Publishers::find()->asArray()->all();
 $clusters         = models\Clusters::find()->asArray()->all();
 ?>
 
@@ -27,11 +27,7 @@ $clusters         = models\Clusters::find()->asArray()->all();
             'model' => $model,
             'attribute' => 'Publishers_id',
             'name' => 'publisher',
-            'data' => ArrayHelper::map( 
-                $publishers, 
-                'id', 
-                'name' 
-            ),
+            'data' => $filterByPublisher,
             'language' => 'us',
             'options' => [
                 'placeholder' => 'Select a publisher...', 

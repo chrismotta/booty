@@ -19,6 +19,7 @@ $model->health_check_imps = 10000;
 
     <?= $this->render('_form', [
         'model' => $model,
+        'filterByPublisher' => $filterByPublisher,
     ]) ?>
 
 </div>

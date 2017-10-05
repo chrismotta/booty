@@ -5,10 +5,12 @@ namespace backend\controllers;
 use Yii;
 use app\models\Placements;
 use app\models\PlacementsSearch;
+use app\models\Publishers;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 use common\models\User;
+use yii\helpers\ArrayHelper;
 
 /**
  * PlacementsController implements the CRUD actions for Placements model.
@@ -42,6 +44,7 @@ class PlacementsController extends Controller
         return $this->render('index', [
             'searchModel' => $searchModel,
             'dataProvider' => $dataProvider,
+            'filterByPublisher' => self::filterByPublisher(),
         ]);
     }
 
@@ -82,8 +85,10 @@ class PlacementsController extends Controller
   
             return $this->redirect(['view', 'id' => $model->id]);
         } else {
+          
             return $this->render('create', [
                 'model' => $model,
+                'filterByPublisher' => self::filterByPublisher(),
             ]);
         }
     }
@@ -126,6 +131,7 @@ class PlacementsController extends Controller
         } else {
             return $this->render('update', [
                 'model' => $model,
+                'filterByPublisher' => self::filterByPublisher(),
             ]);
         }
     }
@@ -170,7 +176,7 @@ class PlacementsController extends Controller
         $list = PlacementsSearch::searchForFilter($q);
 
         $userroles = User::getRolesByID(Yii::$app->user->getId());
-        
+
         foreach ($list as $value) {
             $formatedList['results'][] = [
                 'id'   => $value['id'],
@@ -179,5 +185,21 @@ class PlacementsController extends Controller
         }
 
         return $formatedList;
+    }
+
+    private static function filterByPublisher(){
+        $userroles = User::getRolesByID(Yii::$app->user->getId());
+
+        $publishers = Publishers::find();
+        
+        if(in_array('Advisor', $userroles) || in_array('Stakeholder', $userroles)){
+            $publishers->where( ['admin_user' => Yii::$app->user->getId()] );
+        } 
+
+        return $filterByPublisher = ArrayHelper::map( 
+                $publishers->asArray()->all(), 
+                'id', 
+                'name' 
+            );
     }
 }
