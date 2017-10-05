@@ -164,7 +164,7 @@ if($afterSubmit){
                         'attribute' => $column,
                         'value' => function($model, $key, $index, $widget) {
                             if($model->publisher){
-                                if($userrole=='Stakeholder')
+                                if(in_array('Stakeholder', $userroles)){
                                     $value = $model->publisher_id;
                                 else
                                     $value = $model->publisher . ' ('.$model->publisher_id.')';
