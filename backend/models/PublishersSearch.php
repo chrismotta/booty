@@ -80,7 +80,7 @@ class PublishersSearch extends Publishers
 
         // role filter
         $userroles = User::getRolesByID(Yii::$app->user->getId());
-        if(in_array('Advisor', $userroles)){
+        if(in_array('Advisor', $userroles) || in_array('Stakeholder', $userroles)){
             $assignedPublishers = Publishers::getPublishersByUser(Yii::$app->user->getId());
             $query->andWhere( ['in', 'Publishers.id', $assignedPublishers] );
         } 
@@ -103,7 +103,7 @@ class PublishersSearch extends Publishers
 
         // role filter
         $userroles = User::getRolesByID(Yii::$app->user->getId());
-        if(in_array('Advisor', $userroles)){
+        if(in_array('Advisor', $userroles) || in_array('Stakeholder', $userroles)){
             $assignedPublishers = Publishers::getPublishersByUser(Yii::$app->user->getId());
             $query->andWhere( ['in', 'id', $assignedPublishers] );
         }
