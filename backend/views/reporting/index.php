@@ -162,9 +162,9 @@ if($afterSubmit){
                         'attribute' => $column,
                         'value' => function($model, $key, $index, $widget) {
                             if($model->publisher){
-                                if(in_array('Stakeholder', $model->userroles)){
+                                if(in_array('Stakeholder', $model->userroles))
                                     $value = $model->publisher_id;
-                                }else
+                                else
                                     $value = $model->publisher . ' ('.$model->publisher_id.')';
                             }else
                                 $value = null;
@@ -186,7 +186,14 @@ if($afterSubmit){
                     $columns[$p] = [
                         'attribute' => $column,
                         'value' => function($model, $key, $index, $widget) {
-                            $value = $model->placement ? $model->placement . ' ('.$model->placement_id.')' : null;
+                            if($model->placement){
+                                if(in_array('Stakeholder', $model->userroles))
+                                    $value = $model->placement_id;
+                                else
+                                    $value = $model->placement . ' ('.$model->placement_id.')';
+                            }else
+                                $value = null;
+                            // $value = $model->placement ? $model->placement . ' ('.$model->placement_id.')' : null;
                             return $value;
                         },
                     ];                
