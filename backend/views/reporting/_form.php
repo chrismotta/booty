@@ -246,7 +246,8 @@ else
             'data-pjax' => true,
             'id' => 'filtersform'
         ],
-        'method' => 'GET'
+        'method' => 'GET',
+        'action' => Url::to(['reporting/index'])
     ]); ?>
 
     <div class="box box-info <?php echo $collapse ?>">
