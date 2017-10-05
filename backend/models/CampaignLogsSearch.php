@@ -24,6 +24,7 @@ class CampaignLogsSearch extends CampaignLogs
     public $fields_group2;
     public $fields_group3;
     public $column;
+    public $userroles;
 
 
     /**

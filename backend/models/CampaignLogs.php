@@ -55,7 +55,6 @@ class CampaignLogs extends \yii\db\ActiveRecord
     public $column;
     public $date;
     public $unique_imps;
-    public $userroles;
     
 
     /**
