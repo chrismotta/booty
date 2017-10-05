@@ -118,7 +118,7 @@ class PlacementsSearch extends Placements
 
         // role filter
         $userroles = User::getRolesByID(Yii::$app->user->getId());
-        if(in_array('Advisor', $userroles) || in_array('Stakeholder', $userroles)){
+        if(in_array('Advisor', $userroles)){
             $assignedPublishers = Publishers::getPublishersByUser(Yii::$app->user->getId());
             $query->andWhere( ['in', 'Publishers_id', $assignedPublishers] );
         } 
