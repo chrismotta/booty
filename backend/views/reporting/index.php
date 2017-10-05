@@ -16,7 +16,7 @@ use yii\helpers\ArrayHelper;
 /* @var $searchModel backend\models\CampaignLogsSearch */
 /* @var $dataProvider yii\data\ActiveDataProvider */
 
-// var_dump($searchModel->userroles);die();
+var_dump($searchModel->userroles);echo '<hr>';
 
 $this->title = 'Reporting';
 $this->params['breadcrumbs'][] = $this->title;
