@@ -127,7 +127,9 @@ if($afterSubmit){
 ?>
     
     <div>
+
     <?=
+    /*
         ExportMenu::widget([
             'dataProvider' => $dataProvider,
             'columns' => $columns,
@@ -136,7 +138,8 @@ if($afterSubmit){
                 ExportMenu::FORMAT_EXCEL     => false,
             ]
         ]);
-    ?>
+    */
+    '' ?>
     </div>
 
 
