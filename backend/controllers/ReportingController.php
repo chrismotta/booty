@@ -9,7 +9,6 @@ use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
 use common\models\User;
-use yii2tech\csvgrid\CsvGrid;
 
 /**
  * ReportingController implements the CRUD actions for CampaignLogs model.
@@ -149,7 +148,10 @@ class ReportingController extends Controller
             }  
             
             if ( !$header )
+            {
+                $header = true;
                 fputcsv($fp, $headerFields, ',');
+            }
 
             fputcsv($fp, $row, ',');
             unset( $row );
