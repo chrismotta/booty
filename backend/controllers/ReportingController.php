@@ -38,7 +38,6 @@ class ReportingController extends Controller
     {
         ini_set('memory_limit','3000M');
         set_time_limit(0);
-
         
         $model        = new CampaignLogs();
         $searchModel  = new CampaignLogsSearch();
@@ -48,17 +47,117 @@ class ReportingController extends Controller
         if (isset($queryParams['CampaignLogsSearch'])) {
             $dataProvider = $searchModel->search($queryParams);
             $totalsProvider = $searchModel->searchTotals($queryParams);
+
+            if ( isset($_REQUEST['download']) )
+            {
+                $this->_sendCsvFile( $dataProvider, $queryParams );
+            }      
+            else
+            {
+                return $this->render('index', [
+                    'model'          => $model,
+                    'searchModel'    => $searchModel,
+                    'dataProvider'   => $dataProvider,
+                    'totalsProvider' => $totalsProvider,
+                ]);                
+            }      
         } else {
             $dataProvider = null;
             $totalsProvider = null;
+
+            return $this->render('index', [
+                'model'          => $model,
+                'searchModel'    => $searchModel,
+                'dataProvider'   => $dataProvider,
+                'totalsProvider' => $totalsProvider,
+            ]);            
+        }
+    }
+
+
+    private function _sendCsvFile ( $dataProvider, $params )
+    {
+        if ( isset($params['CampaignLogsSearch']['date_start']) )
+            $dateStart = date( 'Y-m-d', strtotime($params['CampaignLogsSearch']['date_start']) );
+        else
+            $dateStart = date( 'Y-m-d' );
+
+        if ( isset($params['CampaignLogsSearch']['date_end']) )
+            $dateEnd= date( 'Y-m-d', strtotime($params['CampaignLogsSearch']['date_end']) );
+        else
+            $dateEnd = date( 'Y-m-d' );
+
+        $filename = 'Report_'.$dateStart.'-'.$dateEnd.'.csv';
+
+        $fields = [];
+
+        if ( isset($params['CampaignLogsSearch']['fields_group1']) && !empty( $params['CampaignLogsSearch']['fields_group1'] ) )
+        {
+            $fields = array_merge( $fields, $params['CampaignLogsSearch']['fields_group1'] );
         }
 
-        return $this->render('index', [
-            'model'          => $model,
-            'searchModel'    => $searchModel,
-            'dataProvider'   => $dataProvider,
-            'totalsProvider' => $totalsProvider,
-        ]);
+        if ( isset($params['CampaignLogsSearch']['fields_group2']) && !empty( $params['CampaignLogsSearch']['fields_group2'] ) )
+        {
+            $fields = array_merge( $fields, $params['CampaignLogsSearch']['fields_group2'] );
+        }          
+
+        if ( isset($params['CampaignLogsSearch']['fields_group3']) && !empty( $params['CampaignLogsSearch']['fields_group3'] ) )
+        {
+            $fields = array_merge( $fields, $params['CampaignLogsSearch']['fields_group3'] );        
+        }
+
+        $res      = $dataProvider->getModels();
+        $header   = false;
+
+        $fp       = fopen('php://output', 'w');
+
+        header( "Content-type: text/csv;charset=utf-8");
+        header( 'Content-Disposition: attachment;filename='.$filename);
+
+        foreach( $dataProvider->getModels() as $data)
+        {
+            $data = (array)$data;
+
+            $row = [];
+
+            if (!$header)
+                $headerFields = [];
+
+            foreach ( $data as $field => $value )
+            {                                         
+                if ( in_array( $field, $fields ) )
+                {
+                    if(!$header)
+                        $headerFields[] = strtoupper($field);                         
+                    switch ( $field )
+                    {
+                        case 'campaign':
+                        case 'affiliate':
+                        case 'placement':
+                        case 'publisher':
+                        case 'cluster':
+                            $idField = $field.'_id';
+                            $row[]   = $value . ' ('.$data[$idField] .')';
+                        break;
+                        default:
+                            $row[] = $value;
+                        break;
+                    }    
+                }
+                
+            }  
+            
+            if ( !$header )
+            {
+                $header = true;
+                fputcsv($fp, $headerFields, ',');
+            }
+
+            fputcsv($fp, $row, ',');
+            unset( $row );
+        }
+
+        fclose($fp);
     }
 
     /**

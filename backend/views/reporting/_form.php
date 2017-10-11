@@ -246,7 +246,8 @@ else
             'data-pjax' => true,
             'id' => 'filtersform'
         ],
-        'method' => 'GET'
+        'method' => 'GET',
+        'action' => Url::to(['reporting/index'])
     ]); ?>
 
     <div class="box box-info <?php echo $collapse ?>">
@@ -278,6 +279,7 @@ else
                 'opens'=>'center',
             ]
         ]);
+
     ?>
     
     </div>
@@ -785,7 +787,18 @@ else
     </div><!-- box end -->
 
     <div class="form-group">
-        <?= Html::submitButton('Search', ['class' => 'btn btn-info']) ?>
+        <?= 
+            Html::submitButton('Search', [
+                'class' => 'btn btn-info',
+                'onclick' => '$("#filtersform").attr("target", "_self");if ( $("#download-flag").length ) $("#download-flag").remove() ;$("#filtersform").submit();'                
+            ]) 
+        ?>
+        <?=
+            Html::buttonInput('Download CSV', [
+                'class' => 'btn btn-warning', 
+                'onclick' => '$("#filtersform").attr("target", "#");if ( $("#download-flag").length ) $("#download-flag").val("true"); else $("#filtersform").append("<input type=\"hidden\" style=\"visibility:collapse;\" id=\"download-flag\" name=\"download\" value=\"true\" />"); $("#filtersform").submit();'            
+            ] );         
+        ?>        
         <?= Html::resetInput('Reset', ['class' => 'btn btn-default']) ?>
     </div>
 
