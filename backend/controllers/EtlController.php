@@ -573,6 +573,11 @@ class EtlController extends \yii\web\Controller
                     else
                         $impStatus = 'NULL';               
 
+                    if ( isset($clusterLog['clicks']) )
+                        $clicks = $clusterLog['clicks'];
+                    else
+                        $clicks = 'NULL';
+
                     $values .= '( 
                         "'.$sessionHash.'",
                         '.$clusterLog['placement_id'].',
@@ -581,7 +586,7 @@ class EtlController extends \yii\web\Controller
                         '.$clusterLog['cluster_id'].',
                         "'.$clusterLog['cluster_name'].'",
                         '.$clusterLog['imps'].',
-                        '.$clusterLog['clicks'].',
+                        '.$clicks.',
                         "'.\date( 'Y-m-d H:i:s', $clusterLog['imp_time'] ).'",
                         '.$impStatus.',
                         '.$clusterLog['cost'].',
