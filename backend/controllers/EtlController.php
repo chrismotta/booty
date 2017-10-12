@@ -429,7 +429,9 @@ class EtlController extends \yii\web\Controller
     			cluster_id,
                 cluster_name,
     			imps,
+                clicks,
     			imp_time,
+                imp_status,
     			cost,
                 exchange_id,
     			country,
@@ -566,6 +568,11 @@ class EtlController extends \yii\web\Controller
                     if ( $clusterLog['device']=='Phablet' || $clusterLog['device']=='Smartphone' )
                         $clusterLog['device'] = '"mobile"';
 
+                    if ( isset( $clusterLog['imp_status'] ) && $clusterLog['imp_status'] && $clusterLog['imp_status']!='' )
+                        $impStatus = '"'.$clusterLog['imp_status'].'"';
+                    else
+                        $impStatus = 'NULL';               
+
                     $values .= '( 
                         "'.$sessionHash.'",
                         '.$clusterLog['placement_id'].',
@@ -574,7 +581,9 @@ class EtlController extends \yii\web\Controller
                         '.$clusterLog['cluster_id'].',
                         "'.$clusterLog['cluster_name'].'",
                         '.$clusterLog['imps'].',
+                        '.$clusterLog['clicks'].',
                         "'.\date( 'Y-m-d H:i:s', $clusterLog['imp_time'] ).'",
+                        '.$impStatus.',
                         '.$clusterLog['cost'].',
                         '.$clusterLog['exchange_id'].',
                         '.$clusterLog['country'].',

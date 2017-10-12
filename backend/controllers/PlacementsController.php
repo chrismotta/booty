@@ -122,7 +122,6 @@ class PlacementsController extends Controller
             $cache->hset( 'placement:'.$model->id, 'status', $model->status );
             $cluster_id = isset($model->clusters->id) ? $model->clusters->id : null;
             $cache->hset( 'placement:'.$model->id, 'cluster_id', $cluster_id );
-            // $cache->hset( 'placement:'.$model->id, 'cluster_name', $model->clusters->name );
             $cache->hset( 'placement:'.$model->id, 'size', $model->size );
             $cache->hset( 'placement:'.$model->id, 'imps', (int)$model->imps );
             $cache->hset( 'placement:'.$model->id, 'health_check_imps', (int)$model->health_check_imps );

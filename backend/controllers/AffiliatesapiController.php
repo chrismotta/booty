@@ -50,7 +50,7 @@ class AffiliatesapiController extends \yii\web\Controller
             [
                 'class'         => 'iWoopAPI',
                 'affiliate_id'  => 8,
-            ],          
+            ],
             [
                 'class'         => 'AppclientsAPI',
                 'affiliate_id'  => 9,
@@ -71,7 +71,6 @@ class AffiliatesapiController extends \yii\web\Controller
                 'class'         => 'TapticaAPI',
                 'affiliate_id'  => 13,
             ],
-            /*
             [
                 'class'         => 'KimiaAPI',
                 'affiliate_id'  => 14,
@@ -80,7 +79,7 @@ class AffiliatesapiController extends \yii\web\Controller
                 'class'         => 'MobvistaAPI',
                 'affiliate_id'  => 15,
             ],
-            */                       
+                       
 		];
 	}
 
