@@ -573,10 +573,10 @@ class EtlController extends \yii\web\Controller
                     else
                         $impStatus = 'NULL';               
 
-                    if ( isset($clusterLog['clicks']) )
+                    if ( isset($clusterLog['clicks']) && $clusterLog['clicks'] )
                         $clicks = $clusterLog['clicks'];
                     else
-                        $clicks = 'NULL';
+                        $clicks = 0;
 
                     $values .= '( 
                         "'.$sessionHash.'",
