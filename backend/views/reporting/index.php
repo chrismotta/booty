@@ -34,6 +34,14 @@ $placements     = [];//components\MapHelper::filtersFromRedisToSelectWidget( \Yi
 
 
 // redis
+$impStatus = [ 
+    'no_offer',
+    'health_check',
+    'testing',
+    'banned',
+    'inc_targeting',
+    'print'
+];
 
 $devices          = \Yii::$app->redis->zrange( 'devices', 0, -1 );
 $deviceBrands     = \Yii::$app->redis->zrange( 'device_brands', 0, -1 );
@@ -117,6 +125,7 @@ else
         'deviceIds'   => $deviceIds,
         'params'      => $params,
         'afterSubmit' => $afterSubmit,
+        'impStatus'   => $impStatus,
     ]) ?>
 
 

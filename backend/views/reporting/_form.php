@@ -107,6 +107,16 @@ if ( isset($params['model']) && $params['model'] ){
     }
 }
 
+$r_impstatus = [];
+if ( isset($params['imp_status']) && $params['imp_status'] ){
+
+    foreach ( $params['imp_status'] as $value )
+    {
+        if ( !in_array($value, $r_impstatus) )
+            $r_impstatus[] = $value;
+    }
+}
+
 $r_devices = [];
 if ( isset($params['device']) && $params['device'] ){
 
@@ -300,17 +310,18 @@ else
     <?= 
         $form->field($searchModel, 'fields_group1')->checkboxList(
             [
-                'date'      => 'Date',
-                'cluster'   => 'Cluster',
-                'affiliate' => 'Affiliate',
-                'campaign'  => 'Campaign',
-                'publisher' => 'Publisher',
-                'placement' => 'Placement',
-                'model'     => 'Model',
+                'date'        => 'Date',
+                'cluster'     => 'Cluster',
+                'affiliate'   => 'Affiliate',
+                'campaign'    => 'Campaign',
+                'publisher'   => 'Publisher',
+                'placement'   => 'Placement',
+                'model'       => 'Model',
                 'exchange_id' => 'Exchange ID',
-                'pub_id' => 'Pub ID',
-                'subpub_id' => 'Subpub ID',
-                'device_id' => 'Device ID',         
+                'pub_id'      => 'Pub ID',
+                'subpub_id'   => 'Subpub ID',
+                'device_id'   => 'Device ID',
+                'imp_status'  => 'Imp Status',
             ],
             [
                 'item' => function ($index, $label, $name, $checked, $value) {
@@ -572,9 +583,6 @@ else
         ]);           
     ?>
 
-    </div>
-    <div class="col-md-4">
-
     <?=
         '<label class="control-label">Carrier</label>';
         echo Select2::widget( [
@@ -589,7 +597,10 @@ else
                 'maximumInputLength' => 10
             ],
         ]);           
-    ?>    
+    ?> 
+
+    </div>
+    <div class="col-md-4">   
 
     <?=
         '<label class="control-label">Device</label>';
@@ -687,11 +698,6 @@ else
             ],
         ]);           
     ?>  
-
-    </div>
-    <div class="col-md-4">
-
-
     <?=
         '<label class="control-label">Browser Version</label>';
         echo Select2::widget( [
@@ -707,8 +713,27 @@ else
             ],
         ]);           
     ?>
+    </div>
+    <div class="col-md-4">
+
+    <?=
+        '<label class="control-label">Imp. Status</label>';
+        echo Select2::widget( [
+            'name' => 'imp_status',
+            'data' => components\MapHelper::arrayToMap( $impStatus ), 
+            'value' => $r_impstatus,      
+            'language' => 'us',
+            'options' => ['multiple' => true],
+            'pluginOptions' => [
+                //'tags' => true,
+                'tokenSeparators' => [',', ' '],
+                'maximumInputLength' => 10
+            ],
+        ]);           
+    ?>
 
     <?php 
+
     echo $form->field($model, 'pub_id')->textInput(['maxlength' => true]);
     echo $form->field($model, 'subpub_id')->textInput(['maxlength' => true]);
     echo $form->field($model, 'exchange_id')->textInput(['maxlength' => true]);

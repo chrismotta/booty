@@ -57,6 +57,7 @@ class CampaignLogs extends \yii\db\ActiveRecord
     public $date;
     public $unique_imps;
     public $userroles;
+    public $imp_status;
 
     public function __construct($config=[]){
 
@@ -107,7 +108,8 @@ class CampaignLogs extends \yii\db\ActiveRecord
             'cost_ecpm'     => 'Cost eCPM',
             'profit_ecpm'   => 'Profit eCPM',
             'date'          => 'Date',
-            'unique_imps'   => 'Unique Imps'
+            'unique_imps'   => 'Unique Imps',
+            'imp_status'    => 'Imp Status'
         ];
     }
 

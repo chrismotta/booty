@@ -24,6 +24,7 @@ class CampaignLogsSearch extends CampaignLogs
     public $fields_group2;
     public $fields_group3;
     public $column;
+    public $imp_status;
 
 
     /**
@@ -232,6 +233,10 @@ class CampaignLogsSearch extends CampaignLogs
             'asc' => ['F_ClusterLogs.carrier' => SORT_ASC],
             'desc' => ['F_ClusterLogs.carrier' => SORT_DESC],
         ];
+        $dataProvider->sort->attributes['imp_status'] = [
+            'asc' => ['F_ClusterLogs.imp_status' => SORT_ASC],
+            'desc' => ['F_ClusterLogs.imp_status' => SORT_DESC],
+        ];        
         $dataProvider->sort->attributes['device'] = [
             'asc' => ['F_ClusterLogs.device' => SORT_ASC],
             'desc' => ['F_ClusterLogs.device' => SORT_DESC],
@@ -415,6 +420,21 @@ class CampaignLogsSearch extends CampaignLogs
                 }
             }
         }
+
+
+        if ( isset($params['imp_status']) && $params['imp_status'] ){
+            $first = true;
+            foreach ( $params['imp_status'] as $value )
+            {
+                if ( $first ){
+                    $query->andFilterWhere( ['=', 'F_ClusterLogs.imp_status', $value] );
+                    $first = false;
+                }
+                else{
+                    $query->orFilterWhere( ['=', 'F_ClusterLogs.imp_status', $value] );
+                }
+            }
+        }        
 
         if ( isset($params['placement']) && $params['placement'] ){
             $first = true;
@@ -793,6 +813,34 @@ class CampaignLogsSearch extends CampaignLogs
                 }
             }
         }
+
+        if ( isset($params['imp_status']) && $params['imp_status'] ){
+            $first = true;
+            foreach ( $params['imp_status'] as $value )
+            {
+                if ( $first ){
+                    $query->andFilterWhere( ['=', 'F_ClusterLogs.imp_status', $value] );
+                    $first = false;
+                }
+                else{
+                    $query->orFilterWhere( ['=', 'F_ClusterLogs.imp_status', $value] );
+                }
+            }
+        }          
+
+        if ( isset($params['model']) && $params['model'] ){
+            $first = true;
+            foreach ( $params['model'] as $id )
+            {
+                if ( $first ){
+                    $query->andFilterWhere( ['=', 'D_Placement.model', $id] );
+                    $first = false;
+                }
+                else{
+                    $query->orFilterWhere( ['=', 'D_Placement.model', $id] );
+                }
+            }
+        }           
 
         if ( isset($params['country']) && $params['country'] ){
             $first = true;
