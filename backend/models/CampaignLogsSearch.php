@@ -160,16 +160,16 @@ class CampaignLogsSearch extends CampaignLogs
                         $fields[] = 'SUM(F_CampaignLogs.revenue)-SUM(F_ClusterLogs.cost/F_ClusterLogs.clicks) AS '.$field;
                     break;                      
                     case 'revenue_ecpm':
-                        $fields[] = 'SUM(F_ClusterLogs.cost) * 1000 / SUM(F_ClusterLogs.imps) AS '.$field;
+                        $fields[] = 'SUM(F_CampaignLogs.revenue) * 1000 / ROUND(SUM(F_ClusterLogs.imps/F_ClusterLogs.clicks)) AS '.$field;
                     break;
                     case 'cost_ecpm':
-                        $fields[] = 'SUM(F_ClusterLogs.cost) * 1000 / SUM(F_ClusterLogs.imps) AS '.$field;
+                        $fields[] = 'SUM(F_ClusterLogs.cost/F_ClusterLogs.clicks) * 1000 / ROUND(SUM(F_ClusterLogs.imps/F_ClusterLogs.clicks)) AS '.$field;
                     break;      
                     case 'profit_ecpm':
                         $fields[] = '(SUM(F_CampaignLogs.revenue)-SUM(F_ClusterLogs.cost/F_ClusterLogs.clicks)) * 1000 / ROUND(SUM(F_ClusterLogs.imps/F_ClusterLogs.clicks)) AS '.$field;
                     break; 
                     case 'conv_rate':
-                        $fields[] = '(COUNT(F_CampaignLogs.conv_time)*100/COUNT(F_ClusterLogs.imps)) AS '.$field;
+                        $fields[] = '(COUNT(F_CampaignLogs.conv_time)*100/ROUND(SUM(F_ClusterLogs.imps/F_ClusterLogs.clicks))) AS '.$field;
                     break; 
                     default:
                         $fields[] = 'F_ClusterLogs.'.$field.' AS '.$field;
@@ -659,16 +659,16 @@ class CampaignLogsSearch extends CampaignLogs
                         $fields[] = 'SUM(F_CampaignLogs.revenue)-SUM(F_ClusterLogs.cost/F_ClusterLogs.clicks) AS '.$field;
                     break;                      
                     case 'revenue_ecpm':
-                        $fields[] = 'SUM(F_ClusterLogs.cost) * 1000 / SUM(F_ClusterLogs.imps) AS '.$field;
+                        $fields[] = 'SUM(F_CampaignLogs.revenue) * 1000 / ROUND(SUM(F_ClusterLogs.imps/F_ClusterLogs.clicks)) AS '.$field;
                     break;
                     case 'cost_ecpm':
-                        $fields[] = 'SUM(F_ClusterLogs.cost) * 1000 / SUM(F_ClusterLogs.imps) AS '.$field;
+                        $fields[] = 'SUM(F_ClusterLogs.cost/F_ClusterLogs.clicks) * 1000 / ROUND(SUM(F_ClusterLogs.imps/F_ClusterLogs.clicks)) AS '.$field;
                     break;      
                     case 'profit_ecpm':
-                        $fields[] = '(SUM(F_CampaignLogs.revenue)-SUM(F_ClusterLogs.cost)) * 1000 / SUM(F_ClusterLogs.imps) AS '.$field;
+                        $fields[] = '(SUM(F_CampaignLogs.revenue)-SUM(F_ClusterLogs.cost/F_ClusterLogs.clicks)) * 1000 / ROUND(SUM(F_ClusterLogs.imps/F_ClusterLogs.clicks)) AS '.$field;
                     break; 
                     case 'conv_rate':
-                        $fields[] = '(COUNT(F_CampaignLogs.conv_time)*100/COUNT(F_ClusterLogs.imps)) AS '.$field;
+                        $fields[] = '(COUNT(F_CampaignLogs.conv_time)*100/ROUND(SUM(F_ClusterLogs.imps/F_ClusterLogs.clicks))) AS '.$field;
                     break;                                                               
                 }
             }         
