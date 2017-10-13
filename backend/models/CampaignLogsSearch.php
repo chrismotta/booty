@@ -128,6 +128,9 @@ class CampaignLogsSearch extends CampaignLogs
                         $group[]  = 'D_Placement.model';
                     break;
                     case 'imps':
+                        // when query groups by campaign or affiliate it could calculate with little discrepancy
+                        $fields[] = 'CEIL(SUM(F_ClusterLogs.'.$field.'/F_ClusterLogs.clicks)) AS '.$field;
+                    break;
                     case 'cost':
                         $fields[] = 'SUM(F_ClusterLogs.'.$field.') AS '.$field;
                     break;
@@ -637,6 +640,9 @@ class CampaignLogsSearch extends CampaignLogs
                 switch ( $field )
                 {
                     case 'imps':
+                        // when query groups by campaign or affiliate it could calculate with little discrepancy
+                        $fields[] = 'CEIL(SUM(F_ClusterLogs.'.$field.'/F_ClusterLogs.clicks)) AS '.$field;
+                    break;                    
                     case 'cost':
                         $fields[] = 'sum(F_ClusterLogs.'.$field.') AS '.$field;
                     break;
