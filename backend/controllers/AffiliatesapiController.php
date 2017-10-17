@@ -80,7 +80,11 @@ class AffiliatesapiController extends \yii\web\Controller
                 'class'         => 'MobvistaAPI',
                 'affiliate_id'  => 15,
             ],
-            */           
+            */        
+            [
+                'class'         => 'MobildaAPI',
+                'affiliate_id'  => 16,
+            ],              
 		];
 	}
 
