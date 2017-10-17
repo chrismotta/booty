@@ -128,7 +128,8 @@ class ReportingController extends Controller
                 if ( in_array( $field, $fields ) )
                 {
                     if(!$header)
-                        $headerFields[] = strtoupper($field);                         
+                        $headerFields[] = strtoupper($field);
+
                     switch ( $field )
                     {
                         case 'campaign':
