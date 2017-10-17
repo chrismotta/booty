@@ -60,9 +60,20 @@ class CampaignLogsSearch extends CampaignLogs
 
         $query = CampaignLogs::find();
 
-        $dataProvider = new ActiveDataProvider([
-            'query' => $query,
-        ]);
+        if ( isset($_REQUEST['download']) )
+        {
+            $dataProvider = new ActiveDataProvider([
+                'query'      => $query,
+                'pagination' => false,
+            ]);
+        }
+        else
+        {
+            $dataProvider = new ActiveDataProvider([
+                'query'      => $query,
+            ]);
+        }
+
 
         // role detection
         // $this->userroles = User::getRolesByID(Yii::$app->user->getId());
