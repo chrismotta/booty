@@ -1069,7 +1069,7 @@ class EtlController extends \yii\web\Controller
                     c.Affiliates_id          AS Affiliates_id,
                     p.Publishers_id          AS Publishers_id,
                     date(cl.imp_time)        AS date, 
-                    sum( cl.imps )           AS imps, 
+                    round(sum( cl.imps/cl.clicks )) AS imps,                     
                     count( cl.session_hash ) AS unique_users,
 
                     sum(CASE 
@@ -1077,7 +1077,7 @@ class EtlController extends \yii\web\Controller
                         ELSE 0 
                     END)                     AS installs, 
 
-                    sum( cl.cost )           AS cost,
+                    sum( cl.cost/cl.clicks ) AS cost,
                     sum( cp.revenue )        AS revenue 
 
                 FROM F_CampaignLogs cp 
