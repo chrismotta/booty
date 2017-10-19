@@ -84,7 +84,11 @@ class AffiliatesapiController extends \yii\web\Controller
             [
                 'class'         => 'MobildaAPI',
                 'affiliate_id'  => 16,
-            ],              
+            ],
+            [
+                'class'         => 'AppThisAPI',
+                'affiliate_id'  => 17,
+            ],                          
 		];
 	}
 
