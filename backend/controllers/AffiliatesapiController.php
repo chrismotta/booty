@@ -568,28 +568,70 @@ class AffiliatesapiController extends \yii\web\Controller
         }
     }
 
+    public function actionClustersmaintenance ( $id = null )
+    {
+        $clusterId = isset($_GET['id']) ? $_GET['id'] : $id;
 
-    public function actionCheckclusterlist ( )
+        if ( $clusterId )
+        {
+            $this->_checkclusterlist( $clusterId);
+        }
+        else
+        {
+            $clusters = models\Clusters::find()->all();
+
+            foreach ( $clusters as $model )
+            {
+                echo '<hr><br><br><strong>CLUSTER:'.$model->id.'</strong><br><br><hr><br><br><br>';
+                $this->_checkclusterlist( $model->id );
+            }
+        }
+    }
+
+
+    public function _checkclusterlist ( $clusterId )
     {
        $this->_redis   = new \Predis\Client( \Yii::$app->params['predisConString'] );
        $this->_redis->select( 0 ); 
-
-       $clusterId = isset($_GET['id']) ? $_GET['id'] : null;
        
        if ( !$clusterId )
             die('Cluster ID required');
 
-       $clusterList = $this->_redis->zrange( 'clusterlist:'.$clusterId, 0, -1 );
+       $clusterList = $this->_redis->zrange( 
+            'clusterlist:'.$clusterId, 
+            0, 
+            -1,
+            [
+                'WITHSCORES' => true
+            ]               
+        );
        $redis = [];
        $sql   = [];
 
         $clustersHasCampaigns = models\ClustersHasCampaigns::findAll( ['Clusters_id' => $clusterId] );
 
 
-       foreach ( $clusterList as $value )
+       foreach ( $clusterList as $value => $frequency )
        {
             $data = explode( ':', $value );
 
+            $id = $data[0];
+
+            if ( isset($redis[$id]) )
+            {
+                $redis[$id]['app_id'] .= ', ' . $data[2];
+            }
+            else
+            {
+                $redis[$id] = [
+                    'id'     => $id,
+                    'aff'    => $data[1],
+                    'status' => 'active',
+                    'app_id' => $data[2],
+                    'freq'   => $frequency
+                ];                    
+            }
+            /*
             $campaign = models\Campaigns::findOne($data[0]);
 
             if ( $campaign )
@@ -602,28 +644,16 @@ class AffiliatesapiController extends \yii\web\Controller
                         'id'     => $campaign->id,
                         'aff'    => $campaign->Affiliates_id,
                         'status' => $campaign->status,
-                        'app_id' => $campaign->app_id
+                        'app_id' => $campaign->app_id,
+                        'freq'   => $frequency
                     ];
                 }
             }
             else
             {
-                $id = $data[0];
 
-                if ( isset($redis[$id]) )
-                {
-                    $redis[$id]['app_id'] .= $data[2];
-                }
-                else
-                {
-                    $redis[$id] = [
-                        'id'     => $id,
-                        'aff'    => $data[1],
-                        'status' => $campaign->status,
-                        'app_id' => $data[2]
-                    ];                    
-                }
             }
+            */
        }
 
        foreach ( $clustersHasCampaigns as $assign )
@@ -651,13 +681,17 @@ class AffiliatesapiController extends \yii\web\Controller
 
        foreach ( $redis as $id => $values )
        {
-            if ( !isset($sql[$id]) )
+            if ( 
+                !isset($sql[$id]) 
+                || $sql[$id]['status'] != $values['status'] 
+                || $sql[$id]['freq']   != $values['freq'] 
+            )
             {
                 $fixed = 'no';
 
                 if ( isset($_GET['fix']) && $_GET['fix']==1 )
                 {
-                    $packageIds = json_decode($values['app_id'], true);
+                    $packageIds = explode( ', ', $values['app_id'] );
 
                     foreach ( $packageIds AS $packageId )
                     {
@@ -673,6 +707,7 @@ class AffiliatesapiController extends \yii\web\Controller
                     AFF    :'. $values['aff'] .'<br>
                     STATUS :'. $values['status'] . '<br>
                     APP_ID :'. $values['app_id'] . '<br>
+                    FREQ   :'. $values['freq'] . '<br>
                     FIXED  :'. $fixed . '<br>
                     <hr>
                 ';                  
@@ -683,7 +718,11 @@ class AffiliatesapiController extends \yii\web\Controller
        echo '<br><br><br><hr>MISSING CAMPAIGNS<hr><br><br><br>';
        foreach ( $sql as $id => $values )
        {
-            if ( !isset($redis[$id]) )
+            if ( 
+                !isset($redis[$id]) 
+                || $redis[$id]['status'] != $values['status'] 
+                || $redis[$id]['freq'] != $values['freq'] 
+            )
             {        
                 $fixed = 'no';
 
@@ -705,13 +744,14 @@ class AffiliatesapiController extends \yii\web\Controller
                     AFF    :'. $values['aff'] .'<br>
                     STATUS :'. $values['status'] . '<br>
                     APP_ID :'. $values['app_id'] . '<br>
+                    FREQ   :'. $values['freq'] . '<br>
                     FIXED  :'. $fixed . '<br>
                     <hr>
                 '; 
             }
        }
 
-
+       echo '<br><br><br>';
     }    
 
 
