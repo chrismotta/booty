@@ -1071,11 +1071,7 @@ class EtlController extends \yii\web\Controller
                     date(if(conv_time is not null, conv_time, imp_time))        AS date, 
                     round(sum( cl.imps/cl.clicks )) AS imps,                     
                     round(count( cl.session_hash )/cl.clicks) AS unique_users,
-                    sum(CASE 
-                        WHEN date(cp.conv_time)=date(cl.imp_time) THEN 1 
-                        ELSE 0 
-                    END)                     AS installs, 
-
+                    count(cp.conv_time) AS installs, 
                     sum( cl.cost/cl.clicks ) AS cost,
                     sum( cp.revenue )        AS revenue 
 
