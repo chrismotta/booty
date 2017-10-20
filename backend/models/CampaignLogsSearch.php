@@ -116,8 +116,8 @@ class CampaignLogsSearch extends CampaignLogs
                 switch ( $field )
                 {
                     case 'date':
-                        $fields[] = 'date(F_ClusterLogs.imp_time) AS date';
-                        $group[]  = 'date(F_ClusterLogs.imp_time)';
+                        $fields[] = 'date(if(conv_time is not null, conv_time, imp_time)) AS date';
+                        $group[]  = 'date(if(conv_time is not null, conv_time, imp_time))';
                     break;
                     case 'campaign':
                         $fields[] = 'D_Campaign.name AS campaign';
@@ -352,21 +352,9 @@ class CampaignLogsSearch extends CampaignLogs
             $dateEnd = date( 'Y-m-d' );
       
         $expression = new Expression('            
-            ( 
-                F_CampaignLogs.conv_time IS NOT NULL 
-                AND                    
-                date(F_CampaignLogs.conv_time) >= :date_start 
-                AND 
-                date(F_CampaignLogs.conv_time) <= :date_end 
-            ) 
-            OR 
-            ( 
-                F_CampaignLogs.conv_time IS NULL 
-                AND             
-                date(F_ClusterLogs.imp_time) >= :date_start 
-                AND 
-                date(F_ClusterLogs.imp_time) <= :date_end 
-            )
+            date(if(conv_time is not null, conv_time, imp_time)) >= :date_start 
+            AND 
+            date(if(conv_time is not null, conv_time, imp_time)) <= :date_end             
         ', 
         [ 
             ':date_start' => $dateStart,
