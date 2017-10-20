@@ -1086,9 +1086,9 @@ class EtlController extends \yii\web\Controller
                 RIGHT JOIN F_ClusterLogs cl  ON ( cp.session_hash = cl.session_hash ) 
                 LEFT JOIN D_Placement p      ON ( cl.D_Placement_id = p.id )
 
-                WHERE DATE(IF(imp_time is not null, conv_time, imp_time))="'.$date.'" 
+                WHERE DATE(IF(conv_time is not null, conv_time, imp_time))="'.$date.'" 
                 GROUP BY
-                    DATE(IF(imp_time is not null, conv_time, imp_time)),
+                    DATE(IF(conv_time is not null, conv_time, imp_time)),
                     cl.country 
             ) AS r
 
