@@ -1068,10 +1068,9 @@ class EtlController extends \yii\web\Controller
                     cl.country               AS country, 
                     c.Affiliates_id          AS Affiliates_id,
                     p.Publishers_id          AS Publishers_id,
-                    date(cl.imp_time)        AS date, 
+                    date(if(conv_time is not null, conv_time, imp_time))        AS date, 
                     round(sum( cl.imps/cl.clicks )) AS imps,                     
                     round(count( cl.session_hash )/cl.clicks) AS unique_users,
-
                     sum(CASE 
                         WHEN date(cp.conv_time)=date(cl.imp_time) THEN 1 
                         ELSE 0 
@@ -1086,9 +1085,9 @@ class EtlController extends \yii\web\Controller
                 RIGHT JOIN F_ClusterLogs cl  ON ( cp.session_hash = cl.session_hash ) 
                 LEFT JOIN D_Placement p      ON ( cl.D_Placement_id = p.id )
 
-                WHERE DATE(IF(conv_time is not null, conv_time, imp_time))="'.$date.'" 
+                WHERE date(if(conv_time is not null, conv_time, imp_time))="'.$date.'" 
                 GROUP BY
-                    DATE(IF(conv_time is not null, conv_time, imp_time)),
+                    date(if(conv_time is not null, conv_time, imp_time)),
                     cl.country 
             ) AS r
 
