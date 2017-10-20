@@ -708,21 +708,9 @@ class CampaignLogsSearch extends CampaignLogs
             $dateEnd = date( 'Y-m-d' );
       
         $expression = new Expression('            
-            ( 
-                F_CampaignLogs.conv_time IS NOT NULL 
-                AND                         
-                date(F_CampaignLogs.conv_time) >= :date_start 
-                AND 
-                date(F_CampaignLogs.conv_time) <= :date_end 
-            ) 
-            OR 
-            ( 
-                F_CampaignLogs.conv_time IS NULL 
-                AND             
-                date(F_ClusterLogs.imp_time) >= :date_start 
-                AND 
-                date(F_ClusterLogs.imp_time) <= :date_end 
-            )
+            date(if(conv_time is not null, conv_time, imp_time)) >= :date_start 
+            AND 
+            date(if(conv_time is not null, conv_time, imp_time)) <= :date_end 
         ', 
         [ 
             'date_start' => $dateStart,

@@ -326,6 +326,7 @@ if($afterSubmit){
         
     </div>
 
+    <p style="with:100%;text-align: right;margin-top:10px;">Time Elapsed: <?php echo time() - $startTime; ?> sec.</p>
 <?php } //end if ?>
 
 </div>
