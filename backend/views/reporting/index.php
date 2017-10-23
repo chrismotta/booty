@@ -233,7 +233,7 @@ if($afterSubmit){
                 case 'profit':
                     $columns[$p] = [
                         'attribute' => $column,
-                        'footer'    => isset($totals[0]) ? '%&nbsp'.number_format($totals[0][$column],2) : null,
+                        'footer'    => isset($totals[0]) ? '$&nbsp'.number_format($totals[0][$column],2) : null,
                         'footerOptions' => [
                             'style' => 'font-weight:bold;'
                         ],                        
@@ -245,7 +245,7 @@ if($afterSubmit){
                 case 'profit_ecpm':
                     $columns[$p] = [
                         'attribute' => $column,
-                        'footer'    => isset($totals[0]) ? '%&nbsp'.number_format($totals[0][$column],2) : null,
+                        'footer'    => isset($totals[0]) ? '$&nbsp'.number_format($totals[0][$column],2) : null,
                         'footerOptions' => [
                             'style' => 'font-weight:bold;'
                         ],                        
@@ -257,7 +257,7 @@ if($afterSubmit){
                 case 'cost_ecpm':
                     $columns[$p] = [
                         'attribute' => $column,
-                        'footer'    => isset($totals[0]) ? '%&nbsp'.number_format($totals[0][$column],2) : null,
+                        'footer'    => isset($totals[0]) ? '$&nbsp'.number_format($totals[0][$column],2) : null,
                         'footerOptions' => [
                             'style' => 'font-weight:bold;'
                         ],                        
@@ -269,7 +269,7 @@ if($afterSubmit){
                 case 'revenue_ecpm':
                     $columns[$p] = [
                         'attribute' => $column,
-                        'footer'    => isset($totals[0]) ? '%&nbsp'.number_format($totals[0][$column],2) : null,
+                        'footer'    => isset($totals[0]) ? '$&nbsp'.number_format($totals[0][$column],2) : null,
                         'footerOptions' => [
                             'style' => 'font-weight:bold;'
                         ],                        
