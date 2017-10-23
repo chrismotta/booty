@@ -79,6 +79,14 @@ class ReportingController extends Controller
 
     public function actionCreateautoreport ($daysBefore=4) {
 
+        ini_set('memory_limit','3000M');
+        set_time_limit(0);
+
+        $dateTime = date( 'Y-m-d H:i' );        
+        $start    = time();
+        $date     = date( 'Y-m-d' );
+        $filename = './autoreport/autoreport_'.$date.'.csv';
+
         $searchModel  = new CampaignLogsSearch();
         $dataProvider = $searchModel->searchCsv($daysBefore);
         
@@ -104,9 +112,16 @@ class ReportingController extends Controller
             'cost',
             'profit'
         ];
-        $date = date( 'Y-m-d' );
 
-        $this->_getCsvFile( $dataProvider, './autoreport/autoreport_'.$date.'.csv', $fields, false );
+        $this->_getCsvFile( $dataProvider, $filename, $fields, false );
+
+        $elapsed = $start - time();
+
+        echo ( 
+            'Datetime: '. $dateTime . '<br>' .
+            'Filename: '. $filename . '<br>' .
+            'Elapsed : '. $elapsed  . ' sec.'
+        );
     }
 
 
