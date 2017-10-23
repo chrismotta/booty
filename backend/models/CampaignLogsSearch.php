@@ -72,15 +72,15 @@ class CampaignLogsSearch extends CampaignLogs
         $query->select([
             'date(imp_time) as date', 
             'cluster_id',
-            'cluster_name', 
+            'F_ClusterLogs.cluster_name as cluster_name', 
             'Affiliates_id as affiliate_id', 
             'Affiliates_name as affiliate_name', 
             'F_CampaignLogs.D_Campaign_id as campaign_id', 
-            'dc.name as campaign_name',  
+            'D_Campaign.name as campaign_name',  
             'Publishers_id as publisher_id',
             'Publishers_name as publisher_name',  
             'F_ClusterLogs.D_Placement_id as placement_id', 
-            'dp.name as placement_name', 
+            'D_Placement.name as placement_name', 
             'pub_id',
             'subpub_id',
             'imp_status',
@@ -96,15 +96,17 @@ class CampaignLogsSearch extends CampaignLogs
             'date(imp_time)', 
             'cluster_id', 
             'Affiliates_id', 
-            'ca.D_Campaign_id', 
+            'F_CampaignLogs.D_Campaign_id', 
             'Publishers_id', 
-            'cl.D_Placement_id',
+            'F_ClusterLogs.D_Placement_id',
             'pub_id',
             'subpub_id',
             'imp_status',
             ]);
 
-        $query->where('DATE(imp_time) >= SUEBDATE(CURDATE(),'.$daysBefore.')');
+        $query->where('DATE(imp_time) >= SUBDATE(CURDATE(),'.$daysBefore.')');
+
+        return $dataProvider;
 
     }
 

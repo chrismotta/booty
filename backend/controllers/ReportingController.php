@@ -77,16 +77,48 @@ class ReportingController extends Controller
         }
     }
 
-    public function actionCsvdownload ($daysBefore=4) {
+    public function actionCreateautoreport ($daysBefore=4) {
 
         $searchModel  = new CampaignLogsSearch();
         $dataProvider = $searchModel->searchCsv($daysBefore);
         
-        // harcodear los fields según la función searchCsv y obtenerlos de ahí
-        $fields = [];
-        $this->_sendCsvFile( $dataProvider, 'autoreport_date.csv', $fields);
+        $fields = [
+            'date',
+            'cluster_id',
+            'cluster_name',
+            'affiliate_id',
+            'affiliate_name',
+            'campaign_id',
+            'campaign_name',
+            'publisher_id',
+            'publisher_name',
+            'placement_id',
+            'placement_name',
+            'pub_id',
+            'subpub_id',
+            'imp_status',
+            'imps',
+            'clicks',
+            'convs',
+            'revenue',
+            'cost',
+            'profit'
+        ];
+        $date = date( 'Y-m-d' );
 
-        // descargar el reporte en una carpeta y enviar un mail con el link de descarga
+        $this->_getCsvFile( $dataProvider, './autoreport/autoreport_'.$date.'.csv', $fields, false );
+    }
+
+
+    public function actionDownloadautoreport ( )
+    {
+        $date = date( 'Y-m-d' );
+        $filename = 'autoreport_'.$date.'.csv';
+
+        header( "Content-type: text/csv;charset=utf-8");
+        header( 'Content-Disposition: attachment;filename='.$filename);
+
+        echo file_get_contents('./autoreport/'.$filename);
     }
 
 
@@ -121,54 +153,54 @@ class ReportingController extends Controller
             $fields = array_merge( $fields, $params['CampaignLogsSearch']['fields_group3'] );        
         }
 
-        $this->_getCsvFile($dataProvider, $filename, $fields);
+        header( "Content-type: text/csv;charset=utf-8");
+        header( 'Content-Disposition: attachment;filename='.$filename);        
+
+        $this->_getCsvFile($dataProvider, $filename, $fields, true );
     }
 
 
-    private function _getCsvFile($dataProvider, $filename, $fields){
+    private function _getCsvFile($dataProvider, $filename, $fields, $download = true ){
 
         $res      = $dataProvider->getModels();
         $header   = false;
 
-        $fp       = fopen('php://output', 'w');
 
-        header( "Content-type: text/csv;charset=utf-8");
-        header( 'Content-Disposition: attachment;filename='.$filename);
+        if ( $download )
+            $fp       = fopen('php://output', 'w');
+        else
+            $fp       = fopen( $filename, 'w');
 
-        foreach( $dataProvider->getModels() as $data)
+
+        foreach( $dataProvider->getModels() as $model )
         {
-            $data = (array)$data;
-
             $row = [];
+
 
             if (!$header)
                 $headerFields = [];
 
-            foreach ( $data as $field => $value )
+            foreach ( $fields as $field )
             {                                         
-                if ( in_array( $field, $fields ) )
-                {
-                    if(!$header)
-                        $headerFields[] = strtoupper($field);
+                if(!$header)
+                    $headerFields[] = $field;
 
-                    switch ( $field )
-                    {
-                        case 'campaign':
-                        case 'affiliate':
-                        case 'placement':
-                        case 'publisher':
-                        case 'cluster':
-                            $idField = $field.'_id';
-                            $row[]   = $value . ' ('.$data[$idField] .')';
-                        break;
-                        default:
-                            $row[] = $value;
-                        break;
-                    }    
-                }
-                
+                switch ( $field )
+                {
+                    case 'campaign':
+                    case 'affiliate':
+                    case 'placement':
+                    case 'publisher':
+                    case 'cluster':
+                        $idField = $field.'_id';
+                        $row[]   = $model->$field . ' ('.$model->$idField .')';
+                    break;
+                    default:
+                        $row[] = $model->$field;
+                    break;
+                }    
             }  
-            
+
             if ( !$header )
             {
                 $header = true;

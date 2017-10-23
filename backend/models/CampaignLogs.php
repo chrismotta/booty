@@ -20,7 +20,12 @@ class CampaignLogs extends \yii\db\ActiveRecord
     public $placement;
     public $placement_id;
     public $publisher; 
-    public $publisher_id; 
+    public $publisher_id;
+    public $cluster_name;
+    public $affiliate_name;
+    public $publisher_name;
+    public $placement_name;
+    public $campaign_name;
     public $carrier;
     public $cluster;
     public $cluster_id;
