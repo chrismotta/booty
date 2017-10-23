@@ -89,7 +89,7 @@ class ReportingController extends Controller
 
         $searchModel  = new CampaignLogsSearch();
         $dataProvider = $searchModel->searchCsv($daysBefore);
-        
+
         $fields = [
             'date',
             'cluster_id',
@@ -122,12 +122,23 @@ class ReportingController extends Controller
             'Filename: '. $filename . '<br>' .
             'Elapsed : '. $elapsed  . ' sec.'
         );
+
+        $this->_sendMail( 
+            'Splad - Automatic Report<no-reply@spladx.co>', 
+            'dev@splad.co,apastor@splad.co,mghio@splad.co',
+            'AUTOMATIC REPORT '. $dateTime,
+            '<html>
+                <body>
+                    <a href="http://cron.spladx.co/reporting/downloadautoreport?date='.$date.'">Download</a>
+                </body>
+            </html>'
+        );
     }
 
 
-    public function actionDownloadautoreport ( )
+    public function actionDownloadautoreport ( $date = null )
     {
-        $date = date( 'Y-m-d' );
+        $date = $date ? $date : date( 'Y-m-d' );
         $filename = 'autoreport_'.$date.'.csv';
 
         header( "Content-type: text/csv;charset=utf-8");
@@ -173,6 +184,27 @@ class ReportingController extends Controller
 
         $this->_getCsvFile($dataProvider, $filename, $fields, true );
     }
+
+
+    private function _sendmail ( $from, $to, $subject, $body )
+    {
+        $command = '
+            export MAILTO="'.$to.'"
+            export FROM="'.$from.'"
+            export SUBJECT="'.$subject.'"
+            export BODY="'.$body.'"
+            (
+             echo "From: $FROM"
+             echo "To: $MAILTO"
+             echo "Subject: $SUBJECT"
+             echo "MIME-Version: 1.0"
+             echo "Content-Type: text/html; charset=UTF-8"
+             echo $BODY
+            ) | /usr/sbin/sendmail -F $MAILTO -t -v -bm
+        ';
+
+        shell_exec( $command );
+    }       
 
 
     private function _getCsvFile($dataProvider, $filename, $fields, $download = true ){
