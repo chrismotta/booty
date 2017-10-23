@@ -131,6 +131,7 @@ class ReportingController extends Controller
         $filename = 'autoreport_'.$date.'.csv';
 
         header( "Content-type: text/csv;charset=utf-8");
+        header( 'Content-Disposition: render;filename='.$filename);
 
         echo file_get_contents('./autoreport/'.$filename);
     }
