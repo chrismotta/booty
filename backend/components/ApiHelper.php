@@ -71,6 +71,12 @@
 								$results[] = 'iOS';
 						break;
 						case 'android':
+						case 'android_tablet':
+						case 'android (tablet)':
+						case 'android(tablet)':
+						case 'android tablet':		
+						case 'android_phone':
+						case 'android phone':				
 							if ( !in_array( 'Android', $results) )
 								$results[] = 'Android';						
 						break;
@@ -118,12 +124,16 @@
 					switch ( strtolower($p) )
 					{
 						case 'android_phone':
+						case 'android phone':
 						case 'iphone':
 						case 'smartphone':
 							if ( !in_array( 'Smartphone', $results) )
 								$results[] = 'Smartphone';
 						break;
 						case 'android_tablet':
+						case 'android (tablet)':
+						case 'android(tablet)':
+						case 'android tablet':
 						case 'ipad':
 						case 'tablet':						
 							if ( !in_array( 'Tablet', $results) )
