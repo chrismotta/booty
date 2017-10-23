@@ -238,7 +238,7 @@ if($afterSubmit){
                             'style' => 'font-weight:bold;'
                         ],                        
                         'value' => function($model, $key, $index, $widget) {
-                          return '% '.number_format($model->profit,2);
+                          return '$ '.number_format($model->profit,2);
                         },
                     ];
                 break;                
@@ -250,7 +250,7 @@ if($afterSubmit){
                             'style' => 'font-weight:bold;'
                         ],                        
                         'value' => function($model, $key, $index, $widget) {
-                          return '% '.number_format($model->profit_ecpm,2);
+                          return '$ '.number_format($model->profit_ecpm,2);
                         },
                     ];
                 break;                  
@@ -262,7 +262,7 @@ if($afterSubmit){
                             'style' => 'font-weight:bold;'
                         ],                        
                         'value' => function($model, $key, $index, $widget) {
-                          return '% '.number_format($model->cost_ecpm,2);
+                          return '$ '.number_format($model->cost_ecpm,2);
                         },
                     ];
                 break;                 
@@ -274,7 +274,7 @@ if($afterSubmit){
                             'style' => 'font-weight:bold;'
                         ],                        
                         'value' => function($model, $key, $index, $widget) {
-                          return '% '.number_format($model->revenue_ecpm,2);
+                          return '$ '.number_format($model->revenue_ecpm,2);
                         },
                     ];
                 break;                                   
