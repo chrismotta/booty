@@ -1068,15 +1068,10 @@ class EtlController extends \yii\web\Controller
                     cl.country               AS country, 
                     c.Affiliates_id          AS Affiliates_id,
                     p.Publishers_id          AS Publishers_id,
-                    date(cl.imp_time)        AS date, 
+                    date(if(conv_time is not null, conv_time, imp_time))        AS date, 
                     round(sum( cl.imps/cl.clicks )) AS imps,                     
-                    count( cl.session_hash ) AS unique_users,
-
-                    sum(CASE 
-                        WHEN date(cp.conv_time)=date(cl.imp_time) THEN 1 
-                        ELSE 0 
-                    END)                     AS installs, 
-
+                    round(count( cl.session_hash )/cl.clicks) AS unique_users,
+                    count(cp.conv_time) AS installs, 
                     sum( cl.cost/cl.clicks ) AS cost,
                     sum( cp.revenue )        AS revenue 
 
@@ -1086,8 +1081,10 @@ class EtlController extends \yii\web\Controller
                 RIGHT JOIN F_ClusterLogs cl  ON ( cp.session_hash = cl.session_hash ) 
                 LEFT JOIN D_Placement p      ON ( cl.D_Placement_id = p.id )
 
-                WHERE date(cl.imp_time)="'.$date.'" 
-                GROUP BY date(cl.imp_time), cl.country 
+                WHERE date(if(conv_time is not null, conv_time, imp_time))="'.$date.'" 
+                GROUP BY
+                    date(if(conv_time is not null, conv_time, imp_time)),
+                    cl.country 
             ) AS r
 
             ON DUPLICATE KEY UPDATE 

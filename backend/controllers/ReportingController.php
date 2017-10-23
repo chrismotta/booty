@@ -36,6 +36,7 @@ class ReportingController extends Controller
      */
     public function actionIndex()
     {
+        $start   = time();  
         ini_set('memory_limit','3000M');
         set_time_limit(0);
         
@@ -59,6 +60,7 @@ class ReportingController extends Controller
                     'searchModel'    => $searchModel,
                     'dataProvider'   => $dataProvider,
                     'totalsProvider' => $totalsProvider,
+                    'startTime'      => $start
                 ]);                
             }      
         } else {
@@ -70,6 +72,7 @@ class ReportingController extends Controller
                 'searchModel'    => $searchModel,
                 'dataProvider'   => $dataProvider,
                 'totalsProvider' => $totalsProvider,
+                'startTime'      => $start
             ]);            
         }
     }
