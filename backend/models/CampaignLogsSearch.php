@@ -48,6 +48,66 @@ class CampaignLogsSearch extends CampaignLogs
         return Model::scenarios();
     }
 
+    public function searchCsv($daysBefore=4) {
+        
+        $query = CampaignLogs::find();
+
+        $dataProvider = new ActiveDataProvider([
+            'query'      => $query,
+            'pagination' => false,
+        ]);
+
+        $query->joinWith([
+            'campaign',
+        ]);
+
+        $query->rightJoin([
+            'F_ClusterLogs ON (F_ClusterLogs.session_hash=F_CampaignLogs.session_hash)',
+        ]);
+
+        $query->leftJoin([
+            'D_Placement ON ( F_ClusterLogs.D_Placement_id=D_Placement.id )',
+        ]);
+
+        $query->select([
+            'date(imp_time) as date', 
+            'cluster_id',
+            'cluster_name', 
+            'Affiliates_id as affiliate_id', 
+            'Affiliates_name as affiliate_name', 
+            'F_CampaignLogs.D_Campaign_id as campaign_id', 
+            'dc.name as campaign_name',  
+            'Publishers_id as publisher_id',
+            'Publishers_name as publisher_name',  
+            'F_ClusterLogs.D_Placement_id as placement_id', 
+            'dp.name as placement_name', 
+            'pub_id',
+            'subpub_id',
+            'imp_status',
+            'ceil( if(sum(clicks)>0, sum(imps/clicks), sum(imps)) ) as imps',
+            'count(click_id) as clicks',
+            'count(conv_time) as convs',
+            'sum(revenue) as revenue',
+            'if(sum(clicks)>0, sum(cost/clicks), sum(cost)) as cost',
+            'sum(revenue) - if(sum(clicks)>0, sum(cost/clicks), sum(cost)) as profit',
+            ]);
+
+        $query->groupBy([
+            'date(imp_time)', 
+            'cluster_id', 
+            'Affiliates_id', 
+            'ca.D_Campaign_id', 
+            'Publishers_id', 
+            'cl.D_Placement_id',
+            'pub_id',
+            'subpub_id',
+            'imp_status',
+            ]);
+
+        $query->where('DATE(imp_time) >= SUEBDATE(CURDATE(),'.$daysBefore.')');
+
+    }
+
     /**
      * Creates data provider instance with search query applied
      *

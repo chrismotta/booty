@@ -74,6 +74,18 @@ class ReportingController extends Controller
         }
     }
 
+    public function actionCsvdownload ($daysBefore=4) {
+
+        $searchModel  = new CampaignLogsSearch();
+        $dataProvider = $searchModel->searchCsv($daysBefore);
+        
+        // harcodear los fields según la función searchCsv y obtenerlos de ahí
+        $fields = [];
+        $this->_sendCsvFile( $dataProvider, 'autoreport_date.csv', $fields);
+
+        // descargar el reporte en una carpeta y enviar un mail con el link de descarga
+    }
+
 
     private function _sendCsvFile ( $dataProvider, $params )
     {
@@ -105,6 +117,12 @@ class ReportingController extends Controller
         {
             $fields = array_merge( $fields, $params['CampaignLogsSearch']['fields_group3'] );        
         }
+
+        $this->_getCsvFile($dataProvider, $filename, $fields);
+    }
+
+
+    private function _getCsvFile($dataProvider, $filename, $fields){
 
         $res      = $dataProvider->getModels();
         $header   = false;
