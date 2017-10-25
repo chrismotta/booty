@@ -1071,8 +1071,8 @@ class EtlController extends \yii\web\Controller
                     date(if(conv_time is not null, conv_time, imp_time))        AS date, 
                     round(sum( cl.imps/cl.clicks )) AS imps,                     
                     round(count( cl.session_hash )/cl.clicks) AS unique_users,
-                    count(cp.conv_time) AS installs, 
-                    sum( cl.cost/cl.clicks ) AS cost,
+                    count(cp.conv_time) AS installs,
+                    sum(if(cl.clicks>0, cl.cost/cl.clicks, cl.cost)) as cost, 
                     sum( cp.revenue )        AS revenue 
 
                 FROM F_CampaignLogs cp 
