@@ -106,7 +106,7 @@ class CampaignLogsSearch extends CampaignLogs
 
         $query->where('DATE(IF(conv_time is not null, conv_time, imp_time)) >= SUBDATE(CURDATE(),'.$daysBefore.')');
 
-        return $dataProvider;
+        return $dataProvider; 
 
     }
 
