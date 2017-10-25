@@ -32,7 +32,7 @@ $users = User::find()->asArray()->all();
     <?= 
         '<label class="control-label">Admin User</label>';
         echo Select2::widget( [
-        	'model' => $model, 
+            'model' => $model, 
             'attribute' => 'admin_user',
             'data' => ArrayHelper::map( 
                 $users, 
@@ -51,6 +51,10 @@ $users = User::find()->asArray()->all();
             ],
         ]);            
     ?>
+
+    <?= $form->field($model, 'macros', [
+
+        ])->textInput(['maxlength' => true]) ?>
 
     </div>
     <div class="col-md-12">
