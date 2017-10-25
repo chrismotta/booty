@@ -27,6 +27,25 @@ class ReportingController extends Controller
                     'delete' => ['POST'],
                 ],
             ],
+            'access' => [
+                'class' => \yii\filters\AccessControl::className(),
+                'rules' => [
+                    [
+                        'allow' => true,
+                        'actions' => [ 'createautoreport' ],
+                        'roles' => ['?']
+                    ],                    
+                    [
+                        'allow' => false,
+                        'roles' => ['?']
+                    ],                      
+                    [
+                        'allow' => true,
+                        'roles' => ['@']
+                    ]                    
+                ]
+            ]
+
         ];
     }
 
@@ -77,7 +96,7 @@ class ReportingController extends Controller
         }
     }
 
-    public function actionCreateautoreport ($daysBefore=4) {
+    public function actionCreateautoreport ($daysBefore=4, $test=false) {
 
         ini_set('memory_limit','3000M');
         set_time_limit(0);
@@ -123,9 +142,14 @@ class ReportingController extends Controller
             'Elapsed : '. $elapsed  . ' sec.'
         );
 
+        if ( $test==1 )
+            $to = 'dev@splad.co,apastor@splad.co';
+        else
+            $to = 'dev@splad.co,apastor@splad.co,mghio@splad.co,tgonzalez@splad.co';
+
         $this->_sendMail( 
             'Splad - Automatic Report<no-reply@spladx.co>', 
-            'dev@splad.co,apastor@splad.co,mghio@splad.co',
+            $to,
             'AUTOMATIC REPORT '. $dateTime,
             '<html>
                 <body>
@@ -236,11 +260,18 @@ class ReportingController extends Controller
                 {
                     case 'campaign':
                     case 'affiliate':
-                    case 'placement':
-                    case 'publisher':
                     case 'cluster':
                         $idField = $field.'_id';
                         $row[]   = $model->$field . ' ('.$model->$idField .')';
+                    break;
+                    case 'publisher':
+                    case 'placement':
+                        $idField = $field.'_id';
+
+                        if( in_array( 'Stakeholder', $model->userroles ) )
+                            $row[] = $model->$idField;
+                        else
+                            $row[] = $model->$field . ' ('.$model->$idField.')';
                     break;
                     default:
                         $row[] = $model->$field;

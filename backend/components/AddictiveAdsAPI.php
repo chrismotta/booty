@@ -36,7 +36,12 @@
 				die();
 			}
 
-			if ( !$response || !isset($response->data) || !is_array($response->data))
+			if ( isset($response->data->err) )
+			{
+				$this->_msg = $response->data->err->message;
+				return false;
+			}
+			else if ( !$response || !isset($response->data) || !is_array($response->data))
 			{
 				$this->_msg = 'Response without body';
 				return false;

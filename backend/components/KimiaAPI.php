@@ -8,7 +8,6 @@
 	 
 	class KimiaAPI extends Component
 	{
-		// uses orangear.com plattform
 		const URL = 'products.kimia.mobi/cpi';
 
 		protected $_msg;
@@ -80,7 +79,7 @@
 
 						if ( $campaign->PreviewURL )
 						{
-							$packageIds = ApiHelper::getAppIdFromUrl( $campaign->PreviewURL );			
+							$packageIds = ApiHelper::getAppIdFromUrl( $campaign->PreviewURL );	
 						}
 						else
 						{
@@ -112,9 +111,7 @@
 						break;						
 					}
 
-				}
-				
-
+				}				
 
 			}
 
