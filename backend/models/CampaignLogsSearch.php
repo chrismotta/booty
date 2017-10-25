@@ -70,7 +70,7 @@ class CampaignLogsSearch extends CampaignLogs
         ]);
 
         $query->select([
-            'date(imp_time) as date', 
+            'DATE(IF(conv_time is not null, conv_time, imp_time)) as date', 
             'cluster_id',
             'F_ClusterLogs.cluster_name as cluster_name', 
             'Affiliates_id as affiliate_id', 
@@ -84,16 +84,16 @@ class CampaignLogsSearch extends CampaignLogs
             'pub_id',
             'subpub_id',
             'imp_status',
-            'ceil( if(sum(clicks)>0, sum(imps/clicks), sum(imps)) ) as imps',
+            'ceil(sum(if(clicks>0,imps/clicks,imps))) as imps',
             'count(click_id) as clicks',
             'count(conv_time) as convs',
             'sum(revenue) as revenue',
-            'if(sum(clicks)>0, sum(cost/clicks), sum(cost)) as cost',
-            'sum(revenue) - if(sum(clicks)>0, sum(cost/clicks), sum(cost)) as profit',
+            'sum(if(clicks>0, cost/clicks, cost)) as cost',
+            'sum(revenue) - sum(if(clicks>0, cost/clicks, cost)) as profit',
             ]);
 
         $query->groupBy([
-            'date(imp_time)', 
+            'DATE(IF(conv_time is not null, conv_time, imp_time))', 
             'cluster_id', 
             'Affiliates_id', 
             'F_CampaignLogs.D_Campaign_id', 
@@ -104,7 +104,7 @@ class CampaignLogsSearch extends CampaignLogs
             'imp_status',
             ]);
 
-        $query->where('DATE(imp_time) >= SUBDATE(CURDATE(),'.$daysBefore.')');
+        $query->where('DATE(IF(conv_time is not null, conv_time, imp_time)) >= SUBDATE(CURDATE(),'.$daysBefore.')');
 
         return $dataProvider;
 
