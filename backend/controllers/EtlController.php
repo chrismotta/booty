@@ -1068,11 +1068,11 @@ class EtlController extends \yii\web\Controller
                     cl.country               AS country, 
                     c.Affiliates_id          AS Affiliates_id,
                     p.Publishers_id          AS Publishers_id,
-                    date(if(conv_time is not null, conv_time, imp_time))        AS date, 
-                    round(sum( cl.imps/cl.clicks )) AS imps,                     
-                    round(count( cl.session_hash )/cl.clicks) AS unique_users,
-                    count(cp.conv_time) AS installs,
-                    sum(if(cl.clicks>0, cl.cost/cl.clicks, cl.cost)) as cost, 
+                    date(if(cp.conv_time is not null, cp.conv_time, cl.imp_time)) AS date, 
+                    ceil(sum(if(cl.clicks>0,cl.imps/cl.clicks,cl.imps))) AS imps,
+                    ceil(sum(if(cl.clicks>0, 1/cl.clicks, 1))) AS unique_users,
+                    count(cp.conv_time)      AS installs,
+                    sum(if(cl.clicks>0, cl.cost/cl.clicks, cl.cost)) AS cost, 
                     sum( cp.revenue )        AS revenue 
 
                 FROM F_CampaignLogs cp 
@@ -1081,9 +1081,9 @@ class EtlController extends \yii\web\Controller
                 RIGHT JOIN F_ClusterLogs cl  ON ( cp.session_hash = cl.session_hash ) 
                 LEFT JOIN D_Placement p      ON ( cl.D_Placement_id = p.id )
 
-                WHERE date(if(conv_time is not null, conv_time, imp_time))="'.$date.'" 
+                WHERE date(if(cp.conv_time is not null, cp.conv_time, cl.imp_time))="'.$date.'" 
                 GROUP BY
-                    date(if(conv_time is not null, conv_time, imp_time)),
+                    date(if(cp.conv_time is not null, cp.conv_time, cl.imp_time)),
                     cl.country 
             ) AS r
 
