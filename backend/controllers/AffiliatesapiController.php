@@ -27,6 +27,7 @@ class AffiliatesapiController extends \yii\web\Controller
 	protected function _apiRules ( )
 	{
 		return [
+            /*
 			[
 				'class' 		=> 'RegamingAPI',
 				'affiliate_id'	=> 2,
@@ -34,7 +35,8 @@ class AffiliatesapiController extends \yii\web\Controller
 			[
 				'class' 		=> 'SlaviaMobileAPI',
 				'affiliate_id'	=> 3,
-			],		
+			],
+            */		
             [
                 'class'         => 'MobobeatAPI',
                 'affiliate_id'  => 5,
@@ -47,10 +49,12 @@ class AffiliatesapiController extends \yii\web\Controller
                 'class'         => 'GlispaAPI',
                 'affiliate_id'  => 7,
             ],
+            /*
             [
                 'class'         => 'iWoopAPI',
                 'affiliate_id'  => 8,
             ],
+            */
             [
                 'class'         => 'AppclientsAPI',
                 'affiliate_id'  => 9,
