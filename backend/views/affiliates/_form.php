@@ -27,11 +27,13 @@ $users = User::find()->asArray()->all();
     <?= $form->field($model, 'user_id')->textInput(['maxlength' => true]) ?>
 
     <?= $form->field($model, 'api_key')->textInput(['maxlength' => true]) ?>
+
+    <?= $form->field($model, 'click_macro')->textInput(['maxlength' => true]) ?>    
     </div>
     <div class="col-md-6">
 
 
-    <?= $form->field($model, 'click_macro')->textInput(['maxlength' => true]) ?>
+
     <?= $form->field($model, 'placeholders')->textInput(['maxlength' => true]) ?>
     <?= $form->field($model, 'macros')->textInput(['maxlength' => true]) ?>
 
@@ -57,6 +59,8 @@ $users = User::find()->asArray()->all();
             ],
         ]);            
     ?>
+
+    <?= $form->field($model, 'status')->dropDownList([ 'active' => 'Active', 'paused' => 'Paused', ], ['prompt' => '']) ?>
 
     </div>
     <div class="col-md-12">

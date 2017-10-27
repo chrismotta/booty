@@ -136,4 +136,18 @@ class Campaigns extends \yii\db\ActiveRecord
         return isset($cc) ? $cc->delivery_freq : '-';
     }
 
+    public function unassignToCluster($clusterID){
+        
+        try {
+        
+            $cluster = Clusters::findOne($clusterID);
+            $this->unlink('clusters', $cluster, true);
+            return true;
+            
+        } catch (Exception $e) {
+            
+            return false;
+        }
+    }
+    
 }

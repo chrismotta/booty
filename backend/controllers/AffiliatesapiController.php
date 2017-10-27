@@ -27,7 +27,7 @@ class AffiliatesapiController extends \yii\web\Controller
 	protected function _apiRules ( )
 	{
 		return [
-            /*
+
 			[
 				'class' 		=> 'RegamingAPI',
 				'affiliate_id'	=> 2,
@@ -36,7 +36,7 @@ class AffiliatesapiController extends \yii\web\Controller
 				'class' 		=> 'SlaviaMobileAPI',
 				'affiliate_id'	=> 3,
 			],
-            */		
+	
             [
                 'class'         => 'MobobeatAPI',
                 'affiliate_id'  => 5,
@@ -49,12 +49,12 @@ class AffiliatesapiController extends \yii\web\Controller
                 'class'         => 'GlispaAPI',
                 'affiliate_id'  => 7,
             ],
-            /*
+
             [
                 'class'         => 'iWoopAPI',
                 'affiliate_id'  => 8,
             ],
-            */
+
             [
                 'class'         => 'AppclientsAPI',
                 'affiliate_id'  => 9,
@@ -258,7 +258,10 @@ class AffiliatesapiController extends \yii\web\Controller
         {
             $className  = 'backend\components\\'.$rule['class'];
             $api        = new $className;
-            $affiliate  = models\Affiliates::findOne( ['id' => $rule['affiliate_id'] ] );            
+            $affiliate  = models\Affiliates::findOne( ['id' => $rule['affiliate_id'] ] );
+
+            if ( $affiliate->status == 'paused' )
+                return false;
 
             $campaignsData  = $api->requestCampaigns( $affiliate->api_key, $affiliate->user_id );
             
@@ -267,7 +270,7 @@ class AffiliatesapiController extends \yii\web\Controller
             if ( $campaignsData && is_array($campaignsData) )
             {
                 foreach ( $campaignsData AS $campaignData )
-                {
+                {                    
                     $externalIds[] = $campaignData['ext_id'];
 
                     $campaign = models\Campaigns::findOne([ 
@@ -307,9 +310,11 @@ class AffiliatesapiController extends \yii\web\Controller
                         if ( 
                             !$campaignData['package_id'] 
                             || !$campaignData['landing_url'] 
-                            || !$campaignData['payout']  
+                            || !$campaignData['payout']   
                         )
+                        {                    
                             continue;
+                        }
 
                         $newCampaign      = true;
                         $campaign         = new models\Campaigns;     
@@ -400,6 +405,8 @@ class AffiliatesapiController extends \yii\web\Controller
 
         unset ( $api );
         unset ( $affiliate );
+
+        return true;
     }
 
 

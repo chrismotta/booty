@@ -85,20 +85,63 @@ class AffiliatesController extends Controller
     {
         $model = $this->findModel($id);
 
+        if ( $model )
+        {
+            $prevStatus = $model->status; 
+        }
+
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
 
+            if ( $prevStatus != 'paused'  &&  $model->status == 'paused' )
+                $turnedOff = true;
+            else
+                $turnedOff = false;
+
             $campaigns = models\Campaigns::findAll( ['Affiliates_id' => $model->id] );
+
             $cache = new \Predis\Client( \Yii::$app->params['predisConString'] );
+            $cids = [];
 
             foreach ( $campaigns as $campaign )
             {
+                $cids[] = $campaign->id;
+
                 $cache->hmset( 'campaign:'.$campaign->id, [
                     'callback'      => $campaign->landing_url,
                     'ext_id'        => $campaign->ext_id,
                     'click_macro'   => $campaign->affiliates->click_macro,
                     'placeholders'  => $campaign->affiliates->placeholders,
                     'macros'        => $campaign->affiliates->macros,
-                ]);                
+                ]);    
+
+                if ( $turnedOff )
+                {
+                    if ( $campaign->status != 'archived' )
+                    {
+                        $campaign->status = 'affiliate_off';
+                        $campaign->save();                        
+                    }
+
+                    $clustersHasCampaigns = models\ClustersHasCampaigns::findAll( ['Campaigns_id' => $campaign->id] );
+
+                    foreach ( $clustersHasCampaigns as $assign )
+                    {
+                        $packageIds = json_decode($campaign->app_id, true);
+                        $clusterId = $assign['Clusters_id'];
+
+                        if($campaign->unassignToCluster($clusterId))
+                        {
+                            if(isset($packageIds)){
+
+                                foreach ( $packageIds as $packageId )
+                                {
+                                    $cache->zrem( 'clusterlist:'.$clusterId, $campaign->id.':'.$model->id.':'.$packageId );
+                                }
+                            } 
+                        }                      
+                    }
+
+                }                            
             }   
 
             return $this->redirect(['view', 'id' => $model->id]);
@@ -123,6 +166,7 @@ class AffiliatesController extends Controller
 
         return $this->redirect(['index']);
     }
+
 
     /**
      * Finds the Affiliates model based on its primary key value.

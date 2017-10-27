@@ -39,6 +39,7 @@ class Affiliates extends \yii\db\ActiveRecord
             [['name'], 'required'],
             [['admin_user'], 'integer'],
             [['name', 'user_id', 'api_key', 'click_macro', 'placeholders', 'macros'], 'string', 'max' => 255],
+            [['status'], 'string'],
             [['short_name'], 'string', 'max' => 3],
             [['admin_user'], 'exist', 'skipOnError' => true, 'targetClass' => User::className(), 'targetAttribute' => ['admin_user' => 'id']],
         ];
