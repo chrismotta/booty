@@ -141,6 +141,8 @@ class AffiliatesController extends Controller
                         }                      
                     }
 
+                    unset( $clustersHasCampaigns);
+
                 }                            
             }   
 
