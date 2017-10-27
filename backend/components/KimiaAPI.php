@@ -15,6 +15,7 @@
 
 		public function requestCampaigns ( $api_key, $user_id = null  )
 		{
+
 			$url    = 'https://'.$user_id.':'.$api_key.'@'.self::URL;
 			$curl   = curl_init($url);
 
@@ -50,69 +51,62 @@
 		
 			foreach ( $response->data->items AS $campaign )
 			{
-				foreach ( $campaign->Creatives as $creative )
+				if ( !isset( $campaign->ProductURL ) )
+					continue;
+
+				$countries = [];
+
+				if ( $campaign->GeoProvisioning )
 				{
-					if ( $creative->size=='320x50' )
-					{
-						$countries = [];
+					$countryCode = $this->getCountryCode($campaign->GeoProvisioning);
 
-						if ( $campaign->GeoProvisioning )
-						{
-							$countryCode = $this->getCountryCode($campaign->GeoProvisioning);
+					if ( $countryCode )
+						$countries[] = $countryCode;
+				}		
 
-							if ( $countryCode )
-								$countries[] = $countryCode;
-						}		
+				$oss		 = ApiHelper::getOs($campaign->PlatformProvisioning, false);
+				$deviceTypes = ApiHelper::getDeviceTypes($campaign->PlatformProvisioning, false);				
 
-						$oss		 = ApiHelper::getOs($campaign->PlatformProvisioning, false);
-						$deviceTypes = ApiHelper::getDeviceTypes($campaign->PlatformProvisioning, false);				
+				switch ( strtolower($campaign->Status) )
+				{
+					case 'active':
+						$status = 'active';
+					break;
+					default:
+						$status = 'aff_paused';
+					break;
+				}
 
-						switch ( strtolower($campaign->Status) )
-						{
-							case 'active':
-								$status = 'active';
-							break;
-							default:
-								$status = 'aff_paused';
-							break;
-						}
+				if ( $campaign->PreviewURL )
+				{
+					$packageIds = ApiHelper::getAppIdFromUrl( $campaign->PreviewURL );	
+				}
+				else
+				{
+					$packageIds = [];
+				}						
 
-						if ( $campaign->PreviewURL )
-						{
-							$packageIds = ApiHelper::getAppIdFromUrl( $campaign->PreviewURL );	
-						}
-						else
-						{
-							$packageIds = [];
-						}						
+				$result[] = [
+					'ext_id' 			=> $campaign->Id,
+					'name'				=> $campaign->Name,
+					'desc'				=> null,
+					'payout' 			=> $campaign->DefaultPrice,
+					'landing_url'		=> $campaign->ProductURL,
+					'country'			=> $countries,
+					'device_type'		=> $deviceTypes,
+					'connection_type'	=> null,
+					'carrier'			=> null,
+					'os'				=> $oss,
+					'os_version'		=> null,
+					'package_id'		=> empty($packageIds) ? null : $packageIds,
+					'status'			=> $status,
+					'currency'			=> 'USD'
+				];
 
-						$result[] = [
-							'ext_id' 			=> $campaign->Id,
-							'name'				=> $campaign->Name,
-							'desc'				=> null,
-							'payout' 			=> $campaign->DefaultPrice,
-							'landing_url'		=> $creative->creativeLink,
-							'country'			=> $countries,
-							'device_type'		=> $deviceTypes,
-							'connection_type'	=> null,
-							'carrier'			=> null,
-							'os'				=> $oss,
-							'os_version'		=> null,
-							'package_id'		=> empty($packageIds) ? null : $packageIds,
-							'status'			=> $status,
-							'currency'			=> 'USD'
-						];
-
-						unset( $countries );
-						unset( $deviceTypes);
-						unset( $oss );
-						unset( $packageIds );
-
-						break;						
-					}
-
-				}				
-
+				unset( $countries );
+				unset( $deviceTypes);
+				unset( $oss );
+				unset( $packageIds );					
 			}
 
 			if  ( isset($_GET['test']) && $_GET['test']==1 )
