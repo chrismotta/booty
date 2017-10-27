@@ -466,10 +466,15 @@ class EtlController extends \yii\web\Controller
 
                 if ( $clusterLog )
                 {
+                    if ( !isset($clusterLog['placement_id']) )
+                    {
+                        $this->_redis->zadd( 'orfanhashes', 0, $sessionHash );
+                        continue;
+                    }
+
                     if ( $values != '' )
                         $values .= ',';
-
-
+                             
                     if ( !$clusterLog['placement_id'] || $clusterLog['placement_id']=='' || !preg_match( '/^[0-9]+$/',$clusterLog['placement_id'] ) )
                         $clusterLog['placement_id'] = 'NULL';
 
