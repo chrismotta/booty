@@ -83,6 +83,9 @@ class AffiliatesController extends Controller
      */
     public function actionUpdate($id)
     {
+        ini_set('memory_limit','3000M');
+        set_time_limit(0);
+                
         $model = $this->findModel($id);
 
         if ( $model )
@@ -100,12 +103,9 @@ class AffiliatesController extends Controller
             $campaigns = models\Campaigns::findAll( ['Affiliates_id' => $model->id] );
 
             $cache = new \Predis\Client( \Yii::$app->params['predisConString'] );
-            $cids = [];
 
             foreach ( $campaigns as $campaign )
             {
-                $cids[] = $campaign->id;
-
                 $cache->hmset( 'campaign:'.$campaign->id, [
                     'callback'      => $campaign->landing_url,
                     'ext_id'        => $campaign->ext_id,
@@ -141,8 +141,8 @@ class AffiliatesController extends Controller
                         }                      
                     }
 
+                    unset( $packageIds );
                     unset( $clustersHasCampaigns);
-
                 }                            
             }   
 
