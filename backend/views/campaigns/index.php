@@ -31,8 +31,7 @@ $filterByAffiliate = ArrayHelper::map(
 
 ?>
     
-
-<div class="campaigns-index">
+<div class="campaigns-index" style="overflow-x:scroll;">
 
     <!-- <h1><?= Html::encode($this->title) ?></h1>
     <?php // echo $this->render('_search', ['model' => $searchModel]); ?>
@@ -40,6 +39,7 @@ $filterByAffiliate = ArrayHelper::map(
     <p>
         <?= Html::a('Create Campaigns', ['create'], ['class' => 'btn btn-success']) ?>
     </p> -->
+
 <?php Pjax::begin(); ?>    <?= GridView::widget([
         'dataProvider' => $dataProvider,
         'filterModel' => $searchModel,
@@ -63,7 +63,8 @@ $filterByAffiliate = ArrayHelper::map(
                     ]
                 ]),                
             ],
-            'name',
+            'ext_id',
+            'name',  
             'payout',
             [
                 'attribute'=>'country',
@@ -116,4 +117,6 @@ $filterByAffiliate = ArrayHelper::map(
             ]
         ],
     ]); ?>
-<?php Pjax::end(); ?></div>
+<?php Pjax::end(); ?>
+    
+</div>

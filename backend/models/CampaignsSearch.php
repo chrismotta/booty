@@ -21,7 +21,7 @@ class CampaignsSearch extends Campaigns
     {
         return [
             [['id', 'Affiliates_id'], 'integer'],
-            [['name', 'landing_url', 'creative_320x50', 'creative_300x250', 'affiliateName', 'affiliate', 'country', 'os', 'connection_type', 'os_version', 'carrier', 'device_type'], 'safe'],
+            [['name', 'landing_url', 'creative_320x50', 'creative_300x250', 'affiliateName', 'ext_id', 'affiliate', 'country', 'os', 'connection_type', 'os_version', 'carrier', 'device_type'], 'safe'],
             [['payout'], 'number'],
         ];
     }
@@ -51,7 +51,7 @@ class CampaignsSearch extends Campaigns
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
-            'sort' => ['attributes' => [ 'id','name', 'landing_url','payout', 'affiliate', 'country', 'os', 'carrier', 'device_type', 'os_version', 'connection_type']]            
+            'sort' => ['attributes' => [ 'id','name', 'landing_url','payout', 'ext_id', 'affiliate', 'country', 'os', 'carrier', 'device_type', 'os_version', 'connection_type']]            
         ]);
 
         $query->select([
@@ -60,6 +60,7 @@ class CampaignsSearch extends Campaigns
             'Campaigns.name',
             'Campaigns.carrier',
             'payout',
+            'Campaigns.ext_id AS ext_id',
             'Affiliates.name AS affiliate',
             'Campaigns.os',
             'Campaigns.os_version',
@@ -93,6 +94,7 @@ class CampaignsSearch extends Campaigns
 
         $query->andFilterWhere(['like', 'Campaigns.name', $this->name])
             ->andFilterWhere(['like', 'landing_url', $this->landing_url])
+            ->andFilterWhere(['like', 'ext_id', $this->ext_id])
             ->andFilterWhere(['like', 'creative_320x50', $this->creative_320x50])
             ->andFilterWhere(['like', 'creative_300x250', $this->creative_300x250])
             ->andFilterWhere(['like', 'country', $this->country])

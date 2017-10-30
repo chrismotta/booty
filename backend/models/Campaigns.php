@@ -73,6 +73,7 @@ class Campaigns extends \yii\db\ActiveRecord
             'device_type'      => 'Dev. Type',
             'app_id'           => 'App ID',
             'delivery_freq'    => 'Freq.', 
+            'ext_id'            => 'Ext. ID'
         ];
     }
 
