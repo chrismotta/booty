@@ -72,7 +72,7 @@ class CampaignsChangelog extends \yii\db\ActiveRecord
         return $this->hasOne(Clusters::className(), ['id' => 'Clusters_id']);
     }
 
-    public static function log( $campaign_id, $status, $message = null, $cluster_id ) 
+    public static function log( $campaign_id, $status, $message = null, $cluster_id = null ) 
     {
         $log = new self();
 
