@@ -1185,41 +1185,47 @@ class EtlController extends \yii\web\Controller
                     ]
                 )->queryOne();
 
-                if ( $campaign && $campaign['c']<1 )
+                if ( $campaign )
                 {
-                    
-                    $chc = models\ClustersHasCampaigns::findOne( 
-                        ['Campaigns_id' => $cid, 'Clusters_id' => $id] 
-                    );
-
-                    if ( $chc )
+                    if ( $campaign['c']<1 )
                     {
-                        $disabled++;
+                        $chc = models\ClustersHasCampaigns::findOne( 
+                            ['Campaigns_id' => $cid, 'Clusters_id' => $id] 
+                        );
 
-                        $chc->delivery_freq = 0;
-
-                        if ( $chc->save() )
+                        if ( $chc )
                         {
-                            models\CampaignsChangelog::log( $cid, 'no_conv_limit', null, $id );
-                            
-                            if ( $chc->campaigns->app_id )
+                            $disabled++;
+
+                            $chc->delivery_freq = 0;
+
+                            if ( $chc->save() )
                             {
-                                $packageIds = json_decode($chc->campaigns->app_id);
-
-                                foreach ( $packageIds as $packageId )
+                                models\CampaignsChangelog::log( $cid, 'no_conv_limit', null, $id );
+                                
+                                if ( $chc->campaigns->app_id )
                                 {
-                                    $this->_redis->zadd( 
-                                        'clusterlist:'.$id, 
-                                        0, 
-                                        $cid.':'.$chc->campaigns->affiliates->id.':'.$packageId
-                                    );
+                                    $packageIds = json_decode($chc->campaigns->app_id);
+
+                                    foreach ( $packageIds as $packageId )
+                                    {
+                                        $this->_redis->zadd( 
+                                            'clusterlist:'.$id, 
+                                            0, 
+                                            $cid.':'.$chc->campaigns->affiliates->id.':'.$packageId
+                                        );
+                                    }
                                 }
-                            }
 
-                            $this->_redis->zrem( 'clusterimps:'.$id, $cid );
-                        }                
+                                $this->_redis->zrem( 'clusterimps:'.$id, $cid );
+                            }                
 
-                        unset ($chc);
+                            unset ($chc);
+                        }
+                    }
+                    else
+                    {
+                        $this->_redis->zadd( 'clustertrust:'.$id, 0, $cid );
                     }
                 }             
             }
