@@ -176,7 +176,7 @@ class EtlController extends \yii\web\Controller
 
         try
         {
-            //$this->actionPopulatefilters();
+            $this->actionPopulatefilters();
         } 
         catch (Exception $e) {
             $msg .= "ETL FILTERS POPULATE ERROR: ".$e->getCode().'<hr>';
