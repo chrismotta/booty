@@ -133,6 +133,20 @@ class EtlController extends \yii\web\Controller
 
         try
         {
+            $this->actionCheckclusterconvs();
+        } 
+        catch (Exception $e) {
+            $msg .= "ETL CHECK CLUSTER CONVERSIONS ERROR: ".$e->getCode().'<hr>';
+            $msg .= $e->getMessage();
+
+            if ( !$this->_noalerts )
+                $this->_sendMail ( self::ALERT_FROM, self::ALERT_TO, $this->_alertSubject, $msg );
+
+            die($msg);
+        }        
+
+        try
+        {
             $this->_updatePlacements();
         } 
         catch (Exception $e) {
@@ -159,9 +173,10 @@ class EtlController extends \yii\web\Controller
             die($msg);
         } 
 
+
         try
         {
-            $this->actionPopulatefilters();
+            //$this->actionPopulatefilters();
         } 
         catch (Exception $e) {
             $msg .= "ETL FILTERS POPULATE ERROR: ".$e->getCode().'<hr>';
@@ -171,7 +186,8 @@ class EtlController extends \yii\web\Controller
                 $this->_sendMail ( self::ALERT_FROM, self::ALERT_TO, $this->_alertSubject, $msg );
 
             die($msg);
-        }               
+        } 
+             
     }
 
 
@@ -1102,6 +1118,115 @@ class EtlController extends \yii\web\Controller
         ';
 
         \Yii::$app->db->createCommand( $sql )->execute();
+    }
+
+    public function actionCheckclusterconvs ( $cluster_id = null )
+    {
+        $disabled = 0;
+        $start    = time();
+
+        $this->_redis->select(0);
+
+        $clusterId = isset($_GET['cluster_id']) ? $_GET['cluster_id'] : $cluster_id;
+
+        if ( $clusterId )
+        {
+            $disabled = $this->_checkClusterConvs( $clusterId );
+        }
+        else
+        {
+            $clusters = models\Clusters::find()->all();
+
+            foreach ( $clusters as $model )
+            {
+                $disabled += $this->_checkClusterConvs( $model->id );
+            }
+        }
+
+        $elapsed = time() - $start;
+
+        echo 'Check cluster conversions: '.$disabled.' campaigns with delivery frequency set to 0 - Elapsed time: '.$elapsed.' seg.<hr/>';        
+    }
+
+
+    private function _checkClusterConvs (  $id )
+    {
+        $campaigns = $this->_redis->zrangebyscore( 
+            'clusterimps:'.$id,  
+            10000, 
+            '+inf', 
+            [
+                'WITHSCORES' => true, 
+            ]
+        );       
+
+        $disabled = 0;
+
+        foreach ( $campaigns AS $cid => $score )
+        {
+            if ( (int)$score >= 10000 )
+            {
+                $sql = '
+                    SELECT 
+                        count(c.D_Campaign_id) AS c
+                    FROM F_CampaignLogs c
+                    LEFT JOIN F_ClusterLogs cl ON c.session_hash = cl.session_hash 
+                    WHERE 
+                        c.conv_time IS NOT NULL 
+                        AND cl.cluster_id = :id 
+                        AND c.D_Campaign_id = :cid 
+                    LIMIT 1
+                ';
+
+                $campaign = \Yii::$app->db->createCommand( $sql )->bindValues(
+                    [
+                        ':id'   => $id,
+                        ':cid'  => $cid
+                    ]
+                )->queryOne();
+
+                if ( $campaign && $campaign['c']<1 )
+                {
+                    
+                    $chc = models\ClustersHasCampaigns::findOne( 
+                        ['Campaigns_id' => $cid, 'Clusters_id' => $id] 
+                    );
+
+                    if ( $chc )
+                    {
+                        $disabled++;
+
+                        $chc->delivery_freq = 0;
+
+                        if ( $chc->save() )
+                        {
+                            models\CampaignsChangelog::log( $cid, 'no_conv_limit', null, $id );
+                            
+                            if ( $chc->campaigns->app_id )
+                            {
+                                $packageIds = json_decode($chc->campaigns->app_id);
+
+                                foreach ( $packageIds as $packageId )
+                                {
+                                    $this->_redis->zadd( 
+                                        'clusterlist:'.$id, 
+                                        0, 
+                                        $cid.':'.$chc->campaigns->affiliates->id.':'.$packageId
+                                    );
+                                }
+                            }
+
+                            $this->_redis->zrem( 'clusterimps:'.$id, $cid );
+                        }                
+
+                        unset ($chc);
+                    }
+                }             
+            }
+        }
+
+        return $disabled;
+
     }
 
 
