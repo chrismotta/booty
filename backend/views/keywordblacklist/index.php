@@ -18,7 +18,7 @@ $this->params['breadcrumbs'][] = $this->title;
 echo Tabs::widget([
     'items' => [
         [
-            'label' => '<i class="glyphicon glyphicon-console"></i><span class="tag-title"> by App ID</span>',
+            'label' => '<i class="glyphicon glyphicon-phone"></i><span class="tag-title"> by App ID</span>',
             'encode' => false,
             'url' => ['/appidblacklist'],
         ],
