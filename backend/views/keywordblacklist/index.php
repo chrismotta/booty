@@ -53,15 +53,14 @@ echo Tabs::widget([
         'condensed' => true,
         'bordered' => false,
         'columns' => [
-            // ['class' => 'yii\grid\SerialColumn'],
-
-            // 'id',
-            'keyword',
-
             [
                 'class' => 'yii\grid\ActionColumn',
                 'template' => '{delete}',
-            ]
+                'options' => [
+                    'style' => 'width: 30px'
+                ]
+            ],
+            'keyword',
         ],
     ]); ?>
 <?php Pjax::end(); ?></div>
