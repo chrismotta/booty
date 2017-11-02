@@ -120,6 +120,16 @@
                                 ],
                             ],
                             [
+                                'label' => 'Blacklists',
+                                'icon' => 'circle-o',
+                                'url' => '#',
+                                'items' => [
+                                    [
+                                    'label' => 'by App ID', 'icon' => 'circle-thin', 'url' => ['/appidblacklist'],],
+                                    ['label' => 'by Keyword', 'icon' => 'circle-thin', 'url' => ['/keywordblacklist'],],
+                                ],
+                            ],
+                            [
                                 'label' => 'Static Campaigns',
                                 'icon' => 'circle-o',
                                 'url' => '#',
