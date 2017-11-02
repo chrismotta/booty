@@ -22,6 +22,8 @@ class AffiliatesapiController extends \yii\web\Controller
 	protected $_changed;
     protected $_exchangeRates;
     protected $_currentRule;
+    protected $_blacklistAppId;
+    protected $_blacklistKeyword;
 
 
 	protected function _apiRules ( )
@@ -96,6 +98,46 @@ class AffiliatesapiController extends \yii\web\Controller
 		];
 	}
 
+    private function _loadBlacklists()
+    {
+        $this->_blacklistKeyword = models\KeywordBlacklist::find()->all();
+        $this->_blacklistAppId   = [];
+
+        $appids = models\AppidBlacklist::find()->all();
+
+        if ( $appids )
+        {
+            foreach ( $appids as $appid )
+            {
+                $this->_blacklistAppId[] = $appid->app_id;
+            }                    
+        }
+    }
+
+
+    public function hasBlacklistedKeyword( $string )
+    {
+        foreach ( $this->_blacklistKeyword as $keyword )
+        {   
+            if ( 
+                preg_match ( 
+                    "/(".strtolower($keyword->keyword).")/", strtolower($string) 
+                )                
+            )
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+
+    public function appIdIsBlacklisted( $app_id )
+    {
+        return in_array( $app_id, $this->_blacklistAppId );
+    }
+
 
     public function actionIndex( $affiliate_id = null )
     {
@@ -107,6 +149,7 @@ class AffiliatesapiController extends \yii\web\Controller
     	$this->_alerts  = '';
     	$this->_redis 	= new \Predis\Client( \Yii::$app->params['predisConString'] );
 
+        $this->_loadBlacklists();
 
         foreach ( $this->_apiRules() AS $rule )
         {
@@ -270,7 +313,7 @@ class AffiliatesapiController extends \yii\web\Controller
             if ( $campaignsData && is_array($campaignsData) )
             {
                 foreach ( $campaignsData AS $campaignData )
-                {                    
+                {           
                     $externalIds[] = $campaignData['ext_id'];
 
                     $campaign = models\Campaigns::findOne([ 
@@ -314,7 +357,8 @@ class AffiliatesapiController extends \yii\web\Controller
                         )
                         {                    
                             continue;
-                        }
+                        }                                                       
+
 
                         $newCampaign      = true;
                         $campaign         = new models\Campaigns;     
@@ -373,7 +417,28 @@ class AffiliatesapiController extends \yii\web\Controller
                     if ( $campaignData['connection_type'] )
                         $campaign->connection_type = json_encode($campaignData['connection_type']);
                     else
-                        $campaign->connection_type = null;                                         
+                        $campaign->connection_type = null;
+
+
+                    if ( $campaign->app_id  )
+                    {    
+                        foreach ( $campaignData['package_id'] as $os => $appId )
+                        {
+                            if ( $this->appIdIsBlacklisted( $appId ) )
+                            {
+                                $campaign->status = 'blacklisted';
+                                break;
+                            }
+                        }
+                    }     
+
+                    if ( 
+                        $campaign->status!='blacklisted' 
+                        && $this->hasBlacklistedKeyword( $campaign->name )
+                    )
+                    {    
+                        $campaign->status = 'blacklisted';
+                    }   
 
                     if ( !$campaign->save() )
                     {
