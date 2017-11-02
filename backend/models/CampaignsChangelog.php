@@ -32,7 +32,7 @@ class CampaignsChangelog extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['id', 'Campaigns_id'], 'required'],
+            [['Campaigns_id', 'status'], 'required'],
             [['id', 'Campaigns_id', 'Clusters_id'], 'integer'],
             [['status', 'desc'], 'string'],
             [['time'], 'safe'],
@@ -79,7 +79,7 @@ class CampaignsChangelog extends \yii\db\ActiveRecord
         $log->Campaigns_id = $campaign_id;
         $log->Clusters_id  = $cluster_id;
         $log->status       = $status;
-        $log->message      = $message;
+        $log->desc         = $message;
 
         return $log->save();
     }
