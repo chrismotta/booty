@@ -150,5 +150,17 @@ class Campaigns extends \yii\db\ActiveRecord
             return false;
         }
     }
+
+    public function getLastLog(){
+
+        $log = CampaignsChangelog::find()
+        ->where([
+            'Campaigns_id' => $this->id, 
+            'Clusters_id' => $this->clusters_id
+        ])
+        ->orderBy('time DESC')
+        ->one();
+        return $log;
+    }
     
 }

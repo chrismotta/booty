@@ -4,6 +4,7 @@ use yii\helpers\Html;
 // use yii\grid\GridView;
 use kartik\grid\GridView;
 use kartik\grid\EditableColumn;
+use kartik\editable\Editable;
 use yii\widgets\Pjax;
 use yii\web\View;
 use yii\helpers\Url;
@@ -72,7 +73,12 @@ echo Tabs::widget([
                 'attribute'=>'affiliateName',
                 'value'=>'affiliates.name',
             ],
-            'name',
+            [
+                'attribute'=>'name',
+                'contentOptions' => [
+                    'class'=>'wrap-long-names'
+                ],
+            ],
 
             'payout',
             [
@@ -120,7 +126,7 @@ echo Tabs::widget([
 
             [
                 'class' => 'kartik\grid\EditableColumn',
-                'attribute' =>'delivery_freq',
+                'attribute' => 'delivery_freq',
                 'editableOptions'=> function ($model, $key, $index, $widget) {
                     return [
                         'id' => 'delivery_freq',
@@ -139,12 +145,17 @@ echo Tabs::widget([
             
             [
                 'class' => '\kartik\grid\DataColumn',
-                'header' => '<span class="glyphicon glyphicon-alert text-success"></span>',
+                'header' => '<span class="glyphicon glyphicon-alert text-default"></span>',
                 'format'=>'html',
                 'value' => function($model, $key, $index){
                     
-                    if($model->status!='active')
-                        $return = '<span class="glyphicon glyphicon-alert text-success" data-toggle="tooltip" title="PAUSED BY AFF"></span>';
+                    if($model->delivery_freq == 0)
+                        $lastLog = $model->getLastLog();
+
+                    if(isset($lastLog) && $lastLog->status='no_conv_limit')
+                        $return = '<span class="glyphicon glyphicon-alert" style="color:#f90" data-toggle="tooltip" title="10K LIMIT EXCEEDED"></span>';
+                    else if($model->status!='active')
+                        $return = '<span class="glyphicon glyphicon-alert" style="color:#0C0" data-toggle="tooltip" title="PAUSED BY AFF"></span>';
                     else 
                         $return = '';
 

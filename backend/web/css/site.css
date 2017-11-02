@@ -185,3 +185,16 @@ td.paused {
     position: relative;
     top: -1px;
 }
+
+.wrap-long-names {
+    max-width: 200px; 
+    overflow: auto; 
+    white-space: normal; 
+    word-wrap: break-word;
+}
+.wrap-long-hashes {
+    max-width: 100px; 
+    overflow: auto; 
+    white-space: normal; 
+    word-wrap: break-word;
+}
