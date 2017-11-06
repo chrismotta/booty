@@ -60,10 +60,17 @@
 				{
 					if ( $rule->action=='allow' )
 					{
-						$os[] 	    = $rule->rule->req_device_os; 
-						$osVer[] 	= $rule->rule->req_device_os_version; 
-						$carriers[] = $rule->rule->req_mobile_carrier;
-						$devices[]  = $rule->rule->req_device_model;		
+						if ( isset($rule->rule->req_device_os) )
+							$os[] 	    = $rule->rule->req_device_os; 
+
+						if ( isset($rule->rule->req_device_os_version) )
+							$osVer[] 	= $rule->rule->req_device_os_version; 
+
+						if ( isset($rule->rule->req_mobile_carrier) )
+							$carriers[] = $rule->rule->req_mobile_carrier;
+
+						if ( isset($rule->rule->req_device_model) )
+							$devices[]  = $rule->rule->req_device_model;		
 					}
 	 			}
 
