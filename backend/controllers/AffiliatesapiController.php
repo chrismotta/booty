@@ -10,7 +10,7 @@ use backend\components;
 class AffiliatesapiController extends \yii\web\Controller
 {
     CONST FROM = 'Splad - API Controller<no-reply@spladx.co>';
-	const NOTIFY_INBOX = 'dev@splad.co,apastor@splad.co,tgonzalez@splad.co,proman@splad.co';
+	const NOTIFY_INBOX = 'dev@splad.co,apastor@splad.co';
 	const ALERTS_INBOX = 'dev@splad.co,apastor@splad.co';
     const OPEN_EXRATES_APPID = '3ec50944b9564026a90c196286b3e810';
 
@@ -37,8 +37,7 @@ class AffiliatesapiController extends \yii\web\Controller
 			[
 				'class' 		=> 'SlaviaMobileAPI',
 				'affiliate_id'	=> 3,
-			],
-	
+			],	
             [
                 'class'         => 'MobobeatAPI',
                 'affiliate_id'  => 5,
@@ -143,6 +142,7 @@ class AffiliatesapiController extends \yii\web\Controller
     {
         set_error_handler( array( $this, 'handleErrors' ), E_ALL );
 
+        ini_set('memory_limit','3000M');
         set_time_limit(0);
 
     	$this->_changes = '';
@@ -303,17 +303,18 @@ class AffiliatesapiController extends \yii\web\Controller
             $api        = new $className;
             $affiliate  = models\Affiliates::findOne( ['id' => $rule['affiliate_id'] ] );
 
+            // if affiliate is paused, do not run
             if ( $affiliate->status == 'paused' )
                 return false;
 
             $campaignsData  = $api->requestCampaigns( $affiliate->api_key, $affiliate->user_id );
-            
+
             $externalIds = [];
 
             if ( $campaignsData && is_array($campaignsData) )
             {
                 foreach ( $campaignsData AS $campaignData )
-                {           
+                {
                     $externalIds[] = $campaignData['ext_id'];
 
                     $campaign = models\Campaigns::findOne([ 
@@ -323,64 +324,51 @@ class AffiliatesapiController extends \yii\web\Controller
 
                     if  ( $campaign )
                     {
-                        $newCampaign = false;
-
-                        $this->_checkChanges( $rule['class'], $campaign, $campaignData );
-
-                        if ( 
-                            $campaign->landing_url != $campaignData['landing_url'] 
-                            && $this->_redis->exists( 'campaign:'.$campaign->id ) 
-                        )
-                        {
-                            $this->_redis->hset( 'campaign:'.$campaign->id,
-                                'callback', 
-                                $campaignData['landing_url']
-                            );                  
-                        }
-
-                        switch ( $campaign->status )
-                        {
-                            case 'archived':
-                            case 'paused':
-                            break;
-                            default:
-                                $campaign->status = $campaignData['status'];
-                            break;
-                        }                        
+                        // save a copy with old version values
+                        $campaignClone = clone $campaign;                   
                     }
                     else
                     {
-                        if ( 
-                            !$campaignData['package_id'] 
-                            || !$campaignData['landing_url'] 
-                            || !$campaignData['payout']   
-                        )
-                        {                    
-                            continue;
-                        }                                                       
+                        $campaignClone = false;
+                        $campaign      = new models\Campaigns;     
+                    }
 
+                    // change new version status if basic data is null, false or 0
+                    if ( !$campaignData['package_id'] )
+                        $campaignData['status'] = 'no_appid';
+                    else if ( !$campaignData['landing_url'] )
+                        $campaignData['status'] = 'no_url';
+                    else if ( !$campaignData['payout'] )               
+                        $campaignData['status'] = 'no_payout';
 
-                        $newCampaign      = true;
-                        $campaign         = new models\Campaigns;     
-                        $campaign->status = $campaignData['status'];    
-                    }                    
+                    // if existing campaign is archived or paused, do not update status with api value
+                    switch ( $campaign->status )
+                    {
+                        case 'archived':
+                        case 'paused':
+                        break;
+                        default:
+                            $campaign->status = $campaignData['status'];
+                        break;
+                    }                         
 
+                    // set model values
                     $campaign->Affiliates_id = $affiliate->id;
                     $campaign->name          = $campaignData['name'];
                     $campaign->ext_id        = $campaignData['ext_id'];
                     $campaign->info          = $campaignData['desc'];
 
                     if ( $campaignData['currency']=='USD' )
-                        $campaign->payout        = (float)$campaignData['payout'];
+                        $campaign->payout = (float)$campaignData['payout'];
                     else
                     {
                         $rate = $this->getExchangeRate( $campaignData['currency'] );
 
                         if ( $rate )
-                            $campaign->payout        = (float)$campaignData['payout']/$rate;
+                            $campaign->payout = (float)$campaignData['payout']/$rate;
                     }
 
-                    $campaign->landing_url   = $campaignData['landing_url'];
+                    $campaign->landing_url     = $campaignData['landing_url'];
 
                     if ( $campaignData['package_id'] )
                         $campaign->app_id      = json_encode($campaignData['package_id']);
@@ -420,6 +408,7 @@ class AffiliatesapiController extends \yii\web\Controller
                         $campaign->connection_type = null;
 
 
+                    // check if any app_id is blacklisted
                     if ( $campaign->app_id  )
                     {    
                         foreach ( $campaignData['package_id'] as $os => $appId )
@@ -432,6 +421,8 @@ class AffiliatesapiController extends \yii\web\Controller
                         }
                     }     
 
+
+                    // check if name includes any blacklisted keyword
                     if ( 
                         $campaign->status!='blacklisted' 
                         && $this->hasBlacklistedKeyword( $campaign->name )
@@ -440,20 +431,22 @@ class AffiliatesapiController extends \yii\web\Controller
                         $campaign->status = 'blacklisted';
                     }   
 
-                    if ( !$campaign->save() )
+                    // save
+                    if ( $campaign->save() )
+                    {
+                        // if campaign previously existed, update redis (pass the original version too)
+                        if ( $campaignClone )
+                            $this->_updateRedis( $affiliate, $campaignClone, $campaignData );
+                    }
+                    else
                     {
                         $this->_createAlert(  $rule['class'], $campaign->getErrors(), $api->getStatus(), json_encode($campaignData) );
                     }
 
-                    $this->_redis->hmset( 'campaign:'.$campaign->id, [
-                        'callback'     => $campaign->landing_url,
-                        'click_macro'  => $affiliate->click_macro,
-                        'placeholders' => $affiliate->placeholders,
-                        'macros'       => $affiliate->macros,
-                        'ext_id'       => $campaign->ext_id
-                    ]);
 
+                    // free ram
                     unset( $campaign );
+                    unset( $campaignClone );
                 }
             }
             else
@@ -461,6 +454,7 @@ class AffiliatesapiController extends \yii\web\Controller
                 $this->_createAlert( $rule['class'], $api->getMessages(), $api->getStatus() );
             }
 
+            // set status aff_paused for existing campaings which are not present in the current api response
             $this->_clearCampaigns( $rule['affiliate_id'], $externalIds,  $rule['class'] );            
         }
         catch ( Throwable $t )
@@ -468,14 +462,187 @@ class AffiliatesapiController extends \yii\web\Controller
             $this->_createAlert(  $rule['class'], $t, $api->getStatus() );
         }
 
-        unset ( $api );
-        unset ( $affiliate );
-
         return true;
     }
 
 
-    protected function _checkChanges ( $api_class, $campaign, array $campaignData )
+    protected function _updateRedis ( $affiliate, $campaign, array $apiData )
+    {
+        $chc = models\ClustersHasCampaigns::findAll( 
+            ['Campaigns_id' => $campaign->id] 
+        );
+
+        // evaluate all status cases between versions
+        switch ( $campaign->status )
+        {
+            case 'active':
+                switch ( $apiData['status'] )
+                {
+                    case 'aff_paused':
+                    case 'no_url':
+                    case 'no_appid':
+                    case 'no_payout':
+                        $this->_removeCampaignFromClusterList( $chc, $campaign );
+
+                        // remove campaign data
+                        $this->_redis->del( 'campaign:'.$campaign->id );
+                    break;
+                    case 'active':
+                        $this->_updateClusterListOnPackageDiff( $chc, $campaign, $apiData );
+
+                        // update campaign data
+                        $this->_redis->hmset( 'campaign:'.$campaign->id, [
+                            'callback'     => $apiData['landing_url'],
+                            'click_macro'  => $affiliate->click_macro,
+                            'placeholders' => $affiliate->placeholders,
+                            'macros'       => $affiliate->macros,
+                            'ext_id'       => $apiData['ext_id']
+                        ]);                         
+                    break;
+                }
+            break;
+            case 'aff_paused':
+            case 'paused':
+            case 'no_url':
+            case 'no_appid':
+            case 'no_payout':
+                switch ( $apiData['status'] )
+                {
+                    case 'active':
+                        $this->_addCampaignToClusterList( $chc, $campaign, $apiData );
+
+                        // set campaign data
+                        $this->_redis->hmset( 'campaign:'.$campaign->id, [
+                            'callback'     => $apiData['landing_url'],
+                            'click_macro'  => $affiliate->click_macro,
+                            'placeholders' => $affiliate->placeholders,
+                            'macros'       => $affiliate->macros,
+                            'ext_id'       => $apiData['ext_id']
+                        ]);                                          
+                    break;
+                }
+            break;
+        }
+    }
+
+
+    protected function _updateClusterListOnPackageDiff ( $chcs, $campaign, $apiData )
+    {
+        $result = $this->_checkPackageIdDiff( 
+            $campaign->app_id,
+            $apiData['package_id']
+        );
+
+        // check if package id difference exists between versions
+        if ( !empty($result['add']) || !empty($result['rem']) )
+        {
+            foreach ( $clustersHasCampaigns as $assign )
+            {
+                // add new packages not present in the old version
+                foreach ( $result['add'] as $packageId )
+                {
+                    $this->_addToClusterList(
+                        $assign['Clusters_id'],
+                        $campaign->id,
+                        $campaign->affiliates->id,
+                        $packageId,
+                        $assign['delivery_freq']
+                    );
+                }
+
+                // remove old packages not present in the new version
+                foreach ( $result['rem'] as $packageId )
+                {
+                    $this->_removeFromClusterList(
+                        $assign['Clusters_id'],
+                        $campaign->id,
+                        $campaign->affiliates->id,
+                        $packageId
+                    );
+                }                                                              
+            }                    
+        }        
+    }
+
+
+    protected function _removeCampaignFromClusterList ( $chc, $campaign )
+    {
+        $oldPackageIds = $campaign->app_id ? json_decode($campaign->app_id, true) : [];
+
+        foreach ( $chc as $assign )
+        {
+            foreach ( $oldPackageIds as $os => $packageId )
+            {
+                if ( $packageId )
+                {
+                    $this->_redis->zrem( 
+                        'clusterlist:'.$assign['Clusters_id'], 
+                       $campaign->id.":".$campaign->affiliates->id.':'.$packageId
+                    );       
+                    
+                }                    
+            }
+        }    
+    }
+
+
+    public function _addCampaignToClusterList ( $chc, $campaign, $apiData )
+    {
+        $newPackageIds = $apiData['package_id'] ? $apiData['package_id'] : [];        
+        foreach ( $chc as $assign )
+        {
+            foreach ( $newPackageIds as $packageId )
+            {
+                $this->_redis->zadd( 
+                    'clusterlist:'.$assign['Clusters_id'], 
+                    $assign['delivery_freq'],
+                    $campaign->id.':'.$campaign->affiliates->id.':'.$packageId
+                );                 
+            }
+        }
+
+        
+    }
+
+
+    protected function _checkPackageIdDiff ( $oldData, $newData )
+    {
+        $oldPackageIds = $oldData ? json_decode($oldData, true) : [];
+        $newPackageIds = $newData ? $newData : [];
+
+        $add = [];
+        $rem = [];
+
+        foreach ( $oldPackageIds as $os => $oldPackageId )
+        {
+            if ( 
+                !isset( $newPackageIds[$os] )
+                || $newPackageIds[$os] != $oldPackageId
+            )
+            {
+                $rem[] = $oldPackageId;
+            }
+        }
+
+        foreach ( $newPackageIds as $os => $newPackageId )
+        {
+            if ( 
+                !isset( $oldPackageIds[$os] )
+                || $oldPackageIds[$os] != $newPackageId
+            )
+            {
+                $add[] = $newPackageId;
+            }
+        }
+
+        return [
+            'add' => $add,
+            'rem' => $rem
+        ];       
+    }
+
+
+    protected function _checkChangesOLD ( $api_class, $campaign, array $campaignData )
     {
     	$changes = '';
     	$this->_changed = false;
@@ -592,55 +759,29 @@ class AffiliatesapiController extends \yii\web\Controller
 
         foreach ( $campaigns AS $campaign )
         {
-            if ( !in_array( $campaign->ext_id, $external_ids ) )
+            $clustersHasCampaigns = models\ClustersHasCampaigns::findAll(['Campaigns_id' => $campaign->id]);
+
+            $clusters = [];
+
+            foreach ( $clustersHasCampaigns as $assign )
             {
-                $clustersHasCampaigns = models\ClustersHasCampaigns::findAll(['Campaigns_id' => $campaign->id]);
+                $clusters[] = $assign['Clusters_id'];
+                $value      = '['.$campaign->id.':'.$campaign->affiliates->id;
 
-                $clusters = [];
+                $packageIds = json_decode($campaign->app_id, true);
 
-                foreach ( $clustersHasCampaigns as $assign )
+                foreach ( $packageIds AS $packageId )
                 {
-                    $clusters[] = $assign['Clusters_id'];
-                    $value      = '['.$campaign->id.':'.$campaign->affiliates->id;
-
-                    $packageIds = json_decode($campaign->app_id, true);
-
-                    foreach ( $packageIds AS $packageId )
-                    {
-                         $value      = $campaign->id.":".$campaign->affiliates->id.':'.$packageId;
-                         $this->_redis->zrem( 'clusterlist:'.$assign['Clusters_id'], $value );
-                    }
+                     $value      = $campaign->id.":".$campaign->affiliates->id.':'.$packageId;
+                     $this->_redis->zrem( 'clusterlist:'.$assign['Clusters_id'], $value );
                 }
-        
-
-                $prevStatus =  $campaign->status;
-
-                $campaign->status = 'aff_paused';
-                $campaign->save();
-
-                if ( !empty($clusters) && $prevStatus!='aff_paused' )
-                {
-                    $this->_changes .= '
-                        <tr>
-                            <td>'.$api_class.'</td>
-                            <td>'.$campaign->id.'</td>
-                            <td>'.$campaign->ext_id.'</td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td>'.$prevStatus.' => aff_paused</td>
-                            <td>'.json_encode( $clusters ).'</td>
-                        </tr>
-                    ';                    
-                }
-
-                unset( $clusters );
-                unset( $clustersHasCampaigns );                   
             }
+
+            $campaign->status = 'aff_paused';
+            $campaign->save();
+
+            unset( $clusters );
+            unset( $clustersHasCampaigns );
         }
     }
 
@@ -831,8 +972,11 @@ class AffiliatesapiController extends \yii\web\Controller
     }    
 
 
-    protected function _listChanges ( array $list1 = null, array $list2 = null )
+    protected function _checkJsonFieldChanges ( $field, $oldJson, $newJson )
     {
+        $list1 = json_decode($oldJson);
+        $list2 = json_decode($newJson);
+
     	$changes = '';
 
     	if ( !$list1 )
@@ -870,8 +1014,8 @@ class AffiliatesapiController extends \yii\web\Controller
 			$changes .= $removed;
 		}
 
-		if ( $changes != '' )
-			$this->_changed = true;
+		if ( $changes == '' )
+			return false;
 
 		return $changes;
     }
