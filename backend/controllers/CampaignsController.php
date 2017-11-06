@@ -38,6 +38,7 @@ class CampaignsController extends Controller
     public function actionIndex()
     {
         $searchModel = new CampaignsSearch();
+        $searchModel->status = 'active';
         $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
 
         return $this->render('index', [

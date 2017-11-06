@@ -59,7 +59,7 @@ $filterByAffiliate = ArrayHelper::map(
                         'allowClear' => true
                     ],
                     'options' => [
-                        'placeholder' => 'Select an Affiliate...',
+                        'placeholder' => 'Select',
                     ]
                 ]),                
             ],
@@ -99,19 +99,30 @@ $filterByAffiliate = ArrayHelper::map(
                     return $model->formatValues('os', 'info');
                 }
             ],
+            // [
+            //     'attribute'=>'os_version',
+            //     'format'=>'html',
+            //     'value' => function($model, $key, $index){
+            //         return $model->formatValues('os_version', 'default');
+            //     }
+            // ],
+            // [
+            //     'attribute'=>'carrier',
+            //     'format'=>'html',
+            //     'value' => function($model, $key, $index){
+            //         return $model->formatValues('carrier', 'warning');
+            //     }
+            // ],
             [
-                'attribute'=>'os_version',
-                'format'=>'html',
-                'value' => function($model, $key, $index){
-                    return $model->formatValues('os_version', 'default');
-                }
-            ],
-            [
-                'attribute'=>'carrier',
-                'format'=>'html',
-                'value' => function($model, $key, $index){
-                    return $model->formatValues('carrier', 'warning');
-                }
+                'attribute' => 'status',
+                'filter' => [
+                        'active' => 'active',
+                        'archived' => 'archived',
+                        'paused' => 'paused',
+                        'aff_paused' => 'aff_paused',
+                        'affiliate_off' => 'affiliate_off',
+                        'blacklisted' => 'blacklisted',
+                    ],
             ],
             // 'landing_url:url',
             // 'creative_320x50',

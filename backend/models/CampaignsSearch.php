@@ -21,7 +21,7 @@ class CampaignsSearch extends Campaigns
     {
         return [
             [['id', 'Affiliates_id'], 'integer'],
-            [['name', 'landing_url', 'creative_320x50', 'creative_300x250', 'affiliateName', 'ext_id', 'affiliate', 'country', 'os', 'connection_type', 'os_version', 'carrier', 'device_type'], 'safe'],
+            [['name', 'landing_url', 'creative_320x50', 'creative_300x250', 'affiliateName', 'ext_id', 'affiliate', 'country', 'os', 'connection_type', 'os_version', 'carrier', 'device_type', 'status'], 'safe'],
             [['payout'], 'number'],
         ];
     }
@@ -51,7 +51,7 @@ class CampaignsSearch extends Campaigns
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
-            'sort' => ['attributes' => [ 'id','name', 'landing_url','payout', 'ext_id', 'affiliate', 'country', 'os', 'carrier', 'device_type', 'os_version', 'connection_type']]            
+            'sort' => ['attributes' => [ 'id','name', 'landing_url','payout', 'ext_id', 'affiliate', 'country', 'os', 'carrier', 'device_type', 'os_version', 'connection_type', 'status']]            
         ]);
 
         $query->select([
@@ -67,6 +67,7 @@ class CampaignsSearch extends Campaigns
             'Campaigns.connection_type',
             'Campaigns.country',
             'Campaigns.device_type',
+            'Campaigns.status',
         ]);
 
         $this->load($params);
@@ -102,9 +103,10 @@ class CampaignsSearch extends Campaigns
             ->andFilterWhere(['like', 'os', $this->os])
             ->andFilterWhere(['like', 'os_version', $this->os_version])
             ->andFilterWhere(['like', 'device_type', $this->device_type])
-            ->andFilterWhere(['like', 'connection_type', $this->connection_type]);
+            ->andFilterWhere(['like', 'connection_type', $this->connection_type])
+            ->andFilterWhere(['=', 'Campaigns.status', $this->status]);
 
-        $query->andWhere(['=', 'Campaigns.status', 'active']);
+        // $query->andWhere(['=', 'Campaigns.status', 'active']);
 
         return $dataProvider;
     }
