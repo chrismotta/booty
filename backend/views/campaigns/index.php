@@ -122,6 +122,9 @@ $filterByAffiliate = ArrayHelper::map(
                         'aff_paused' => 'aff_paused',
                         'affiliate_off' => 'affiliate_off',
                         'blacklisted' => 'blacklisted',
+                        'no_appid' => 'no_appid',
+                        'no_payout' => 'no_payout',                        
+                        'no_url' => 'no_url',
                     ],
                 'contentOptions' => function($model, $key, $index){
                     switch ($model->status) {
