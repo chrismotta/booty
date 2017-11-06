@@ -40,7 +40,7 @@ class Campaigns extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['Affiliates_id', 'name', 'payout', 'landing_url'], 'required'],
+            [['Affiliates_id', 'ext_id'], 'required'],
             [['id', 'Affiliates_id'], 'integer'],
             [['payout'], 'number'],
             [['status', 'info'], 'string'],

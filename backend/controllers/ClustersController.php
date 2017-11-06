@@ -406,9 +406,14 @@ class ClustersController extends Controller
 
             $packageIds = json_decode($chc->campaigns->app_id);
 
-            foreach ( $packageIds as $packageId )
+            $prevDeliveryFreq = $chc->delivery_freq;
+
+            if ( $chc->campaigns->status=='active' )
             {
-                $cache->zadd( 'clusterlist:'.$Clusters_id, $delivery_freq, $chc->campaigns->id.':'.$chc->campaigns->affiliates->id.':'.$packageId );
+                foreach ( $packageIds as $packageId )
+                {
+                    $cache->zadd( 'clusterlist:'.$Clusters_id, $delivery_freq, $chc->campaigns->id.':'.$chc->campaigns->affiliates->id.':'.$packageId );
+                }
             }
         }
 
