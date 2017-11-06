@@ -123,6 +123,33 @@ $filterByAffiliate = ArrayHelper::map(
                         'affiliate_off' => 'affiliate_off',
                         'blacklisted' => 'blacklisted',
                     ],
+                'contentOptions' => function($model, $key, $index){
+                    switch ($model->status) {
+                        case 'active':
+                            $options = ['class'=>'text-success'];
+                            break;
+                        case 'paused':
+                            $options = ['class'=>'text-info'];
+                            break;
+                        case 'aff_paused':
+                            $options = ['class'=>'text-info'];
+                            break;
+                        case 'blacklisted':
+                            $options = ['class'=>'text-danger'];
+                            break;
+                        case 'archived':
+                            $options = ['class'=>'text-muted'];
+                            break;
+                        case 'affiliate_off':
+                            $options = ['class'=>'text-muted'];
+                            break;
+                        default:
+                            $options = [];
+                    }
+
+                    $options['style'] = 'font-weight: bold; font-size: 11px';
+                    return $options;
+                }
             ],
             // 'landing_url:url',
             // 'creative_320x50',
