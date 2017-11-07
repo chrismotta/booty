@@ -44,6 +44,20 @@
 			return $result;
 		}
 
+
+		static function cleanAppleId ( $value )
+		{
+			$matches = [];
+			preg_match( '/(id)[0-9]+/', $value, $matches );
+
+			if ( !empty($matches) )
+			{
+				return substr( $matches[0], 2 );
+			}
+
+			return $value;	
+		}
+
 		static function getOs ( $data, $otherAsDefault = true )
 		{
 			$results = [];

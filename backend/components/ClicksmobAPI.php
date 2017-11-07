@@ -63,7 +63,7 @@
 
 				if ( $campaign->iosbundleID )
 				{
-					$packageIds['ios'] = $campaign->iosbundleID;
+					$packageIds['ios'] = ApiHelper::cleanAppleId($campaign->iosbundleID);
 				}
 
 				if ( $campaign->androidPackageName )

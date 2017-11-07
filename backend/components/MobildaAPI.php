@@ -126,7 +126,7 @@
 						}
 						else if ( isset($packageIds['ios']) )
 						{
-							$packageIds['ios'] = $campaign->attributes->package_name;
+							$packageIds['ios'] = ApiHelper::cleanAppleId($campaign->attributes->package_name);
 						}
 						else if ( !in_array( 'Android', $oss ) )
 						{
@@ -134,7 +134,7 @@
 						}
 						else if ( !in_array( 'iOS', $oss ) )
 						{
-							$packageIds['ios'] = $campaign->attributes->package_name;
+							$packageIds['ios'] = ApiHelper::cleanAppleId($campaign->attributes->package_name);
 						}
 					}					
 				}
@@ -147,7 +147,7 @@
 				else if ( in_array( 'iOS', $oss ) && $campaign->attributes->package_name )
 				{
 					$packageIds = [
-						'ios' => $campaign->attributes->package_name
+						'ios' => ApiHelper::cleanAppleId($campaign->attributes->package_name)
 					];
 				}				
 				else

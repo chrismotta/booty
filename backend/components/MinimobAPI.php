@@ -74,7 +74,7 @@
 						}
 						else if ( isset($packageIds['ios']) )
 						{
-							$packageIds['ios'] = $campaign->appId;
+							$packageIds['ios'] = ApiHelper::cleanAppleId($campaign->appId);
 						}
 						else if ( !in_array( 'Android', $os ) )
 						{
@@ -82,7 +82,7 @@
 						}
 						else if ( !in_array( 'iOS', $os ) )
 						{
-							$packageIds['ios'] = $campaign->appId;
+							$packageIds['ios'] = ApiHelper::cleanAppleId($campaign->appId);
 						}
 					}					
 				}
@@ -95,7 +95,7 @@
 				else if ( in_array( 'iOS', $os ) && $campaign->appId )
 				{
 					$packageIds = [
-						'ios' => $campaign->appId
+						'ios' => ApiHelper::cleanAppleId($campaign->appId)
 					];
 				}				
 				else

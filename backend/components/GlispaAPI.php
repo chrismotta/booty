@@ -80,7 +80,7 @@
 				else if ( in_array( 'iOS', $os ) && $campaign->mobile_app_id )
 				{
 					$packageIds = [
-						'ios' => $campaign->mobile_app_id
+						'ios' => ApiHelper::cleanAppleId($campaign->mobile_app_id)
 					];
 				}				
 				else if ( $campaign->mobile_app_id )

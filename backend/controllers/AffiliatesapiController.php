@@ -151,15 +151,17 @@ class AffiliatesapiController extends \yii\web\Controller
 
         $this->_loadBlacklists();
 
+        $clusters = models\Clusters::find()->asArray()->all();
+
         foreach ( $this->_apiRules() AS $rule )
         {
             if ( !$affiliate_id )
             {
-                $this->_runAPI( $rule );
+                $this->_runAPI( $rule, $clusters );
             }            
             if ( $affiliate_id == $rule['affiliate_id'] )
             {                
-                $this->_runAPI( $rule );
+                $this->_runAPI( $rule, $clusters );
                 break;
             }
         }
@@ -295,7 +297,7 @@ class AffiliatesapiController extends \yii\web\Controller
     }
 
 
-    protected function _runAPI ( array $rule )
+    protected function _runAPI ( array $rule, $clusters )
     {
         try
         {
@@ -434,9 +436,19 @@ class AffiliatesapiController extends \yii\web\Controller
                     // save
                     if ( $campaign->save() )
                     {
-                        // if campaign previously existed, update redis (pass the original version too)
+                        // autoassign campaigns to clusters
+                        /*
+                        if ( $affiliate->assignation_mehtod == 'automatic' )
+                            $this->_autoassign( $campaign, $campaignData, $clusters );
+                        */
+                       
+                        // if campaign already exists update redis. Otherwise, save if was auto-assigned
                         if ( $campaignClone )
                             $this->_updateRedis( $affiliate, $campaignClone, $campaignData );
+                        /*
+                        else
+                            $this->_saveRedis( $affiliate, $campaignClone, $campaignData );
+                        */
                     }
                     else
                     {
@@ -466,7 +478,115 @@ class AffiliatesapiController extends \yii\web\Controller
     }
 
 
-    protected function _updateRedis ( $affiliate, $campaign, array $apiData )
+    private function _autoassign ( $campaign, $apiData, $clusters )
+    {
+        foreach  ( $clusters as $cluster )
+        {
+            if ( $campaign->status=='active' && $campaign->payout>=$cluster['min_payout'] )
+            {
+                echo $cluster['os'] . ': ';
+                var_dump($apiData['os']).'<br><br>';
+                echo $cluster['country'] . ': ';
+                var_dump($apiData['country']).'<br><br>';
+
+                // if country / os are open or cluster setting is not included in campaign setting, do not autoasign to this cluster
+                if ( 
+                    !$apiData['os'] 
+                    || !$cluster['os']
+                    || !$apiData['country'] 
+                    || !$cluster['country']
+                    || !in_array( $cluster['os'], $apiData['os'] ) 
+                    || !in_array( $cluster['country'], $apiData['country'] ) 
+                )
+                {
+                    echo ' => 1';echo '<hr>';
+                    continue;
+                }
+
+                // if connection type is not open in cluster or campaign and cluster's is not included between campaign's then skip autoasign
+                if ( 
+                    $apiData['connection_type'] 
+                    && $cluster['connection_type']
+                    && !in_array( $cluster['connection_type'], $apiData['connection_type'] ) 
+                )
+                {
+                    echo ' => 2';echo '<hr>';
+                    continue;
+                }
+
+                // if os_version is not open in cluster or campaign and cluster's is not included between campaign's then skip autoasign
+                if ( 
+                    $apiData['os_version'] 
+                    && $cluster['os_version']
+                    && !in_array( $cluster['os_version'], $apiData['os_version'] ) 
+                )
+                {
+                    echo ' => 3';echo '<hr>';
+                    continue;
+                }
+
+                // if carrier is not open in cluster or campaign and cluster's is not included between campaign's then skip autoasign
+                if ( 
+                    $apiData['carrier'] 
+                    && isset($cluster['carrier'])
+                    && !in_array( $cluster['carrier'], $apiData['carrier'] ) 
+                )
+                {
+                    echo ' => 4';echo '<hr>';
+                    continue;
+                }
+                echo ' => OK!! cluster: '.$cluster['id'].' campaign: '.$campaign->id.' <hr>';
+
+                // check if assignment already exists
+                $chc = models\ClustersHasCampaigns::findOne( 
+                    [
+                        'Campaigns_id' => $campaign->id,
+                        'Clusters_id'  => $cluster['id']
+                    ] 
+                );
+
+                // if it doesn't exist, create
+                if ( !$chc )
+                {
+                    $chc = new models\ClustersHasCampaigns();
+
+                    $chc->Clusters_id   = $cluster['id'];
+                    $chc->Campaigns_id  = $campaign->id;
+                    $chc->delivery_freq = 1;
+
+                    $chc->save();
+                }
+
+                // free ram
+                unset ( $chc );                
+            }
+        }
+    }
+
+    // save only assigned campaigns
+    private function _saveRedis ( $affiliate, $campaign, $apiData )
+    {
+        $chc = models\ClustersHasCampaigns::findAll( 
+            ['Campaigns_id' => $campaign->id] 
+        );
+
+        switch ( $campaign->status )
+        {
+            case 'active':
+                $this->_redis->hmset( 'campaign:'.$campaign->id, [
+                    'callback'     => $campaign->landing_url,
+                    'click_macro'  => $affiliate->click_macro,
+                    'placeholders' => $affiliate->placeholders,
+                    'macros'       => $affiliate->macros,
+                    'ext_id'       => $campaign->ext_id
+                ]);           
+
+                $this->_addCampaignToClusterList( $chc, $campaign, $apiData );
+            break;
+        }
+    }
+
+    private function _updateRedis ( $affiliate, $campaign, array $apiData )
     {
         $chc = models\ClustersHasCampaigns::findAll( 
             ['Campaigns_id' => $campaign->id] 
@@ -526,7 +646,9 @@ class AffiliatesapiController extends \yii\web\Controller
     }
 
 
-    protected function _updateClusterListOnPackageDiff ( $chcs, $campaign, $apiData )
+
+
+    private function _updateClusterListOnPackageDiff ( $chcs, $campaign, $apiData )
     {
         $result = $this->_checkPackageIdDiff( 
             $campaign->app_id,
@@ -536,36 +658,32 @@ class AffiliatesapiController extends \yii\web\Controller
         // check if package id difference exists between versions
         if ( !empty($result['add']) || !empty($result['rem']) )
         {
-            foreach ( $clustersHasCampaigns as $assign )
+            foreach ( $chcs as $assign )
             {
                 // add new packages not present in the old version
                 foreach ( $result['add'] as $packageId )
                 {
-                    $this->_addToClusterList(
-                        $assign['Clusters_id'],
-                        $campaign->id,
-                        $campaign->affiliates->id,
-                        $packageId,
-                        $assign['delivery_freq']
-                    );
+                    $this->_redis->zadd( 
+                        'clusterlist:'.$assign['Clusters_id'], 
+                        $assign['delivery_freq'],
+                        $campaign->id.':'.$campaign->affiliates->id.':'.$packageId
+                    );  
                 }
 
                 // remove old packages not present in the new version
                 foreach ( $result['rem'] as $packageId )
                 {
-                    $this->_removeFromClusterList(
-                        $assign['Clusters_id'],
-                        $campaign->id,
-                        $campaign->affiliates->id,
-                        $packageId
-                    );
+                    $this->_redis->zrem( 
+                        'clusterlist:'.$assign['Clusters_id'], 
+                        $campaign->id.":".$campaign->affiliates->id.':'.$packageId
+                    );  
                 }                                                              
             }                    
         }        
     }
 
 
-    protected function _removeCampaignFromClusterList ( $chc, $campaign )
+    private function _removeCampaignFromClusterList ( $chc, $campaign )
     {
         $oldPackageIds = $campaign->app_id ? json_decode($campaign->app_id, true) : [];
 
@@ -578,17 +696,17 @@ class AffiliatesapiController extends \yii\web\Controller
                     $this->_redis->zrem( 
                         'clusterlist:'.$assign['Clusters_id'], 
                        $campaign->id.":".$campaign->affiliates->id.':'.$packageId
-                    );       
-                    
+                    );                           
                 }                    
             }
         }    
     }
 
 
-    public function _addCampaignToClusterList ( $chc, $campaign, $apiData )
+    public function _addCampaignToClusterList ( $chc, $campaign, $apiData  )
     {
-        $newPackageIds = $apiData['package_id'] ? $apiData['package_id'] : [];        
+        $newPackageIds = $apiData['package_id'] ? $apiData['package_id'] : []; 
+
         foreach ( $chc as $assign )
         {
             foreach ( $newPackageIds as $packageId )
@@ -641,7 +759,7 @@ class AffiliatesapiController extends \yii\web\Controller
         ];       
     }
 
-
+    // DEPRECATED!!!!
     protected function _checkChangesOLD ( $api_class, $campaign, array $campaignData )
     {
     	$changes = '';
