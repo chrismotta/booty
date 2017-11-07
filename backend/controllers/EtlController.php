@@ -13,8 +13,9 @@ use Predis;
 
 class EtlController extends \yii\web\Controller
 {
-    CONST ALERT_FROM = 'Splad - ETL Controller<no-reply@spladx.co>';
-    CONST ALERT_TO   = 'dev@splad.co,apastor@splad.co';
+    const ALERT_FROM         = 'Splad - ETL Controller<no-reply@spladx.co>';
+    const ALERT_TO           = 'dev@splad.co,apastor@splad.co';
+    const CLUSTER_TRUST_IMPS = 10000;
 
 	private $_redis;
 	private $_objectLimit;
@@ -1164,7 +1165,7 @@ class EtlController extends \yii\web\Controller
 
         foreach ( $campaigns AS $cid => $score )
         {
-            if ( (int)$score >= 10000 )
+            if ( (int)$score >= self::CLUSTER_TRUST_IMPS )
             {
                 $sql = '
                     SELECT 
