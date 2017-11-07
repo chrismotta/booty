@@ -483,7 +483,10 @@ class EtlController extends \yii\web\Controller
 
                 if ( $clusterLog )
                 {
-                    if ( !isset($clusterLog['placement_id']) )
+                    if ( 
+                        !isset($clusterLog['placement_id']) 
+                        || !isset( $clusterLog['imps'] )
+                    )
                     {
                         $this->_redis->zadd( 'orfanhashes', 0, $sessionHash );
                         continue;
