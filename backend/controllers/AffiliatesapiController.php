@@ -926,7 +926,7 @@ class AffiliatesapiController extends \yii\web\Controller
     protected function _clearCampaigns ( $affiliate_id, array $external_ids, $api_class )
     {
 
-        $campaigns = models\Campaigns::find()->where(['Affiliates_id' => $affiliate_id ])->andWhere(['<>', 'status', 'archived'])->andWhere(['<>', 'status', 'paused'])->andWhere(['<>', 'status', 'aff_paused'])->andWhere( ['not in' , 'ext_id', $external_ids] )->all();
+        $campaigns = models\Campaigns::find()->where(['Affiliates_id' => $affiliate_id ])->andWhere(['<>', 'status', 'archived'])->andWhere(['<>', 'status', 'paused'])->andWhere(['<>', 'status', 'aff_paused'])->andWhere( ['not in' , 'ext_id', $external_ids] )->andWhere(['<>', 'creation', 'manual'])->all();
        
         //var_export( $campaigns->createCommand()->getRawSql() );die();
 
