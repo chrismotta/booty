@@ -496,9 +496,26 @@ class AffiliatesapiController extends \yii\web\Controller
     {           
         $oss = [];
 
-        foreach ( $values as $os =>$packageId )
+        foreach ( $values as $os => $packageId )
         {
-            $oss[] = $os;
+            switch ( strtolower($os) )
+            {
+                case 'ios':
+                    $oss[] = 'iOS';
+                break;
+                case 'android':
+                    $oss[] = 'Android';
+                break;
+                case 'windows':
+                    $oss[] = 'Windows';
+                break;
+                case 'blackberry':
+                    $oss[] = 'Blackberry';
+                break;
+                default:
+                    $oss[] = 'Other';
+                break;
+            }            
         }
 
         if ( empty( $oss ) )
