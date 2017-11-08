@@ -326,8 +326,12 @@ class AffiliatesapiController extends \yii\web\Controller
 
                     if  ( $campaign )
                     {
+                        // skip when api campaign matches a campaign manually created
+                        if ( $campaign->creation=='manual' )
+                            continue;
+
                         // save a copy with old version values
-                        $campaignClone = clone $campaign;                   
+                        $campaignClone = clone $campaign;                
                     }
                     else
                     {
@@ -387,10 +391,26 @@ class AffiliatesapiController extends \yii\web\Controller
                     else
                         $campaign->device_type  = null;
 
+
                     if ( $campaignData['os'] )
+                    {
                         $campaign->os           = json_encode($campaignData['os']);    
+                    }
+                    else if ( $campaignData['package_id'] )
+                    {
+                        // if app_id exists and os not, detect os from app_id
+                        $os = $this->_getOsFromAppId( $campaignData['package_id'] );
+
+                        if ( $os )
+                            $campaign->os       = json_encode($os);
+                        else
+                            $campaign->os       = null;
+                    }
                     else
+                    {
                         $campaign->os           = null;
+                    }
+
 
                     if ( $campaignData['os_version'] )
                         $campaign->os_version   = json_encode($campaignData['os_version']);
@@ -472,6 +492,40 @@ class AffiliatesapiController extends \yii\web\Controller
     }
 
 
+    private function _getOsFromAppId ( array $values )
+    {           
+        $oss = [];
+
+        foreach ( $values as $os => $packageId )
+        {
+            switch ( strtolower($os) )
+            {
+                case 'ios':
+                    $oss[] = 'iOS';
+                break;
+                case 'android':
+                    $oss[] = 'Android';
+                break;
+                case 'windows':
+                    $oss[] = 'Windows';
+                break;
+                case 'blackberry':
+                    $oss[] = 'Blackberry';
+                break;
+                default:
+                    $oss[] = 'Other';
+                break;
+            }            
+        }
+
+        if ( empty( $oss ) )
+            return null;
+
+        return $oss;
+    }
+
+
+
     private function _autoassign ( $affiliate, $campaign, $apiData, $clusters )
     {
         foreach  ( $clusters as $cluster )
@@ -551,7 +605,7 @@ class AffiliatesapiController extends \yii\web\Controller
                     if ( $chc->save() )
                     {
                         $this->_saveRedis( $chc, $affiliate, $campaign, $apiData );
-                        
+
                         models\CampaignsChangelog::log( $campaign->id, 'autoassigned', null, $cluster->id );
                     }
                 }
