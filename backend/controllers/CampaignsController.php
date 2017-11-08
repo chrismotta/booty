@@ -67,6 +67,7 @@ class CampaignsController extends Controller
     public function actionCreate()
     {
         $model = new Campaigns();
+        $model->creation = 'manual';
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) { 
             return $this->redirect(['view', 'id' => $model->id]);

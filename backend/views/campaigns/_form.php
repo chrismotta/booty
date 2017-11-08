@@ -53,6 +53,8 @@ $affiliates = models\Affiliates::find()->asArray()->all();
 
     <?= $form->field($model, 'device_type')->textInput(['maxlength' => true]) ?>
 
+    <?= $form->field($model, 'ext_id')->textInput(['maxlength' => true]) ?>
+
     </div>
     <div class="col-md-6">
     
