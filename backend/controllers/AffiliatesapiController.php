@@ -478,11 +478,6 @@ class AffiliatesapiController extends \yii\web\Controller
         {
             if ( $campaign->status=='active' && $campaign->payout>=$cluster['min_payout'] )
             {
-                echo $cluster['os'] . ': ';
-                var_dump($apiData['os']).'<br><br>';
-                echo $cluster['country'] . ': ';
-                var_dump($apiData['country']).'<br><br>';
-
                 // if country / os are open or cluster setting is not included in campaign setting, do not autoasign to this cluster
                 if ( 
                     !$apiData['os'] 
@@ -493,7 +488,6 @@ class AffiliatesapiController extends \yii\web\Controller
                     || !in_array( strtolower($cluster->country), array_map('strtolower',$apiData['country'] ) ) 
                 )
                 {
-                    echo ' => 1';echo '<hr>';
                     continue;
                 }
 
@@ -504,7 +498,6 @@ class AffiliatesapiController extends \yii\web\Controller
                     && !in_array( strtolower($cluster->connection_type), array_map('strtolower',$apiData['connection_type'] ) ) 
                 )
                 {
-                    echo ' => 2';echo '<hr>';
                     continue;
                 }
 
@@ -515,7 +508,6 @@ class AffiliatesapiController extends \yii\web\Controller
                     && !in_array( strtolower($cluster->device_type), array_map('strtolower',$apiData['device_type'] ) ) 
                 )
                 {
-                    echo ' => 5';echo '<hr>';
                     continue;
                 }                
 
@@ -526,7 +518,6 @@ class AffiliatesapiController extends \yii\web\Controller
                     && !in_array( strtolower($cluster->os_version), array_map('strtolower',$apiData['os_version'] ) ) 
                 )
                 {
-                    echo ' => 3';echo '<hr>';
                     continue;
                 }
 
@@ -537,10 +528,8 @@ class AffiliatesapiController extends \yii\web\Controller
                     && !in_array( strtolower($cluster->carriers->carrier_name), array_map('strtolower',$apiData['carrier'] ) )
                 )
                 {
-                    echo ' => 4';echo '<hr>';
                     continue;
                 }
-                echo ' => OK!! cluster: '.$cluster['id'].' campaign: '.$campaign->id.' <hr>';
 
                 // check if assignment already exists
                 $chc = models\ClustersHasCampaigns::findOne( 
@@ -555,13 +544,15 @@ class AffiliatesapiController extends \yii\web\Controller
                 {
                     $chc = new models\ClustersHasCampaigns();
 
-                    $chc->Clusters_id   = $cluster['id'];
+                    $chc->Clusters_id   = $cluster->id;
                     $chc->Campaigns_id  = $campaign->id;
                     $chc->delivery_freq = 1;
 
                     if ( $chc->save() )
                     {
-                        $this->_saveRedis( $chc, $affiliate, $campaign, $apiData );                        
+                        $this->_saveRedis( $chc, $affiliate, $campaign, $apiData );
+                        
+                        models\CampaignsChangelog::log( $campaign->id, 'autoassigned', null, $cluster->id );
                     }
                 }
 
