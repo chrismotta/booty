@@ -326,8 +326,12 @@ class AffiliatesapiController extends \yii\web\Controller
 
                     if  ( $campaign )
                     {
+                        // skip when api campaign matches a campaign manually created
+                        if ( $campaign->creation=='manual' )
+                            continue;
+
                         // save a copy with old version values
-                        $campaignClone = clone $campaign;                   
+                        $campaignClone = clone $campaign;                
                     }
                     else
                     {
@@ -551,7 +555,7 @@ class AffiliatesapiController extends \yii\web\Controller
                     if ( $chc->save() )
                     {
                         $this->_saveRedis( $chc, $affiliate, $campaign, $apiData );
-                        
+
                         models\CampaignsChangelog::log( $campaign->id, 'autoassigned', null, $cluster->id );
                     }
                 }
