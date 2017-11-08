@@ -398,14 +398,13 @@ class AffiliatesapiController extends \yii\web\Controller
                     }
                     else if ( $campaignData['package_id'] )
                     {
-                        $oss = [];
+                        // if app_id exists and os not, detect os from app_id
+                        $os = $this->_getOsFromAppId( $campaignData['package_id'] );
 
-                        foreach ( $campaignData['package_id'] as $os =>$v )
-                        {
-                            $oss[] = $os;
-                        }
-
-                        $campaign->os           = json_encode($oss); 
+                        if ( $os )
+                            $campaign->os       = json_encode($os);
+                        else
+                            $campaign->os       = null;
                     }
                     else
                     {
@@ -491,6 +490,23 @@ class AffiliatesapiController extends \yii\web\Controller
 
         return true;
     }
+
+
+    private function _getOsFromAppId ( array $values )
+    {           
+        $oss = [];
+
+        foreach ( $values as $os =>$packageId )
+        {
+            $oss[] = $os;
+        }
+
+        if ( empty( $oss ) )
+            return null;
+
+        return $oss;
+    }
+
 
 
     private function _autoassign ( $affiliate, $campaign, $apiData, $clusters )
