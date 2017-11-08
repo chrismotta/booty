@@ -70,7 +70,9 @@ $affiliates = models\Affiliates::find()->asArray()->all();
 
     <?= $form->field($model, 'creative_300x250')->textInput(['maxlength' => true]) ?>
 
+    <?= $form->field($model, 'app_id')->textInput(['maxlength' => true]) ?>
     </div>
+
 
     <div class="form-group col-md-12">
         <?= Html::submitButton($model->isNewRecord ? 'Create' : 'Update', ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary']) ?>
