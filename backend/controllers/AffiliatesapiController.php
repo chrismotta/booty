@@ -391,10 +391,27 @@ class AffiliatesapiController extends \yii\web\Controller
                     else
                         $campaign->device_type  = null;
 
+
                     if ( $campaignData['os'] )
+                    {
                         $campaign->os           = json_encode($campaignData['os']);    
+                    }
+                    else if ( $campaignData['package_id'] )
+                    {
+                        $oss = [];
+
+                        foreach ( $campaignData['package_id'] as $os =>$v )
+                        {
+                            $oss[] = $os;
+                        }
+
+                        $campaign->os           = json_encode($oss); 
+                    }
                     else
+                    {
                         $campaign->os           = null;
+                    }
+
 
                     if ( $campaignData['os_version'] )
                         $campaign->os_version   = json_encode($campaignData['os_version']);
