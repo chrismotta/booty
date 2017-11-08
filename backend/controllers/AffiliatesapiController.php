@@ -151,7 +151,7 @@ class AffiliatesapiController extends \yii\web\Controller
 
         $this->_loadBlacklists();
 
-        $clusters = models\Clusters::find()->asArray()->all();
+        $clusters = models\Clusters::find()->with(['carriers'])->all();
 
         foreach ( $this->_apiRules() AS $rule )
         {
@@ -437,18 +437,12 @@ class AffiliatesapiController extends \yii\web\Controller
                     if ( $campaign->save() )
                     {
                         // autoassign campaigns to clusters
-                        /*
-                        if ( $affiliate->assignation_mehtod == 'automatic' )
-                            $this->_autoassign( $campaign, $campaignData, $clusters );
-                        */
+                        if ( $affiliate->assignation_method == 'automatic' )
+                            $this->_autoassign( $affiliate, $campaign, $campaignData, $clusters );
                        
-                        // if campaign already exists update redis. Otherwise, save if was auto-assigned
+                        // if campaign already exists and was assigned, update redis. Otherwise, save if was auto-assigned
                         if ( $campaignClone )
                             $this->_updateRedis( $affiliate, $campaignClone, $campaignData );
-                        /*
-                        else
-                            $this->_saveRedis( $affiliate, $campaignClone, $campaignData );
-                        */
                     }
                     else
                     {
@@ -478,7 +472,7 @@ class AffiliatesapiController extends \yii\web\Controller
     }
 
 
-    private function _autoassign ( $campaign, $apiData, $clusters )
+    private function _autoassign ( $affiliate, $campaign, $apiData, $clusters )
     {
         foreach  ( $clusters as $cluster )
         {
@@ -492,11 +486,11 @@ class AffiliatesapiController extends \yii\web\Controller
                 // if country / os are open or cluster setting is not included in campaign setting, do not autoasign to this cluster
                 if ( 
                     !$apiData['os'] 
-                    || !$cluster['os']
+                    || !$cluster->os
                     || !$apiData['country'] 
-                    || !$cluster['country']
-                    || !in_array( $cluster['os'], $apiData['os'] ) 
-                    || !in_array( $cluster['country'], $apiData['country'] ) 
+                    || !$cluster->country
+                    || !in_array( strtolower($cluster->os), array_map('strtolower',$apiData['os'] ) )  
+                    || !in_array( strtolower($cluster->country), array_map('strtolower',$apiData['country'] ) ) 
                 )
                 {
                     echo ' => 1';echo '<hr>';
@@ -506,19 +500,30 @@ class AffiliatesapiController extends \yii\web\Controller
                 // if connection type is not open in cluster or campaign and cluster's is not included between campaign's then skip autoasign
                 if ( 
                     $apiData['connection_type'] 
-                    && $cluster['connection_type']
-                    && !in_array( $cluster['connection_type'], $apiData['connection_type'] ) 
+                    && $cluster->connection_type
+                    && !in_array( strtolower($cluster->connection_type), array_map('strtolower',$apiData['connection_type'] ) ) 
                 )
                 {
                     echo ' => 2';echo '<hr>';
                     continue;
                 }
 
+
+                if ( 
+                    $apiData['device_type'] 
+                    && $cluster->device_type
+                    && !in_array( strtolower($cluster->device_type), array_map('strtolower',$apiData['device_type'] ) ) 
+                )
+                {
+                    echo ' => 5';echo '<hr>';
+                    continue;
+                }                
+
                 // if os_version is not open in cluster or campaign and cluster's is not included between campaign's then skip autoasign
                 if ( 
                     $apiData['os_version'] 
-                    && $cluster['os_version']
-                    && !in_array( $cluster['os_version'], $apiData['os_version'] ) 
+                    && $cluster->os_version 
+                    && !in_array( strtolower($cluster->os_version), array_map('strtolower',$apiData['os_version'] ) ) 
                 )
                 {
                     echo ' => 3';echo '<hr>';
@@ -528,8 +533,8 @@ class AffiliatesapiController extends \yii\web\Controller
                 // if carrier is not open in cluster or campaign and cluster's is not included between campaign's then skip autoasign
                 if ( 
                     $apiData['carrier'] 
-                    && isset($cluster['carrier'])
-                    && !in_array( $cluster['carrier'], $apiData['carrier'] ) 
+                    && $cluster->carriers
+                    && !in_array( strtolower($cluster->carriers->carrier_name), array_map('strtolower',$apiData['carrier'] ) )
                 )
                 {
                     echo ' => 4';echo '<hr>';
@@ -554,7 +559,10 @@ class AffiliatesapiController extends \yii\web\Controller
                     $chc->Campaigns_id  = $campaign->id;
                     $chc->delivery_freq = 1;
 
-                    $chc->save();
+                    if ( $chc->save() )
+                    {
+                        $this->_saveRedis( $chc, $affiliate, $campaign, $apiData );                        
+                    }
                 }
 
                 // free ram
@@ -563,13 +571,9 @@ class AffiliatesapiController extends \yii\web\Controller
         }
     }
 
-    // save only assigned campaigns
-    private function _saveRedis ( $affiliate, $campaign, $apiData )
+    // save assigned campaign
+    private function _saveRedis ( $chc, $affiliate, $campaign, $apiData )
     {
-        $chc = models\ClustersHasCampaigns::findAll( 
-            ['Campaigns_id' => $campaign->id] 
-        );
-
         switch ( $campaign->status )
         {
             case 'active':
@@ -581,7 +585,16 @@ class AffiliatesapiController extends \yii\web\Controller
                     'ext_id'       => $campaign->ext_id
                 ]);           
 
-                $this->_addCampaignToClusterList( $chc, $campaign, $apiData );
+                $packageIds = $apiData['package_id'] ? $apiData['package_id'] : []; 
+
+                foreach ( $packageIds as $packageId )
+                {
+                    $this->_redis->zadd( 
+                        'clusterlist:'.$chc->Clusters_id, 
+                        $chc->delivery_freq,
+                        $campaign->id.':'.$campaign->affiliates->id.':'.$packageId
+                    );                 
+                }
             break;
         }
     }
@@ -638,7 +651,7 @@ class AffiliatesapiController extends \yii\web\Controller
                             'placeholders' => $affiliate->placeholders,
                             'macros'       => $affiliate->macros,
                             'ext_id'       => $apiData['ext_id']
-                        ]);                                          
+                        ]);
                     break;
                 }
             break;
@@ -705,11 +718,11 @@ class AffiliatesapiController extends \yii\web\Controller
 
     public function _addCampaignToClusterList ( $chc, $campaign, $apiData  )
     {
-        $newPackageIds = $apiData['package_id'] ? $apiData['package_id'] : []; 
+        $packageIds = $apiData['package_id'] ? $apiData['package_id'] : []; 
 
         foreach ( $chc as $assign )
         {
-            foreach ( $newPackageIds as $packageId )
+            foreach ( $packageIds as $packageId )
             {
                 $this->_redis->zadd( 
                     'clusterlist:'.$assign['Clusters_id'], 
@@ -717,9 +730,7 @@ class AffiliatesapiController extends \yii\web\Controller
                     $campaign->id.':'.$campaign->affiliates->id.':'.$packageId
                 );                 
             }
-        }
-
-        
+        }        
     }
 
 

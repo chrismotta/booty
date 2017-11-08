@@ -51,6 +51,38 @@ $filterByUser = ArrayHelper::map(
             //'user_id',
             //'api_key',
             [
+                'attribute' => 'assignation_method',
+                'label'     => 'Assignation method',
+                'filter' => Select2::widget([
+                    'model' => $searchModel,
+                    'attribute' => 'assignation_method',
+                    'data' => ['manual' => 'manual', 'automatic' => 'automatic'],
+                    'theme' => Select2::THEME_BOOTSTRAP,
+                    'pluginOptions' => [
+                        'allowClear' => true
+                    ],
+                    'options' => [
+                        'placeholder' => 'Select status...',
+                    ]
+                ]),                
+            ],            
+            [
+                'attribute' => 'status',
+                'label'     => 'Status',
+                'filter' => Select2::widget([
+                    'model' => $searchModel,
+                    'attribute' => 'status',
+                    'data' => ['active' => 'active', 'paused' => 'paused'],
+                    'theme' => Select2::THEME_BOOTSTRAP,
+                    'pluginOptions' => [
+                        'allowClear' => true
+                    ],
+                    'options' => [
+                        'placeholder' => 'Select status...',
+                    ]
+                ]),                
+            ],            
+            [
                 'attribute' => 'username',
                 'label'     => 'Admin User',
                 'filter' => Select2::widget([
@@ -66,7 +98,6 @@ $filterByUser = ArrayHelper::map(
                     ]
                 ]),                
             ],
-
             [
             'class' => 'yii\grid\ActionColumn',
             'contentOptions' => ['class'=>'prevent-deep-link'],

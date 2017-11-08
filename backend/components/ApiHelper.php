@@ -58,65 +58,56 @@
 			return $value;	
 		}
 
+
 		static function getOs ( $data, $otherAsDefault = true )
 		{
 			$results = [];
 
-
 			if ( is_array($data) )
 				$values = $data;
 			else
-				$values = explode( ',' , $data );	
+				$values = preg_split( '/[^a-zA-Z\d]/', $data, null, PREG_SPLIT_NO_EMPTY );
 
-
-			foreach ( $values as $v )
+			foreach ( $values as $value )
 			{
-				$platforms = preg_split( '/[^a-zA-Z\d]/', $v, null, PREG_SPLIT_NO_EMPTY );
-
-				foreach ( $platforms as $p )
+				switch ( strtolower($value) )
 				{
-					switch ( strtolower($p) )
-					{
-						case 'ios':
-						case 'ipod':
-						case 'ipad':
-						case 'iphone':
-							if ( !in_array( 'iOS', $results) )
-								$results[] = 'iOS';
-						break;
-						case 'android':
-						case 'android_tablet':
-						case 'android (tablet)':
-						case 'android(tablet)':
-						case 'android tablet':		
-						case 'android_phone':
-						case 'android phone':				
-							if ( !in_array( 'Android', $results) )
-								$results[] = 'Android';						
-						break;
-						case 'windows':
-							if ( !in_array( 'Windows', $results) )
-								$results[] = 'Windows';						
-						break;
-						case 'blackberry':
-							if ( !in_array( 'BlackBerry', $results) )
-								$results[] = 'BlackBerry';							
-						break;
-						case null:
-						break;
-						default:
-							if ( $otherAsDefault && !in_array( 'Other', $results) )
-								$results[] = 'Other';
-						break;
-					}
+					case 'ios':
+					case 'ipod':
+					case 'ipad':
+					case 'iphone':
+						if ( !in_array( 'iOS', $results) )
+							$results[] = 'iOS';
+					break;
+					case 'android':
+					case 'android_tablet':
+					case 'android (tablet)':
+					case 'android(tablet)':
+					case 'android tablet':		
+					case 'android_phone':
+					case 'android phone':				
+						if ( !in_array( 'Android', $results) )
+							$results[] = 'Android';						
+					break;
+					case 'windows':
+						if ( !in_array( 'Windows', $results) )
+							$results[] = 'Windows';						
+					break;
+					case 'blackberry':
+						if ( !in_array( 'BlackBerry', $results) )
+							$results[] = 'BlackBerry';							
+					break;
+					case null:
+					break;
+					default:
+						if ( $otherAsDefault && !in_array( 'Other', $results) )
+							$results[] = 'Other';
+					break;
 				}
-
-				unset ( $platforms );
-			}	
+			}
 
 			return $results;						
 		}
-
 
 		static function getDeviceTypes ( $data, $otherAsDefault = true )
 		{

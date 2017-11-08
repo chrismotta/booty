@@ -16,6 +16,28 @@
 
 		public function requestCampaigns ( $api_key, $user_id = null  )
 		{
+			// ONLY FOR TESTING
+			/*
+			$result[] = [
+				'ext_id' 			=> 'test_mobo_id',
+				'name'				=> 'test_mobo',
+				'desc'				=> 'bla bla', 
+				'payout' 			=> 1,
+				'landing_url'		=> 'http://google.com',
+				'country'			=> ['US'],
+				'device_type'		=> ['tablet'],
+				'connection_type'	=> ['WiFi'],
+				'carrier'			=> null,
+				'os'				=> ['iOS'],
+				'os_version'		=> null,
+				'package_id'		=> ['ios'=>"4444444"],
+				'status'			=> 'active',
+				'currency'			=> 'USD'
+			];
+
+			return $result;
+			*/
+		
 			$url    = self::URL . '&apiKey='.$api_key;
 			$curl   = curl_init($url);
 
@@ -141,7 +163,7 @@
 					'device_type'		=> $deviceTypes,
 					'connection_type'	=> null,
 					'carrier'			=> null,
-					'os'				=> empty($os) ? null : $os,
+					'os'				=> empty($oss) ? null : $oss,
 					'os_version'		=> null,
 					'package_id'		=> empty($packageIds) ? null : $packageIds,
 					'status'			=> $status,

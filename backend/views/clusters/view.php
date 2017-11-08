@@ -39,10 +39,12 @@ $this->params['breadcrumbs'][] = $this->title;
                 'label'     => 'Carrier',
                 'attribute' => 'carriers.carrier_name'
             ],
+            'min_payout',
             [
                 'label'     => 'Static Campaign',
                 'attribute' => 'staticCampaigns.name'
             ],
+
         ],
     ]) ?>
 

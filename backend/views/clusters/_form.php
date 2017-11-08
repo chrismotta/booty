@@ -31,14 +31,17 @@ $carriers        = models\Carriers::find()->asArray()->all();
 
     <?= $form->field($model, 'connection_type')->dropDownList([ 'Carrier' => 'Carrier', 'wifi' => 'Wifi', ], ['prompt' => '']) ?>
 
+    <?= $form->field($model, 'device_type')->dropDownList([ 'Desktop' => 'Desktop', 'Smartphone' => 'Smartphone', 'Tablet' => 'Tablet', 'Other' => 'Other' ], ['prompt' => '']) ?>
+
     </div>
     <div class="col-md-6">
 
-    <?= $form->field($model, 'device_type')->dropDownList([ 'Desktop' => 'Desktop', 'Smartphone' => 'Smartphone', 'Tablet' => 'Tablet', 'Other' => 'Other' ], ['prompt' => '']) ?>
 
     <?= $form->field($model, 'os')->dropDownList([ 'Android' => 'Android', 'iOS' => 'iOS', 'Windows' => 'Windows', 'BlackBerry' => 'BlackBerry' ], ['prompt' => '']) ?>
 
     <?= $form->field($model, 'os_version')->textInput(['type' => 'text']) ?>
+
+    <?= $form->field($model, 'min_payout')->textInput(['maxlength' => true]) ?>
 
     <?= 
         '<label class="control-label">Static Campaign</label>';

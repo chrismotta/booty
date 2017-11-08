@@ -59,6 +59,7 @@ $filterByCarrier = ArrayHelper::map(
                     ]
                 ]),                
             ],
+            'min_payout',
             [
                 'class' => '\kartik\grid\ActionColumn',
                 'width' => '90px',

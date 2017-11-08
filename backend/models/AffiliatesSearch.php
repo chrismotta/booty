@@ -19,7 +19,7 @@ class AffiliatesSearch extends Affiliates
     {
         return [
             [['id', 'admin_user'], 'integer'],
-            [['name', 'short_name', 'user_id', 'api_key', 'admin_user'], 'safe'],
+            [['name', 'short_name', 'user_id', 'api_key', 'admin_user', 'assignation_method', 'status'], 'safe'],
         ];
     }
 
@@ -55,12 +55,14 @@ class AffiliatesSearch extends Affiliates
             'name',
             'short_name',
             'user_id',
+            'assignation_method',
+            'Affiliates.status',
             'user.username as username'
         ]);
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
-            'sort' => ['attributes' => [ 'id','name', 'short_name','user_id', 'api_key', 'username']]
+            'sort' => ['attributes' => [ 'id','name', 'short_name','user_id', 'api_key', 'assignation_method', 'status', 'username']]
         ]);
 
         $this->load($params);
@@ -75,6 +77,9 @@ class AffiliatesSearch extends Affiliates
         $query->andFilterWhere([
             'Affiliates.id' => $this->id,
             'Affiliates.admin_user' => $this->admin_user,
+            'Affiliates.status' => $this->status,
+            'assignation_method' => $this->assignation_method
+
         ]);
 
         $query->andFilterWhere(['like', 'name', $this->name])

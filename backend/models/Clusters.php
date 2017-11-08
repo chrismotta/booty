@@ -40,7 +40,7 @@ class Clusters extends \yii\db\ActiveRecord
         return [
             [['name', 'StaticCampaigns_id'], 'required'],
             [['StaticCampaigns_id', 'Carriers_id'], 'integer'],
-            [['os_version'], 'number'],
+            [['os_version', 'min_payout'], 'number'],
             [['connection_type', 'os', 'os_version', 'device_type'], 'string', 'skipOnEmpty'=>true ],
             [['os', 'connection_type', 'country', 'device_type'], 'default', 'value' => NULL],            
             [['name'], 'string', 'max' => 255],
