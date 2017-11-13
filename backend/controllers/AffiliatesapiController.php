@@ -100,12 +100,12 @@ class AffiliatesapiController extends \yii\web\Controller
                 'affiliate_id'  => 18,
             ],
             */
-            /*  
+ 
             [
                 'class'         => 'PersonalyAPI',
                 'affiliate_id'  => 19,
             ],
-            */
+
             [
                 'class'         => 'PerformanceGenieAPI',
                 'affiliate_id'  => 20,
