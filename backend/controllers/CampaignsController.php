@@ -70,6 +70,16 @@ class CampaignsController extends Controller
         $model->creation = 'manual';
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) { 
+            $cache = new \Predis\Client( \Yii::$app->params['predisConString'] );
+
+            $cache->hmset( 'campaign:'.$model->id, [
+                'callback'      => $model->landing_url,
+                'ext_id'        => $model->ext_id,
+                'click_macro'   => $model->affiliates->click_macro,
+                'placeholders'  => $model->affiliates->placeholders,
+                'macros'        => $model->affiliates->macros
+            ]);            
+
             return $this->redirect(['view', 'id' => $model->id]);
 
         } else {
@@ -95,6 +105,14 @@ class CampaignsController extends Controller
 
             $clustersHasCampaigns = models\ClustersHasCampaigns::findAll( ['Campaigns_id' => $model->id] );
 
+            $cache->hmset( 'campaign:'.$model->id, [
+                'callback'      => $model->landing_url,
+                'ext_id'        => $model->ext_id,
+                'click_macro'   => $model->affiliates->click_macro,
+                'placeholders'  => $model->affiliates->placeholders,
+                'macros'        => $model->affiliates->macros
+            ]);  
+                        
             switch ( $model->status )
             {
                 case 'active':

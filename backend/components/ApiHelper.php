@@ -98,6 +98,9 @@
 							$results[] = 'BlackBerry';							
 					break;
 					case null:
+					case '':
+					case false:
+					case 0:
 					break;
 					default:
 						if ( $otherAsDefault && !in_array( 'Other', $results) )
@@ -117,68 +120,58 @@
 			if ( is_array($data) )
 				$values = $data;
 			else
-				$values = explode( ',' , $data );	
+				$values = preg_split( '/[^a-zA-Z\d]/', $data, null, PREG_SPLIT_NO_EMPTY );	
 
 
-			foreach ( $values as $v )
+			foreach ( $values as $value )
 			{
-				$platforms = preg_split( '/[^a-zA-Z\d]/', $v, null, PREG_SPLIT_NO_EMPTY );
-
-				foreach ( $platforms as $p )
+				switch ( strtolower($value) )
 				{
-					switch ( strtolower($p) )
-					{
-						case 'android_phone':
-						case 'android phone':
-						case 'iphone':
-						case 'smartphone':
-							if ( !in_array( 'Smartphone', $results) )
-								$results[] = 'Smartphone';
-						break;
-						case 'android_tablet':
-						case 'android (tablet)':
-						case 'android(tablet)':
-						case 'android tablet':
-						case 'ipad':
-						case 'tablet':						
-							if ( !in_array( 'Tablet', $results) )
-								$results[] = 'Tablet';						
-						break;
-						default:
-							if ( $otherAsDefault && !in_array( 'Other', $results) )
-								$results[] = 'Other';
-						break;
-					}
+					case 'android_phone':
+					case 'android phone':
+					case 'iphone':
+					case 'smartphone':
+						if ( !in_array( 'Smartphone', $results) )
+							$results[] = 'Smartphone';
+					break;
+					case 'android_tablet':
+					case 'android (tablet)':
+					case 'android(tablet)':
+					case 'android tablet':
+					case 'ipad':
+					case 'tablet':						
+						if ( !in_array( 'Tablet', $results) )
+							$results[] = 'Tablet';						
+					break;
+					case null:
+					case '':
+					case false:
+					case 0:
+					break;
+					default:
+						if ( $otherAsDefault && !in_array( 'Other', $results) )
+							$results[] = 'Other';
+					break;
 				}
-
-				unset ( $platforms );
-			}	
+			}
 
 			return $results;						
 		}
 
 
-		static function getValues ( $data, $delimiter = ',' )
+		static function getValues ( $data, $delimiter = ', ;:' )
 		{
 			$results = [];
 
 			if ( is_array($data) )
 				$values = $data;
 			else
-				$values = explode( $delimiter , $data );	
+				$values = preg_split( '/[^a-z'.$delimiter.'A-Z\d]/', $data, null, PREG_SPLIT_NO_EMPTY );	
 
-
-			foreach ( $values as $v )
+			foreach ( $values as $value )
 			{
-				$platforms = preg_split( '/[^a-z.A-Z\d]/', $v, null, PREG_SPLIT_NO_EMPTY );
-
-				foreach ( $platforms as $p )
-				{
-					$results[] = $p;
-				}
-
-				unset ( $platforms );
-			}	
+				$results[] = $value;
+			}
 
 			return $results;						
 		}
@@ -194,21 +187,16 @@
 			}
 			else
 			{
-				$values = explode( ',' , $data );
+				$values = preg_split( '/[, |;:]/', $data, null, PREG_SPLIT_NO_EMPTY );
 			}
 
-			foreach ( $carriersDataProvider as $carrier )
+			foreach ( $values as $value )
 			{
-				foreach ( $values as $v )
+				foreach ( $carriersDataProvider as $carrier )
 				{
-					$names = preg_split( '/[^a-zA-Z\d]/', $v, null, PREG_SPLIT_NO_EMPTY );
-
-					foreach ( $names as $n )
-					{
-						if ( strtolower($n) == strtolower($carrier->name) )
-							$result[] = $carrier->name;
-					}
-				}	
+					if ( strtolower($value) == strtolower($carrier->name) )
+						$result[] = $carrier->name;
+				}				
 			}
 
 			return $result;						
