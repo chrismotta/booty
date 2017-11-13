@@ -93,7 +93,23 @@ class AffiliatesapiController extends \yii\web\Controller
             [
                 'class'         => 'AppThisAPI',
                 'affiliate_id'  => 17,
-            ],                          
+            ],
+            /*
+            [
+                'class'         => 'AirpushAPI',
+                'affiliate_id'  => 18,
+            ],
+            */
+            /*  
+            [
+                'class'         => 'PersonalyAPI',
+                'affiliate_id'  => 19,
+            ],
+            */
+            [
+                'class'         => 'PerformanceGenieAPI',
+                'affiliate_id'  => 20,
+            ],                                                          
 		];
 	}
 
@@ -376,27 +392,27 @@ class AffiliatesapiController extends \yii\web\Controller
 
                     $campaign->landing_url     = $campaignData['landing_url'];
 
-                    if ( $campaignData['package_id'] )
+                    if ( empty($campaignData['package_id']) )
+                        $campaign->app_id      = null;                        
+                    else
                         $campaign->app_id      = json_encode($campaignData['package_id']);
-                    else
-                        $campaign->app_id      = null;
 
-                    if ( $campaignData['country'] )
+                    if ( empty($campaignData['country']) )
+                        $campaign->country      = null;                        
+                    else
                         $campaign->country      = json_encode($campaignData['country']);
-                    else
-                        $campaign->country      = null;
 
-                    if ( $campaignData['device_type'] )
-                        $campaign->device_type  = json_encode($campaignData['device_type']);
-                    else
+                    if ( empty($campaignData['device_type']) )
                         $campaign->device_type  = null;
+                    else
+                        $campaign->device_type  = json_encode($campaignData['device_type']);
 
 
-                    if ( $campaignData['os'] )
+                    if ( !empty($campaignData['os']) )
                     {
                         $campaign->os           = json_encode($campaignData['os']);    
                     }
-                    else if ( $campaignData['package_id'] )
+                    else if ( !empty($campaignData['package_id']) )
                     {
                         // if app_id exists and os not, detect os from app_id
                         $os = $this->_getOsFromAppId( $campaignData['package_id'] );
@@ -412,23 +428,22 @@ class AffiliatesapiController extends \yii\web\Controller
                     }
 
 
-                    if ( $campaignData['os_version'] )
-                        $campaign->os_version   = json_encode($campaignData['os_version']);
-                    else
+                    if ( empty($campaignData['os_version']) )
                         $campaign->os_version   = null;
+                    else
+                        $campaign->os_version   = json_encode($campaignData['os_version']);
 
 
-                    if ( $campaignData['carrier'] )
+                    if ( empty($campaignData['carrier']) )
+                        $campaign->carrier      = null;                        
+                    else
                         $campaign->carrier      = json_encode($campaignData['carrier']);
-                    else
-                        $campaign->carrier      = null;
 
 
-                    if ( $campaignData['connection_type'] )
-                        $campaign->connection_type = json_encode($campaignData['connection_type']);
-                    else
+                    if ( empty($campaignData['connection_type']) )
                         $campaign->connection_type = null;
-
+                    else
+                        $campaign->connection_type = json_encode($campaignData['connection_type']);                        
 
                     // check if any app_id is blacklisted
                     if ( $campaign->app_id  )

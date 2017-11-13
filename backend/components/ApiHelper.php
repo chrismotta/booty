@@ -64,9 +64,19 @@
 			$results = [];
 
 			if ( is_array($data) )
-				$values = $data;
+			{
+				$values = [];
+
+				foreach ( $data as $v )
+				{
+					$r = preg_split( '/[^a-zA-Z\d]/', $v, null, PREG_SPLIT_NO_EMPTY );
+					$values = array_merge($values, $r);
+				}
+			}
 			else
+			{
 				$values = preg_split( '/[^a-zA-Z\d]/', $data, null, PREG_SPLIT_NO_EMPTY );
+			}
 
 			foreach ( $values as $value )
 			{
@@ -112,16 +122,26 @@
 			return $results;						
 		}
 
+
 		static function getDeviceTypes ( $data, $otherAsDefault = true )
 		{
 			$results = [];
 
 
 			if ( is_array($data) )
-				$values = $data;
-			else
-				$values = preg_split( '/[^a-zA-Z\d]/', $data, null, PREG_SPLIT_NO_EMPTY );	
+			{
+				$values = [];
 
+				foreach ( $data as $v )
+				{
+					$r = preg_split( '/[^a-zA-Z\d]/', $v, null, PREG_SPLIT_NO_EMPTY );
+					$values = array_merge($values, $r);
+				}
+			}
+			else
+			{
+				$values = preg_split( '/[^a-zA-Z\d]/', $data, null, PREG_SPLIT_NO_EMPTY );
+			}
 
 			foreach ( $values as $value )
 			{
@@ -130,6 +150,7 @@
 					case 'android_phone':
 					case 'android phone':
 					case 'iphone':
+					case 'mobile':
 					case 'smartphone':
 						if ( !in_array( 'Smartphone', $results) )
 							$results[] = 'Smartphone';
@@ -139,10 +160,24 @@
 					case 'android(tablet)':
 					case 'android tablet':
 					case 'ipad':
-					case 'tablet':						
+					case 'tablet':
 						if ( !in_array( 'Tablet', $results) )
 							$results[] = 'Tablet';						
 					break;
+					case 'desktop':
+						if ( !in_array( 'Desktop', $results) )
+							$results[] = 'Desktop';					
+					break;
+					case 'all':
+						if ( !in_array( 'Smartphone', $results) )
+							$results[] = 'Smartphone';					
+						if ( !in_array( 'Tablet', $results) )
+							$results[] = 'Tablet';					
+						if ( !in_array( 'Desktop', $results) )
+							$results[] = 'Desktop';
+						if ( !in_array( 'Other', $results) )
+							$results[] = 'Other';
+					break;					
 					case null:
 					case '':
 					case false:
@@ -156,17 +191,26 @@
 			}
 
 			return $results;						
-		}
+		}		
 
-
-		static function getValues ( $data, $delimiter = ', ;:' )
+		static function getValues ( $data, $regex = ', ;:' )
 		{
 			$results = [];
 
 			if ( is_array($data) )
-				$values = $data;
+			{
+				$values = [];
+
+				foreach ( $data as $v )
+				{
+					$r = preg_split( '/['.$regex.'^a-zA-Z\d]/', $v, null, PREG_SPLIT_NO_EMPTY );
+					$values = array_merge($values, $r);
+				}
+			}
 			else
-				$values = preg_split( '/[^a-z'.$delimiter.'A-Z\d]/', $data, null, PREG_SPLIT_NO_EMPTY );	
+			{
+				$values = preg_split( '/[^a-z'.$regex.'A-Z\d]/', $data, null, PREG_SPLIT_NO_EMPTY );
+			}	
 
 			foreach ( $values as $value )
 			{
@@ -176,19 +220,25 @@
 			return $results;						
 		}
 
-
 		static function getCarriers ( $data, $carriersDataProvider )
 		{
 			$result = [];
 
 			if ( is_array($data) )
 			{
-				$values = $data;
+				$values = [];
+
+				foreach ( $data as $v )
+				{
+					$r = preg_split( '/[, |;:]/', $v, null, PREG_SPLIT_NO_EMPTY );
+					$values = array_merge($values, $r);
+				}
 			}
 			else
 			{
 				$values = preg_split( '/[, |;:]/', $data, null, PREG_SPLIT_NO_EMPTY );
 			}
+
 
 			foreach ( $values as $value )
 			{
