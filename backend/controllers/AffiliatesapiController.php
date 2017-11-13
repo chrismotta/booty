@@ -94,12 +94,10 @@ class AffiliatesapiController extends \yii\web\Controller
                 'class'         => 'AppThisAPI',
                 'affiliate_id'  => 17,
             ],
-            /*
             [
                 'class'         => 'AirpushAPI',
                 'affiliate_id'  => 18,
             ],
-            */
  
             [
                 'class'         => 'PersonalyAPI',
