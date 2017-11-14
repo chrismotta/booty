@@ -159,7 +159,12 @@ $filterByAffiliate = ArrayHelper::map(
             // 'creative_300x250',
             [
                 'class' => 'yii\grid\ActionColumn',
-                'template' => '{view}{delete}',
+                'template' => '{view}{blacklist}{delete}',
+                'buttons' => [
+                    'blacklist' => function ($url, $model, $key) {
+                        return Html::a('<span class="glyphicon glyphicon-ban-circle" title="BlackList"></span>', ['pubidblacklist/update', 'id'=>$key]);
+                    },
+                ],
             ]
         ],
     ]); ?>
