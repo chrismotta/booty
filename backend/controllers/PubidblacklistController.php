@@ -91,6 +91,22 @@ class PubidblacklistController extends Controller
         }
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
+            $cache  = new \Predis\Client( \Yii::$app->params['predisConString'] );
+
+            $pubIds = preg_split( '/(\\n|\\r)/', $model->blacklist );
+            $ids    = [];
+
+            $cache->del( 'pubidblacklist:'.$model->Campaigns_id );
+
+            foreach ( $pubIds as $pubId )
+            {
+                if ( !empty($pubId) )
+                    $ids[] = $pubId;
+            }
+
+            if ( !empty($ids) )
+                $cache->sadd( 'pubidblacklist:'.$model->Campaigns_id, $ids );
+
             return $this->goBack();
             // return $this->redirect(['view', 'id' => $model->Campaigns_id]);
             
