@@ -165,7 +165,7 @@ $filterByAffiliate = ArrayHelper::map(
                     'blacklist' => function ($url, $model, $key) {
                         return Html::a(
                             '<span class="glyphicon glyphicon-ban-circle"></span>', 
-                            ['pubidblacklist/update', 'id'=>$key],
+                            ['pubidblacklistiframe', 'id'=>$key],
                             [
                                 'title' => 'Pubid Blacklist',
                                 'data-toggle'=>'modal',

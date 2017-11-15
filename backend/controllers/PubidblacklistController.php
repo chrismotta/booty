@@ -107,17 +107,19 @@ class PubidblacklistController extends Controller
             if ( !empty($ids) )
                 $cache->sadd( 'pubidblacklist:'.$model->Campaigns_id, $ids );
 
-            return $this->goBack();
-            // return $this->redirect(['view', 'id' => $model->Campaigns_id]);
-            
-            // trigger heres
+            $updated = true;
             
         } else {
-            // $this->layout='iframe';
-            return $this->renderPartial('update', [
-                'model' => $model,
-            ]);
+
+            $updated = false;
+
         }
+
+        $this->layout='iframe';
+        return $this->render('update', [
+            'model' => $model,
+            'updated' => $updated,
+        ]);
     }
 
     /**

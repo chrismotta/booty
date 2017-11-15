@@ -7,15 +7,16 @@ use yii\helpers\Html;
 
 ?>
 
-<div class="modal-header">
-    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-    <h4 class="modal-title"><?= 'Campaign '.$model->Campaigns_id.' Blacklist' ?></h4>
-</div>
+<?php if(!$updated){ ?>
 
-<div class="modal-body">
+<?= $this->render('_form', [
+    'model' => $model,
+]) ?>
 
-    <?= $this->render('_form', [
-        'model' => $model,
-    ]) ?>
+<?php }else{ ?>
 
-</div>
+	<div class="alert alert-info" role="alert">
+	  <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true" style="margin-right:10px;font-size:24px;vertical-align: super;"></span> 
+	  <span style="font-weight:bold; display:inline-block;">BLACKLIST CORRECTLY UPDATED<br/><a href="javascript:;" onClick="history.go(-1);return true;">GO BACK</a></span>
+	</div>
+<?php } ?>

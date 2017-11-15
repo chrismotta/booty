@@ -195,4 +195,11 @@ class CampaignsController extends Controller
 
         return $formatedList;
     }
+
+    public function actionPubidblacklistiframe($id){
+
+        return $this->renderPartial('pubidblacklistiframe', [
+                'id' => $id,
+            ]);
+    }
 }

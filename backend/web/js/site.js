@@ -30,6 +30,10 @@ $(document).ready(function(){
 	carrierUpdate();
 });
 
+$(document).on("hidden.bs.modal", function (e) {
+    $(e.target).removeData("bs.modal").find(".modal-content").empty();
+});
+
 function deepLink(){
 	$('.deep-link td:not(.prevent-deep-link)').click(function(event){
 		// console.log( 'URL: ' + $(this).attr('data-child') );
