@@ -168,7 +168,7 @@ echo Tabs::widget([
             [
                 'class' => '\kartik\grid\ActionColumn',
                 'width'  => '40px',
-                'template' => '{unassigncampaign}',
+                'template' => '{unassigncampaign}{blacklist}',
                 'header' => '<span class="glyphicon glyphicon-minus"></span>',
 
                 'buttons' => [
@@ -177,7 +177,18 @@ echo Tabs::widget([
                             '<span class="glyphicon glyphicon-minus"></span>', 
                             ['unassigncampaign', 'cid'=>$key, 'id'=>$clusterID]
                             );
-                    }
+                    },
+                    'blacklist' => function ($url, $model, $key) {
+                        return Html::a(
+                            '<span class="glyphicon glyphicon-ban-circle"></span>', 
+                            ['pubidblacklistiframe', 'id'=>$key],
+                            [
+                                'title' => 'Pubid Blacklist',
+                                'data-toggle'=>'modal',
+                                'data-target'=>'#blacklist',
+                            ]
+                        );
+                    },
                 ]
             ],
 
@@ -202,13 +213,14 @@ echo Tabs::widget([
 
 
 <div class="row">
-
 <div class="clusters-index col-sm-12 col-md-8">
-
 </div>
-
 <div class="clusters-index col-sm-12 col-md-4">
-
+</div>
 </div>
 
+<div class="modal remote fade" id="blacklist" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content loader-lg"></div>
+        </div>
 </div>
