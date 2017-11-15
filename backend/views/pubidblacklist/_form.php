@@ -14,7 +14,7 @@ use yii\widgets\ActiveForm;
 
     <?= $form->field($model, 'Campaigns_id')->hiddenInput()->label(false) ?>
 
-    <?= $form->field($model, 'blacklist')->textarea(['rows' => 6])->label(false) ?>
+    <?= $form->field($model, 'blacklist')->textarea(['rows' => 18])->label(false) ?>
 
     <div class="form-group">
         <?= Html::submitButton('Update', ['class' => 'btn btn-primary']) ?>

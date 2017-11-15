@@ -97,7 +97,8 @@ class PubidblacklistController extends Controller
             // trigger heres
             
         } else {
-            return $this->render('update', [
+            // $this->layout='iframe';
+            return $this->renderPartial('update', [
                 'model' => $model,
             ]);
         }

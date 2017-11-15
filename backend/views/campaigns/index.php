@@ -6,6 +6,7 @@ use yii\widgets\Pjax;
 use app\models;
 use kartik\select2\Select2;
 use yii\helpers\ArrayHelper;
+
 /* @var $this yii\web\View */
 /* @var $searchModel app\models\CampaignsSearch */
 /* @var $dataProvider yii\data\ActiveDataProvider */
@@ -162,10 +163,24 @@ $filterByAffiliate = ArrayHelper::map(
                 'template' => '{view}{blacklist}{delete}',
                 'buttons' => [
                     'blacklist' => function ($url, $model, $key) {
-                        return Html::a('<span class="glyphicon glyphicon-ban-circle" title="BlackList"></span>', ['pubidblacklist/update', 'id'=>$key]);
+                        return Html::a(
+                            '<span class="glyphicon glyphicon-ban-circle"></span>', 
+                            ['pubidblacklist/update', 'id'=>$key],
+                            [
+                                'title' => 'Pubid Blacklist',
+                                'data-toggle'=>'modal',
+                                'data-target'=>'#blacklist',
+                            ]
+                        );
                     },
                 ],
             ]
         ],
     ]); ?>
 <?php Pjax::end(); ?></div>
+
+<div class="modal remote fade" id="blacklist" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content loader-lg"></div>
+        </div>
+</div>

@@ -5,9 +5,14 @@ use yii\helpers\Html;
 /* @var $this yii\web\View */
 /* @var $model app\models\PubidBlacklist */
 
-$this->title = 'Campaign '.$model->Campaigns_id.' Blacklist';
 ?>
-<div class="pubid-blacklist-update">
+
+<div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+    <h4 class="modal-title"><?= 'Campaign '.$model->Campaigns_id.' Blacklist' ?></h4>
+</div>
+
+<div class="modal-body">
 
     <?= $this->render('_form', [
         'model' => $model,
