@@ -41,12 +41,12 @@ class AffiliatesapiController extends \yii\web\Controller
 				'class' 		=> 'SlaviaMobileAPI',
 				'affiliate_id'	=> 3,
 			],	
-
+            /*
             [
                 'class'         => 'PocketMediaAPI',
                 'affiliate_id'  => 4,
             ],
-             
+             */
             [
                 'class'         => 'MobobeatAPI',
                 'affiliate_id'  => 5,
