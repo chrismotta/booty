@@ -41,12 +41,12 @@ class AffiliatesapiController extends \yii\web\Controller
 				'class' 		=> 'SlaviaMobileAPI',
 				'affiliate_id'	=> 3,
 			],	
-            /*
+
             [
                 'class'         => 'PocketMediaAPI',
                 'affiliate_id'  => 4,
             ],
-            */              
+             
             [
                 'class'         => 'MobobeatAPI',
                 'affiliate_id'  => 5,
@@ -348,9 +348,14 @@ class AffiliatesapiController extends \yii\web\Controller
                     }
 
                     if ( isset($campaignData['daily_cap']) && $campaignData['daily_cap']>=0 )
+                    {
                         $campaign->aff_daily_cap   = (float)$campaignData['daily_cap'];
+                    }
                     else
+                    {
+                        $campaignData['daily_cap'] = null;
                         $campaign->aff_daily_cap   = null;
+                    }
 
 
                     $campaign->landing_url     = $campaignData['landing_url'];
