@@ -1383,6 +1383,7 @@ class EtlController extends \yii\web\Controller
                 'payout'            => $model->payout,
                 'model'             => $model->model,
                 'cluster_id'        => isset($model->clusters->id) ? $model->clusters->id : null,
+                'publisher_id'      => $model->Publishers_id,
                 'status'            => $model->status,
                 'size'              => $model->size,
                 'imps'              => $imps,
