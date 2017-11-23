@@ -1320,6 +1320,31 @@ class EtlController extends \yii\web\Controller
                     {
                         $cache->zadd( 'clusterlist:'.$model->id, $assign->delivery_freq, $assign->campaigns->id.':'.$assign->campaigns->affiliates->id.':'.$packageId );
                     }
+
+                    // set campaign's cap in redis
+                    if ( isset($assign->campaigns->daily_cap) )
+                    {
+                        $cache->zadd( 
+                            'clustercaps:'.$model->id, 
+                            $assign->campaigns->daily_cap,
+                            $assign->campaigns->id
+                        ); 
+                    }
+                    else if ( isset($campaign->aff_daily_cap) )
+                    {
+                        $cache->zadd( 
+                            'clustercaps:'.$model->id, 
+                            $assign->campaigns->aff_daily_cap,
+                            $assign->campaigns->id
+                        );
+                    }
+                    else
+                    {
+                        $cache->zrem( 
+                            'clustercaps:'.$model->id, 
+                            $assign->campaigns->id
+                        );                 
+                    }                    
                 }
             }
         }

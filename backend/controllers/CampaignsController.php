@@ -112,25 +112,66 @@ class CampaignsController extends Controller
                 'placeholders'  => $model->affiliates->placeholders,
                 'macros'        => $model->affiliates->macros
             ]);  
-                        
+
             switch ( $model->status )
             {
                 case 'active':
                     foreach ( $clustersHasCampaigns as $assign )
                     {
-                        $packageIds = (array)json_decode($campaign->app_id);
+                        $packageIds = (array)json_decode($model->app_id);
 
                         foreach ( $packageIds AS $os => $packageId )
                         {                
-                            $cache->zadd( 'clusterlist:'.$assign['Clusters_id'], $assign['frequency'], $model->id.':'.$model->Affiliates_id.':'.$packageId );
+                            $cache->zadd( 'clusterlist:'.$assign['Clusters_id'], $assign['delivery_freq'], $model->id.':'.$model->Affiliates_id.':'.$packageId );
+                        }
+
+                        // set campaign's cap in redis
+                        if ( $model->daily_cap=='' )
+                        {
+                            $model->daily_cap = null;
+                        }
+
+                        if (
+                            isset($model->daily_cap) 
+                            && (int)$model->daily_cap>=0 )
+                        {                            
+                            $cache->zadd( 
+                                'clustercaps:'.$assign['Clusters_id'], 
+                                $model->daily_cap,
+                                $model->id
+                            );  
+                        }
+                        else if ( $model->aff_daily_cap && (int)$model->aff_daily_cap>=0 )
+                        {
+                            $cache->zadd( 
+                                'clustercaps:'.$assign['Clusters_id'], 
+                                $model->aff_daily_cap,
+                                $model->id
+                            );
+                        }
+                        else
+                        {                           
+                            $cache->zrem( 
+                                'clustercaps:'.$assign['Clusters_id'], 
+                                $model->id
+                            );                 
                         }
                     }
                 break;
                 default:
+                    $packageIds = (array)json_decode($model->app_id);
+
                     foreach ( $clustersHasCampaigns as $assign )
                     {
-                        $value = "[".$campaign->id.':'.$campaign->affiliates->id;
-                        $cache->zremrangebylex( 'clusterlist:'.$id, $value, $value."\xff" );
+                        foreach ( $packageIds AS $os => $packageId )
+                        {                
+                            $cache->zrem( 'clusterlist:'.$assign['Clusters_id'], $model->id.':'.$model->Affiliates_id.':'.$packageId );
+                        }
+
+                        $cache->zrem( 
+                            'clustercaps:'.$assign['Clusters_id'], 
+                            $model->id
+                        );                         
                     }
                 break;
             }

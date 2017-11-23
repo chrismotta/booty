@@ -290,6 +290,31 @@ class ClustersController extends Controller
                             $cache->zadd( 'clusterlist:'.$id, 1, $campaign->id.':'.$campaign->affiliates->id.':'.$packageId );
                         }
 
+                        // set campaign's cap in redis
+                        if ( isset($campaign->daily_cap) )
+                        {
+                            $cache->zadd( 
+                                'clustercaps:'.$id, 
+                                $campaign->daily_cap,
+                                $campaign->id
+                            ); 
+                        }
+                        else if ( isset($campaign->aff_daily_cap) )
+                        {
+                            $cache->zadd( 
+                                'clustercaps:'.$id, 
+                                $campaign->aff_daily_cap,
+                                $campaign->id
+                            );
+                        }
+                        else
+                        {
+                            $cache->zrem( 
+                                'clustercaps:'.$id, 
+                                $campaign->id
+                            );                 
+                        }
+
                         $return[] = $campaignID.': assignation ok';
 
                     }else{
@@ -359,6 +384,10 @@ class ClustersController extends Controller
                             $cache->zrem( 'clusterlist:'.$id, $campaign->id.':'.$campaign->affiliates->id.':'.$packageId );
                         }
 
+                        $cache->zrem( 
+                            'clustercaps:'.$id, 
+                            $campaign->id
+                        );                          
                     }
 
                     $return[] = $campaignID.': unassign ok';

@@ -41,7 +41,7 @@ class Campaigns extends \yii\db\ActiveRecord
     {
         return [
             [['Affiliates_id', 'ext_id'], 'required'],
-            [['id', 'Affiliates_id'], 'integer'],
+            [['id', 'Affiliates_id', 'daily_cap'], 'integer'],
             [['payout'], 'number'],
             [['status', 'info'], 'string'],
             [['country' ], 'string'],
@@ -74,7 +74,9 @@ class Campaigns extends \yii\db\ActiveRecord
             'app_id'           => 'App ID',
             'delivery_freq'    => 'Freq.', 
             'ext_id'           => 'Ext. ID',
-            'status'           => 'Status'
+            'status'           => 'Status',
+            'daily_cap'        => 'Daily Cap',
+            'aff_daily_cap'    => 'Affiliate Daily Cap',
         ];
     }
 

@@ -155,7 +155,7 @@ echo Tabs::widget([
                     if(isset($lastLog) && $lastLog->status='no_conv_limit')
                         $return = '<span class="glyphicon glyphicon-alert" style="color:#f90" data-toggle="tooltip" title="20K LIMIT EXCEEDED"></span>';
                     else if($model->status!='active')
-                        $return = '<span class="glyphicon glyphicon-alert" style="color:#0C0" data-toggle="tooltip" title="PAUSED BY AFF"></span>';
+                        $return = '<span class="glyphicon glyphicon-alert" style="color:#0C0" data-toggle="tooltip" title="'.strtoupper($model->status).'"></span>';
                     else 
                         $return = '';
 

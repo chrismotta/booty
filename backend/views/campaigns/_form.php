@@ -32,45 +32,50 @@ $affiliates = models\Affiliates::find()->asArray()->all();
             ),
             'addon' => [
                 'contentAfter' => '<div style="height:25px;">&nbsp;</div>',
-            ],            
+            ],
             'language' => 'us',
             'options' => [
                 'placeholder' => 'Select an affiliate...', 
+                'disabled' => true
             ],
             'pluginOptions' => [
                 'maximumInputLength' => 50
             ],
-        ]);            
+        ]);
     ?>
 
-    <?= $form->field($model, 'name')->textInput(['maxlength' => true]) ?>
+    <?= $form->field($model, 'name')->textInput(['maxlength' => true, 'disabled' => true]) ?>
 
-    <?= $form->field($model, 'payout')->textInput(['maxlength' => true]) ?>
+    <?= $form->field($model, 'payout')->textInput(['maxlength' => true, 'disabled' => true]) ?>
 
-    <?= $form->field($model, 'country')->textInput(['maxlength' => true]) ?>
+    <?= $form->field($model, 'aff_daily_cap')->textInput(['maxlength' => true, 'disabled' => true]) ?>
 
-    <?= $form->field($model, 'connection_type')->textInput(['maxlength' => true]) ?>
+    <?= $form->field($model, 'daily_cap')->textInput(['maxlength' => true ]) ?>
 
-    <?= $form->field($model, 'device_type')->textInput(['maxlength' => true]) ?>
+    <?= $form->field($model, 'country')->textInput(['maxlength' => true, 'disabled' => true]) ?>
 
-    <?= $form->field($model, 'ext_id')->textInput(['maxlength' => true]) ?>
+    <?= $form->field($model, 'connection_type')->textInput(['maxlength' => true, 'disabled' => true]) ?>
+
+    <?= $form->field($model, 'device_type')->textInput(['maxlength' => true, 'disabled' => true]) ?>
+
+    <?= $form->field($model, 'ext_id')->textInput(['maxlength' => true, 'disabled' => true]) ?>
 
     </div>
     <div class="col-md-6">
     
-    <?= $form->field($model, 'os')->textInput(['maxlength' => true]) ?>
+    <?= $form->field($model, 'os')->textInput(['maxlength' => true, 'disabled' => true]) ?>
     
-    <?= $form->field($model, 'os_version')->textInput(['maxlength' => true]) ?>
+    <?= $form->field($model, 'os_version')->textInput(['maxlength' => true, 'disabled' => true]) ?>
 
-    <?= $form->field($model, 'carrier')->textInput(['maxlength' => true]) ?>
+    <?= $form->field($model, 'carrier')->textInput(['maxlength' => true, 'disabled' => true]) ?>
 
-    <?= $form->field($model, 'landing_url')->textInput(['maxlength' => true]) ?>
+    <?= $form->field($model, 'landing_url')->textInput(['maxlength' => true, 'disabled' => true]) ?>
 
-    <?= $form->field($model, 'creative_320x50')->textInput(['maxlength' => true]) ?>
+    <?= $form->field($model, 'creative_320x50')->textInput(['maxlength' => true, 'disabled' => true]) ?>
 
-    <?= $form->field($model, 'creative_300x250')->textInput(['maxlength' => true]) ?>
+    <?= $form->field($model, 'creative_300x250')->textInput(['maxlength' => true, 'disabled' => true]) ?>
 
-    <?= $form->field($model, 'app_id')->textInput(['maxlength' => true]) ?>
+    <?= $form->field($model, 'app_id')->textInput(['maxlength' => true, 'disabled' => true]) ?>
     </div>
 
 

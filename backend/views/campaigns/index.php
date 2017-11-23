@@ -117,15 +117,16 @@ $filterByAffiliate = ArrayHelper::map(
             [
                 'attribute' => 'status',
                 'filter' => [
-                        'active' => 'active',
-                        'archived' => 'archived',
-                        'paused' => 'paused',
-                        'aff_paused' => 'aff_paused',
+                        'active'        => 'active',
+                        'archived'      => 'archived',
+                        'paused'        => 'paused',
+                        'aff_paused'    => 'aff_paused',
+                        'cap_reached'   => 'cap_reached',
                         'affiliate_off' => 'affiliate_off',
-                        'blacklisted' => 'blacklisted',
-                        'no_appid' => 'no_appid',
-                        'no_payout' => 'no_payout',                        
-                        'no_url' => 'no_url',
+                        'blacklisted'   => 'blacklisted',
+                        'no_appid'      => 'no_appid',
+                        'no_payout'     => 'no_payout',
+                        'no_url'        => 'no_url',
                     ],
                 'contentOptions' => function($model, $key, $index){
                     switch ($model->status) {
@@ -136,6 +137,7 @@ $filterByAffiliate = ArrayHelper::map(
                             $options = ['class'=>'text-info'];
                             break;
                         case 'aff_paused':
+                        case 'cap_reached':
                             $options = ['class'=>'text-info'];
                             break;
                         case 'blacklisted':
@@ -160,7 +162,7 @@ $filterByAffiliate = ArrayHelper::map(
             // 'creative_300x250',
             [
                 'class' => 'yii\grid\ActionColumn',
-                'template' => '{view}{blacklist}{delete}',
+                'template' => '{view}{blacklist}{update}{delete}',
                 'buttons' => [
                     'blacklist' => function ($url, $model, $key) {
                         return Html::a(
