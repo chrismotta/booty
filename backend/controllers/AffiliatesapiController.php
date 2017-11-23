@@ -29,6 +29,10 @@ class AffiliatesapiController extends \yii\web\Controller
 	protected function _apiRules ( )
 	{
 		return [
+            [
+                'class'         => 'TestAPI',
+                'affiliate_id'  => 1,
+            ],              
 			[
 				'class' 		=> 'RegamingAPI',
 				'affiliate_id'	=> 2,
