@@ -87,6 +87,8 @@
 				}					
 
 				$os 	  	= ApiHelper::getOs($campaign->Offer->name);
+
+				$devices 	= ApiHelper::getDeviceTypes($campaign->Offer->name);
 				//$carriers 	= ApiHelper::getCarriers( $reqCarriers, $dbCarriers );
 				$p 			= ApiHelper::getAppIdFromUrl( $campaign->Offer->preview_url );
 
@@ -104,7 +106,7 @@
 					'payout' 			=> $campaign->Offer->default_payout,
 					'landing_url'		=> $campaign->TrackingLink->click_url,
 					'country'			=> empty($country) ? null : $country,
-					'device_type'		=> null,
+					'device_type'		=> empty($devices) ? null : $devices,
 					'connection_type'	=> null,
 					'carrier'			=> null,
 					'os'				=> empty($os) ? null : $os, 
@@ -118,6 +120,7 @@
 				unset( $os );
 				unset( $osVersions );
 				unset( $country );
+				unset( $devices );
 				//unset( $carriers );
 			}
 
