@@ -387,9 +387,9 @@ class EtlController extends \yii\web\Controller
 
                 $c = \Yii::$app->db->createCommand( $sql );
 
-                echo $c->rawSql;die();
+                
                 $return = $c->execute();         
-
+                echo $c->rawSql;die();
                 if ( $return )
                 {
                     foreach ( $clickIDs AS $clickID )
