@@ -331,7 +331,7 @@ class EtlController extends \yii\web\Controller
     private function _buildCampaignLogsQuery (  )
     {
     	$sql = '
-    		INSERT IGNORE INTO F_CampaignLogs (
+    		INSERT INTO F_CampaignLogs (
                 click_id,
     			D_Campaign_id,
                 session_hash,
@@ -385,10 +385,16 @@ class EtlController extends \yii\web\Controller
                 if ( $this->_sqltest )
                     return 0;
 
-                $c = \Yii::$app->db->createCommand( $sql );
+                $return = \Yii::$app->db->createCommand( $sql )->execute();
 
+                if ( $return===0 || $return>0 )
+                {
 
-                $return = $c->execute();
+                }
+                else
+                {
+                    echo 'aca: '.$return;die();
+                }
 
                 if ( $return )
                 {
