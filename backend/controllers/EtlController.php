@@ -385,7 +385,10 @@ class EtlController extends \yii\web\Controller
                 if ( $this->_sqltest )
                     return 0;
 
-                $return = \Yii::$app->db->createCommand( $sql )->execute();         
+                $c = \Yii::$app->db->createCommand( $sql );
+
+                echo $c->rawSql;
+                $return = $c->execute();         
 
                 if ( $return )
                 {
