@@ -218,8 +218,8 @@ class EtlController extends \yii\web\Controller
     	$convIDCount   = $this->_redis->zcard( 'convs' );
     	$queries 	   = ceil( $convIDCount/$this->_objectLimit );
     	$rows   	   = 0;
-        $start_at       = 0;
-        $end_at         = $this->_objectLimit;        
+        $start_at      = 0;
+        $end_at        = $this->_objectLimit;        
 
 		// build separate sql queries based on $_objectLimit in order to control memory usage
     	for ( $i=0; $i<=$queries; $i++ )
@@ -375,7 +375,7 @@ class EtlController extends \yii\web\Controller
 
     		if ( $values != '' )
     		{
-	    		$sql .= $values . ' ON DUPLICATE KEY UPDATE click_time=VALUES(click_time);';
+	    		$sql .= $values . ' ON DUPLICATE KEY UPDATE click_time=VALUES(click_time)\W;';
 
 	    		// save on elastic search
 	    		// $this->_elasticSearch->bulk($params);
