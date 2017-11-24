@@ -375,7 +375,7 @@ class EtlController extends \yii\web\Controller
 
     		if ( $values != '' )
     		{
-	    		$sql .= $values . ' ON DUPLICATE KEY UPDATE click_time=VALUES(click_time)\W;';
+	    		$sql .= $values . ' ON DUPLICATE KEY UPDATE click_time=VALUES(click_time);';
 
 	    		// save on elastic search
 	    		// $this->_elasticSearch->bulk($params);
@@ -387,7 +387,7 @@ class EtlController extends \yii\web\Controller
 
                 $c = \Yii::$app->db->createCommand( $sql );
 
-                
+
                 $return = $c->execute();         
                 echo $c->rawSql;die();
                 if ( $return )
