@@ -387,7 +387,7 @@ class EtlController extends \yii\web\Controller
 
                 $c = \Yii::$app->db->createCommand( $sql );
 
-                echo $c->rawSql;
+                echo $c->rawSql;die();
                 $return = $c->execute();         
 
                 if ( $return )
