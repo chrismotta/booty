@@ -101,9 +101,18 @@ class ReportingController extends Controller
         ini_set('memory_limit','3000M');
         set_time_limit(0);
 
-        $dateTime = date( 'Y-m-d H:i' );        
+        if ( isset($_GET['date']) )
+        {
+            $date     = $_GET['date'];
+            $dateTime = date( 'Y-m-d H:i', strtotime($date) );            
+        }
+        else
+        {
+            $dateTime = date( 'Y-m-d H:i' );
+            $date     = date( 'Y-m-d' );
+        }
+        
         $start    = time();
-        $date     = date( 'Y-m-d' );
         $filename = './autoreport/autoreport_'.$date.'.csv';
 
         $searchModel  = new CampaignLogsSearch();

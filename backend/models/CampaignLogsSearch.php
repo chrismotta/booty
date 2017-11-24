@@ -50,6 +50,7 @@ class CampaignLogsSearch extends CampaignLogs
 
     public function searchCsv($daysBefore=4) {
         
+        $date = isset($_GET['date']) ? '"'.$_GET['date'].'"' : 'CURDATE()';
         $query = CampaignLogs::find();
 
         $dataProvider = new ActiveDataProvider([
@@ -104,7 +105,7 @@ class CampaignLogsSearch extends CampaignLogs
             'imp_status',
             ]);
 
-        $query->where('DATE(IF(conv_time is not null, conv_time, imp_time)) >= SUBDATE(CURDATE(),'.$daysBefore.')');
+        $query->where('DATE(IF(conv_time is not null, conv_time, imp_time)) >= SUBDATE('.$date.','.$daysBefore.')');
 
         return $dataProvider; 
 
