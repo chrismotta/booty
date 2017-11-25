@@ -29,6 +29,7 @@ class EtlController extends \yii\web\Controller
     private $_noalerts;
     private $_db;
     private $_test;
+    private $_fixloaded;
 
     private $_count;
 
@@ -56,6 +57,7 @@ class EtlController extends \yii\web\Controller
         $this->_showsql   = isset( $_GET['showsql'] ) && $_GET['showsql'] ? true : false;
         $this->_noalerts  = isset( $_GET['noalerts'] ) && $_GET['noalerts'] ? true : false;
         $this->_sqltest   = isset( $_GET['sqltest'] ) && $_GET['sqltest'] ? true : false;
+        $this->_fixloaded   = isset( $_GET['fixloaded'] ) && $_GET['fixloaded'] ? true : false;        
 
         $this->_timestamp = time();
 
@@ -315,7 +317,6 @@ class EtlController extends \yii\web\Controller
     	$rows 			= 0;
 
 
-
     	// build separate sql queries based on $_objectLimit in order to control memory usage
     	for ( $i=0; $i<$queries; $i++ )
     	{
@@ -387,14 +388,6 @@ class EtlController extends \yii\web\Controller
 
                 $return = \Yii::$app->db->createCommand( $sql )->execute();
 
-                if ( $return===0 || $return>0 )
-                {
-
-                }
-                else
-                {
-                    echo 'aca: '.$return;die();
-                }
 
                 if ( $return )
                 {
@@ -403,6 +396,26 @@ class EtlController extends \yii\web\Controller
                         $this->_redis->zadd( 'loadedclicks', $this->_timestamp, $clickID );
                         $this->_redis->zrem( 'clickids', $clickID );
                     }                                        
+                }
+
+                if ( $this->_fixloaded )
+                {
+                    $sql2 = "SELECT count(clickid) AS c FROM F_CampaignLogs WHERE click_id IN (:clickids)";
+
+                    $return = \Yii::$app->db->createCommand( $sql2 )->bindParam( [ ':clickids' => $clickIDs ] )->queryOne();
+
+                    if ( 
+                        $return 
+                        && isset($return['c']) 
+                        && $return['c']==count($clickIDs) 
+                    )
+                    {
+                        foreach ( $clickIDs AS $clickID )
+                        {
+                            $this->_redis->zadd( 'loadedclicks', $this->_timestamp, $clickID );
+                            $this->_redis->zrem( 'clickids', $clickID );
+                        }                          
+                    }
                 }
 
                 return $return;   			
@@ -755,10 +768,8 @@ class EtlController extends \yii\web\Controller
             }    
         }
 
-
         $uaCount = $this->_redis->zcard( 'useragents' );
         $queries = ceil( $uaCount/$this->_objectLimit );
-
 
         for ( $i=0; $i<=$queries; $i++ )
         {
@@ -1020,6 +1031,7 @@ class EtlController extends \yii\web\Controller
             break;
         }
     }
+
 
     private function _getYesterdayConvDatabase (  )
     {
