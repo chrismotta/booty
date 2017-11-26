@@ -400,7 +400,7 @@ class EtlController extends \yii\web\Controller
 
                 if ( $this->_fixloaded )
                 {
-                    $sql2 = "SELECT count(clickid) AS c FROM F_CampaignLogs WHERE click_id IN (:clickids)";
+                    $sql2 = "SELECT count(click_id) AS c FROM F_CampaignLogs WHERE click_id IN (:clickids)";
 
                     $clids = implode(',', $clickIDs);
                     $return = \Yii::$app->db->createCommand( $sql2 )->bindParam( ':clickids', $clids )->queryOne();
