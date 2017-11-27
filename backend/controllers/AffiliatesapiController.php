@@ -121,7 +121,12 @@ class AffiliatesapiController extends \yii\web\Controller
             [
                 'class'         => 'LeverageAPI',
                 'affiliate_id'  => 22,
-            ],                                                               */                   
+            ], 
+            */
+            [
+                'class'         => 'ResultsMediaAPI',
+                'affiliate_id'  => 23,
+            ]                   
 		];
 	}
 
