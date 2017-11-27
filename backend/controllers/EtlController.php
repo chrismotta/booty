@@ -30,6 +30,7 @@ class EtlController extends \yii\web\Controller
     private $_db;
     private $_test;
     private $_fixloaded;
+    private $_skipcheck;
 
     private $_count;
 
@@ -53,17 +54,18 @@ class EtlController extends \yii\web\Controller
         {
             die('invalid limit');
         }
-      
-        $this->_showsql   = isset( $_GET['showsql'] ) && $_GET['showsql'] ? true : false;
-        $this->_noalerts  = isset( $_GET['noalerts'] ) && $_GET['noalerts'] ? true : false;
-        $this->_sqltest   = isset( $_GET['sqltest'] ) && $_GET['sqltest'] ? true : false;
-        $this->_fixloaded   = isset( $_GET['fixloaded'] ) && $_GET['fixloaded'] ? true : false;        
 
-        $this->_timestamp = time();
+        $this->_showsql       = isset( $_GET['showsql'] ) && $_GET['showsql'] ? true : false;
+        $this->_noalerts      = isset( $_GET['noalerts'] ) && $_GET['noalerts'] ? true : false;
+        $this->_sqltest       = isset( $_GET['sqltest'] ) && $_GET['sqltest'] ? true : false;
+        $this->_fixloaded     = isset( $_GET['fixloaded'] ) && $_GET['fixloaded'] ? true : false;       
+        $this->_skipcheck     = isset( $_GET['skipcheck'] ) && $_GET['skipcheck'] ? true : false;
+
+        $this->_timestamp     = time();
 
         $this->_db = isset( $_GET['db'] ) ? $_GET['db'] : 'current';
 
-        $this->_alertSubject = 'AD NIGMA - ETL2 ERROR ' . date( "Y-m-d H:i:s", $this->_timestamp );
+        $this->_alertSubject  = 'AD NIGMA - ETL2 ERROR ' . date( "Y-m-d H:i:s", $this->_timestamp );
 
 
 		ini_set('memory_limit','3000M');
@@ -407,8 +409,7 @@ class EtlController extends \yii\web\Controller
 
                     if ( 
                         $return 
-                        && isset($return['c']) 
-                        && $return['c']==count($clickIDs) 
+                        || $this->_skipcheck
                     )
                     {
                         foreach ( $clickIDs AS $clickID )
@@ -417,16 +418,7 @@ class EtlController extends \yii\web\Controller
                             $this->_redis->zrem( 'clickids', $clickID );
                         }
 
-                        return $return['c'];
-                    }
-                    else
-                    {
-                        foreach ( $clickIDs AS $clickID )
-                        {
-                            $this->_redis->zadd( 'issueclicks', $this->_timestamp, $clickID );
-                        }
-
-                        return 0;
+                        return count($clickIDs);
                     }
                 }
 
