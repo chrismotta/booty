@@ -390,36 +390,16 @@ class EtlController extends \yii\web\Controller
 
                 $return = \Yii::$app->db->createCommand( $sql )->execute();
 
-
-                if ( $return )
+                if ( $return || $this->_skipcheck )
                 {
                     foreach ( $clickIDs AS $clickID )
                     {
                         $this->_redis->zadd( 'loadedclicks', $this->_timestamp, $clickID );
                         $this->_redis->zrem( 'clickids', $clickID );
-                    }                                        
-                }
-
-                if ( $this->_fixloaded )
-                {
-                    $sql2 = "SELECT count(click_id) AS c FROM F_CampaignLogs WHERE click_id IN (:clickids)";
-
-                    $clids = implode(',', $clickIDs);
-                    $return = \Yii::$app->db->createCommand( $sql2 )->bindParam( ':clickids', $clids )->queryOne();
-
-                    if ( 
-                        $return 
-                        || $this->_skipcheck
-                    )
-                    {
-                        foreach ( $clickIDs AS $clickID )
-                        {
-                            $this->_redis->zadd( 'loadedclicks', $this->_timestamp, $clickID );
-                            $this->_redis->zrem( 'clickids', $clickID );
-                        }
-
-                        return count($clickIDs);
                     }
+                    
+                    if ( !$return )
+                        return count($clickIDs);
                 }
 
                 return $return;   			
