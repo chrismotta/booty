@@ -267,7 +267,7 @@ class ReportingController extends Controller
                 */    
             }
 
-            $mbLinks = '<br><a href="http://cron.spladx.co/reporting/downloadmbautoreport?date='.$date.'"&prefix='.$mbPrefix.'>Download '.strtoupper($mbPrefix).'</a>';
+            $mbLinks .= '<br><a href="http://cron.spladx.co/reporting/downloadmbautoreport?date='.$date.'"&prefix='.$mbPrefix.'>Download '.strtoupper($mbPrefix).'</a>';
         }            
 
         $this->_sendMail( 
