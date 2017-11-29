@@ -111,7 +111,7 @@ class ReportingController extends Controller
             $dateTime = date( 'Y-m-d H:i' );
             $date     = date( 'Y-m-d' );
         }
-        
+
         $start    = time();
         $filename = './autoreport/autoreport_'.$date.'.csv';
 
@@ -166,6 +166,141 @@ class ReportingController extends Controller
                 </body>
             </html>'
         );
+    }
+
+
+    private function _isMediaBuyerPrefix ( $prefix )
+    {
+        switch ( $prefix )
+        {
+            case 'ek_':
+                return true;
+            break;
+            case 'ag_':
+                return true;
+            break;
+            case 'tes':
+                return true;
+            break;
+        }
+
+        return false;
+    }
+
+
+    public function actionCreatembautoreport ( $daysBefore=4, $test=0 )
+    {
+        ini_set('memory_limit','3000M');
+        set_time_limit(0);
+
+        if ( isset($_GET['date']) )
+        {
+            $date     = $_GET['date'];
+            $dateTime = date( 'Y-m-d H:i', strtotime($date) );            
+        }
+        else
+        {
+            $dateTime = date( 'Y-m-d H:i' );
+            $date     = date( 'Y-m-d' );
+        }
+        
+        $start    = time();
+        $path     = './mbautoreport/';
+        $filename = 'mbautoreport_'.$date.'.csv';
+
+        $searchModel  = new CampaignLogsSearch();
+        $dataProvider = $searchModel->searchMediaBuyersReport($date,$daysBefore);
+
+        $fields = [
+            'date',
+            'publisher_id',
+            'publisher_name',
+            'placement_id',
+            'placement_name',
+            'pub_id',
+            'subpub_id',
+            'country',
+            'os',
+            'os_version',
+            'connection_type',
+            'carrier',            
+            'imp_status',
+            'imps',
+            'clicks',
+            'convs',
+            'revenue',
+            'cost',
+            'profit'
+        ];
+
+        $mbPrefixes = $this->_getMediaBuyerCsvFile( $dataProvider, $path, $filename, $fields, false );
+
+        $elapsed = $start - time();
+
+        echo ( 
+            'Datetime: '. $dateTime . '<br>' .
+            'Filename: '. $path.$filename . '<br>' .
+            'Elapsed : '. $elapsed  . ' sec.'
+        );
+
+        if ( $test==1 )
+            $to = 'dev@splad.co,apastor@splad.co';
+        else
+        {
+            $to = 'dev@splad.co,apastor@splad.co,mghio@splad.co,tgonzalez@splad.co';
+        }
+
+        $mbLinks = '';
+
+        foreach ( $mbPrefixes AS $mbPrefix )
+        {
+            if ( $test==0 )
+            {                
+                $to = $this->_isMediaBuyerPrefix( $prefix );
+                /*
+                $this->_sendMail( 
+                    'Splad - Automatic Report<no-reply@spladx.co>', 
+                    $to,
+                    'MEDIA BUYER AUTOMATIC REPORT '. $dateTime,
+                    '<html>
+                        <body>
+                            <a href="http://cron.spladx.co/reporting/downloadmbautoreport?date='.$date.'">Download</a>
+                        </body>
+                    </html>'
+                );
+                */    
+            }
+
+            $mbLinks = '<br><a href="http://cron.spladx.co/reporting/downloadmbautoreport?date='.$date.'"&prefix='.$mbPrefix.'>Download</a>';
+        }            
+
+        $this->_sendMail( 
+            'Splad - Automatic Report<no-reply@spladx.co>', 
+            $to,
+            'MEDIA BUYER AUTOMATIC REPORT '. $dateTime,
+            '<html>
+                <body>
+                    <strong>Complete Report:</strong>
+                    <br>
+                    <a href="http://cron.spladx.co/reporting/downloadmbautoreport?date='.$date.'">Download</a>
+                    <hr>
+                    <strong>Media Buyers Reports:</strong>
+                    '.$mbLinks.'
+                </body>
+            </html>'
+        );        
+    }
+
+
+    public function actionDownloadmbautoreport ( $date = null )
+    {
+        $date = $date ? $date : date( 'Y-m-d' );
+        $filename = 'mbautoreport_'.$date.'.csv';
+
+        header( "Content-type: text/csv;charset=utf-8");
+        header( 'Content-Disposition: render;filename='.$filename);
+
+        echo file_get_contents('./mbautoreport/'.$filename);
     }
 
 
@@ -251,11 +386,9 @@ class ReportingController extends Controller
         else
             $fp       = fopen( $filename, 'w');
 
-
         foreach( $dataProvider->getModels() as $model )
         {
             $row = [];
-
 
             if (!$header)
                 $headerFields = [];
@@ -300,6 +433,100 @@ class ReportingController extends Controller
 
         fclose($fp);
     }
+
+    private function _getMediaBuyerCsvFile($dataProvider, $path, $filename, $fields, $download = true ){
+
+        $res      = $dataProvider->getModels();
+        $header   = false;
+
+
+        if ( $download )
+            $fp       = fopen('php://output', 'w');
+        else
+            $fp       = fopen( $path.$filename, 'w');
+
+
+        $mbFp     = [];
+        $mbHeader = [];
+
+        foreach( $dataProvider->getModels() as $model )
+        {
+            $row = [];
+
+            if (!$header)
+                $headerFields = [];
+
+            foreach ( $fields as $field )
+            {                                         
+                if(!$header)
+                    $headerFields[] = $field;
+
+                switch ( $field )
+                {
+                    case 'campaign':
+                    case 'affiliate':
+                    case 'cluster':
+                        $idField = $field.'_id';
+                        $row[]   = $model->$field . ' ('.$model->$idField .')';
+                    break;
+                    case 'publisher':
+                    case 'placement':
+                        $idField = $field.'_id';
+
+                        if( in_array( 'Stakeholder', $model->userroles ) )
+                            $row[] = $model->$idField;
+                        else
+                            $row[] = $model->$field . ' ('.$model->$idField.')';
+                    break;
+                    case 'pub_id':
+                        $mbPrefix = strtolower(substr( $model->$field, 0, 3 ));
+
+                        $row[] = $model->$field;
+                    break;
+                    default:
+                        $row[] = $model->$field;
+                    break;
+                }    
+            }  
+
+            if ( !$header )
+            {
+                $header = true;
+                fputcsv($fp, $headerFields, ',');
+            }
+
+            fputcsv($fp, $row, ',');
+
+            if ( $mbPrefix && $this->_isMediaBuyerPrefix($mbPrefix)  )
+            {
+                if ( !isset($mbFp[$mbPrefix]) )
+                {
+                    $mbFp[$mbPrefix] = fopen( $path.$mbPrefix.$filename, 'w'); 
+                }
+
+                if ( !isset($mbHeader[$mbPrefix]) )
+                {
+                    $mbHeader[$mbPrefix] = true;
+                    fputcsv($mbFp[$mbPrefix], $headerFields, ',');
+                }
+
+                fputcsv($mbFp[$mbPrefix], $row, ',');               
+            }
+
+            unset( $row );
+        }
+
+        fclose($fp);
+
+        $mbPrefixes = [];
+
+        foreach ( $mbHeader AS $mbPrefix )
+        {
+            $mbPrefixes[] = $mbPrefix;
+        }
+
+        return $mbPrefixes;
+    }    
 
     /**
      * Displays a single CampaignLogs model.
