@@ -473,7 +473,7 @@ class ReportingController extends Controller
                 switch ( $field )
                 {
                     case 'placement':
-                        $row[] = $model->$field . ' ('.$model->placement_id.')';
+                        $row[] = $model->placement_name . ' ('.$model->placement_id.')';
                     break;
                     case 'pub_id':
                         $mbPrefix = strtolower(substr( $model->$field, 0, 3 ));
@@ -519,6 +519,7 @@ class ReportingController extends Controller
 
         foreach ( $mbHeader AS $mbPrefix )
         {
+            fclose($mbFp[$mbPrefix]);
             $mbPrefixes[] = $mbPrefix;
         }
 
