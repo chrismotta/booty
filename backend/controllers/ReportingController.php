@@ -179,9 +179,6 @@ class ReportingController extends Controller
             case 'ag_':
                 return true;
             break;
-            case 'tes':
-                return true;
-            break;
         }
 
         return false;
@@ -433,6 +430,7 @@ class ReportingController extends Controller
 
         fclose($fp);
     }
+
 
     private function _getMediaBuyerCsvFile($dataProvider, $path, $filename, $fields, $download = true ){
 
