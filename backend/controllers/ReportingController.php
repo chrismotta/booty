@@ -171,12 +171,14 @@ class ReportingController extends Controller
 
     private function _isMediaBuyerPrefix ( $prefix )
     {
-        switch ( $prefix )
+        switch ( strtolower($prefix) )
         {
             case 'ek_':
+            case 'EK_':
                 return true;
             break;
             case 'ag_':
+            case 'AG_':
                 return true;
             break;
         }
@@ -210,10 +212,7 @@ class ReportingController extends Controller
 
         $fields = [
             'date',
-            'publisher_id',
-            'publisher_name',
-            'placement_id',
-            'placement_name',
+            'placement',
             'pub_id',
             'subpub_id',
             'country',
@@ -268,7 +267,7 @@ class ReportingController extends Controller
                 */    
             }
 
-            $mbLinks = '<br><a href="http://cron.spladx.co/reporting/downloadmbautoreport?date='.$date.'"&prefix='.$mbPrefix.'>Download</a>';
+            $mbLinks = '<br><a href="http://cron.spladx.co/reporting/downloadmbautoreport?date='.$date.'"&prefix='.$mbPrefix.'>Download '.strtoupper($mbPrefix).'</a>';
         }            
 
         $this->_sendMail( 
@@ -457,24 +456,22 @@ class ReportingController extends Controller
             foreach ( $fields as $field )
             {                                         
                 if(!$header)
-                    $headerFields[] = $field;
+                {
+                    switch ( $field )
+                    {
+                        case 'placement':
+                            $headerFields[] = 'campaign';
+                        break;
+                        default:
+                            $headerFields[] = $field;
+                        break;
+                    }                    
+                }
 
                 switch ( $field )
                 {
-                    case 'campaign':
-                    case 'affiliate':
-                    case 'cluster':
-                        $idField = $field.'_id';
-                        $row[]   = $model->$field . ' ('.$model->$idField .')';
-                    break;
-                    case 'publisher':
                     case 'placement':
-                        $idField = $field.'_id';
-
-                        if( in_array( 'Stakeholder', $model->userroles ) )
-                            $row[] = $model->$idField;
-                        else
-                            $row[] = $model->$field . ' ('.$model->$idField.')';
+                        $row[] = $model->$field . ' ('.$model->placement_id.')';
                     break;
                     case 'pub_id':
                         $mbPrefix = strtolower(substr( $model->$field, 0, 3 ));
