@@ -239,12 +239,7 @@ class ReportingController extends Controller
             'Elapsed : '. $elapsed  . ' sec.'
         );
 
-        if ( $test==1 )
-            $to = 'dev@splad.co,apastor@splad.co';
-        else
-        {
-            $to = 'dev@splad.co,apastor@splad.co,mghio@splad.co,tgonzalez@splad.co';
-        }
+
 
         $mbLinks = '';
 
@@ -252,11 +247,11 @@ class ReportingController extends Controller
         {
             if ( $test==0 )
             {                
-                $to = $this->_isMediaBuyerPrefix( $prefix );
+                $mbTo = $this->_isMediaBuyerPrefix( $prefix );
                 /*
                 $this->_sendMail( 
                     'Splad - Automatic Report<no-reply@spladx.co>', 
-                    $to,
+                    $mbTo,
                     'MEDIA BUYER AUTOMATIC REPORT '. $dateTime,
                     '<html>
                         <body>
@@ -269,6 +264,13 @@ class ReportingController extends Controller
 
             $mbLinks .= '<br><a href="http://cron.spladx.co/reporting/downloadmbautoreport?date='.$date.'"&prefix='.$mbPrefix.'>Download '.strtoupper($mbPrefix).'</a>';
         }            
+
+        if ( $test==1 )
+            $to = 'dev@splad.co,apastor@splad.co';
+        else
+        {
+            $to = 'dev@splad.co,apastor@splad.co,mghio@splad.co,tgonzalez@splad.co';
+        }
 
         $this->_sendMail( 
             'Splad - Automatic Report<no-reply@spladx.co>', 
