@@ -32,7 +32,7 @@ class ReportingController extends Controller
                 'rules' => [
                     [
                         'allow' => true,
-                        'actions' => [ 'createautoreport' ],
+                        'actions' => [ 'createautoreport', 'creatembautoreport', 'downloadmbautoreport' ],
                         'roles' => ['?']
                     ],                    
                     [
@@ -222,7 +222,6 @@ class ReportingController extends Controller
             'carrier',            
             'imp_status',
             'imps',
-            'clicks',
             'convs',
             'revenue',
             'cost',
@@ -290,10 +289,11 @@ class ReportingController extends Controller
     }
 
 
-    public function actionDownloadmbautoreport ( $date = null )
+    public function actionDownloadmbautoreport ( $date = null, $prefix = null )
     {
         $date = $date ? $date : date( 'Y-m-d' );
-        $filename = 'mbautoreport_'.$date.'.csv';
+        $filename = strtolower($prefix).'mbautoreport_'.$date.'.csv';
+
 
         header( "Content-type: text/csv;charset=utf-8");
         header( 'Content-Disposition: render;filename='.$filename);
@@ -476,9 +476,12 @@ class ReportingController extends Controller
                         $row[] = $model->placement_name . ' ('.$model->placement_id.')';
                     break;
                     case 'pub_id':
-                        $mbPrefix = strtolower(substr( $model->$field, 0, 3 ));
+                        $mbPrefix = strtolower(substr(stripslashes($model->$field), 0, 3 ));
 
-                        $row[] = $model->$field;
+                        $row[] = stripslashes($model->$field);
+                    break;
+                    case 'subpub_id':
+                        $row[] = stripslashes($model->$field);
                     break;
                     default:
                         $row[] = $model->$field;
@@ -498,13 +501,8 @@ class ReportingController extends Controller
             {
                 if ( !isset($mbFp[$mbPrefix]) )
                 {
-                    $mbFp[$mbPrefix] = fopen( $path.$mbPrefix.$filename, 'w'); 
-                }
-
-                if ( !isset($mbHeader[$mbPrefix]) )
-                {
-                    $mbHeader[$mbPrefix] = true;
-                    fputcsv($mbFp[$mbPrefix], $headerFields, ',');
+                    $mbFp[$mbPrefix] = fopen( $path.$mbPrefix.$filename, 'w');
+                    fputcsv($mbFp[$mbPrefix], $headerFields, ','); 
                 }
 
                 fputcsv($mbFp[$mbPrefix], $row, ',');               
@@ -517,10 +515,10 @@ class ReportingController extends Controller
 
         $mbPrefixes = [];
 
-        foreach ( $mbHeader AS $mbPrefix )
-        {
-            fclose($mbFp[$mbPrefix]);
+        foreach ( $mbFp AS $mbPrefix => $fp )
+        {            
             $mbPrefixes[] = $mbPrefix;
+            fclose($fp);
         }
 
         return $mbPrefixes;
