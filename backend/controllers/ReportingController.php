@@ -246,22 +246,21 @@ class ReportingController extends Controller
         {
             if ( $test==0 )
             {                
-                $mbTo = $this->_isMediaBuyerPrefix( $prefix );
-                /*
+                $mbTo = $this->_isMediaBuyerPrefix( $mbPrefix );
+
                 $this->_sendMail( 
                     'Splad - Automatic Report<no-reply@spladx.co>', 
                     $mbTo,
                     'MEDIA BUYER AUTOMATIC REPORT '. $dateTime,
                     '<html>
                         <body>
-                            <a href="http://cron.spladx.co/reporting/downloadmbautoreport?date='.$date.'">Download</a>
+                            <a href="http://cron.spladx.co/reporting/downloadmbautoreport?date='.$date.'&prefix='.$mbPrefix.'">Download '.strtoupper($mbPrefix).'</a>
                         </body>
                     </html>'
-                );
-                */    
+                );    
             }
 
-            $mbLinks .= '<br><a href="http://cron.spladx.co/reporting/downloadmbautoreport?date='.$date.'"&prefix='.$mbPrefix.'>Download '.strtoupper($mbPrefix).'</a>';
+            $mbLinks .= '<br><a href="http://cron.spladx.co/reporting/downloadmbautoreport?date='.$date.'&prefix='.$mbPrefix.'">Download '.strtoupper($mbPrefix).'</a>';
         }            
 
         if ( $test==1 )
