@@ -238,29 +238,27 @@ class ReportingController extends Controller
             'Elapsed : '. $elapsed  . ' sec.'
         );
 
-
-
         $mbLinks = '';
 
         foreach ( $mbPrefixes AS $mbPrefix )
         {
+            $url = "http://cron.spladx.co/reporting/downloadmbautoreport?prefix=".$date.':'.$mbPrefix;
+
             if ( $test==0 )
             {                
-                $mbTo = $this->_isMediaBuyerPrefix( $mbPrefix );
-
                 $this->_sendMail( 
                     'Splad - Automatic Report<no-reply@spladx.co>', 
-                    $mbTo,
+                    $this->_isMediaBuyerPrefix( $mbPrefix ),
                     'MEDIA BUYER AUTOMATIC REPORT '. $dateTime,
                     '<html>
                         <body>
-                            <a href="http://cron.spladx.co/reporting/downloadmbautoreport?date='.$date.'&prefix='.$mbPrefix.'">Download '.strtoupper($mbPrefix).'</a>
+                            <a href="'.$url.'">Download '.strtoupper($mbPrefix).'</a>
                         </body>
                     </html>'
                 );    
             }
 
-            $mbLinks .= '<br><a href="http://cron.spladx.co/reporting/downloadmbautoreport?date='.$date.'&prefix='.$mbPrefix.'">Download '.strtoupper($mbPrefix).'</a>';
+            $mbLinks .= '<a href="'.$url.'">Download '.strtoupper($mbPrefix).'</a><br>';
         }            
 
         if ( $test==1 )
@@ -289,9 +287,21 @@ class ReportingController extends Controller
 
 
     public function actionDownloadmbautoreport ( $date = null, $prefix = null )
-    {
-        $date = $date ? $date : date( 'Y-m-d' );
-        $filename = strtolower($prefix).'mbautoreport_'.$date.'.csv';
+    {        
+        if ( $prefix )
+        {
+            $parts = preg_split( '/(:)/', $prefix );
+
+            $date   = $parts[0];
+            $p      = $parts[1];
+        }
+        else
+        {
+            $date = $date ? $date : date( 'Y-m-d' );
+            $p    = '';
+        }
+
+        $filename = strtolower($p).'mbautoreport_'.$date.'.csv';
 
 
         header( "Content-type: text/csv;charset=utf-8");
