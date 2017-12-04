@@ -175,11 +175,11 @@ class ReportingController extends Controller
         {
             case 'ek_':
             case 'EK_':
-                return true;
+                return 'tef@themedialab.co';
             break;
-            case 'ag_':
-            case 'AG_':
-                return true;
+            case 'ga_':
+            case 'GA_':
+                return 'augusto@themedialab.co';
             break;
         }
 
@@ -244,7 +244,7 @@ class ReportingController extends Controller
         {
             $url = "http://cron.spladx.co/reporting/downloadmbautoreport?prefix=".$date.':'.$mbPrefix;
 
-            if ( $test==0 )
+            if ( $test!=1 )
             {                
                 $this->_sendMail( 
                     'Splad - Automatic Report<no-reply@spladx.co>', 
@@ -252,7 +252,8 @@ class ReportingController extends Controller
                     'MEDIA BUYER AUTOMATIC REPORT '. $dateTime,
                     '<html>
                         <body>
-                            <a href="'.$url.'">Download '.strtoupper($mbPrefix).'</a>
+                        <strong>MEDIA BUYER AUTOMATIC REPORT '. $dateTime.'</strong>
+                            <a href="'.$url.'">Download</a>
                         </body>
                     </html>'
                 );    
@@ -265,7 +266,7 @@ class ReportingController extends Controller
             $to = 'dev@splad.co,apastor@splad.co';
         else
         {
-            $to = 'dev@splad.co,apastor@splad.co,mghio@splad.co,tgonzalez@splad.co';
+            $to = 'dev@splad.co,apastor@splad.co,mghio@splad.co,tgonzalez@splad.co,pedro@themedialab.co,proman@splad.co';
         }
 
         $this->_sendMail( 
