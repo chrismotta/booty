@@ -52,7 +52,7 @@ $disabled = isset($_GET['dev']) && $_GET['dev']==1 ? false : true;
 
     <?= $form->field($model, 'aff_daily_cap')->textInput(['maxlength' => true, 'disabled' => $disabled]) ?>
 
-    <?= $form->field($model, 'daily_cap')->textInput(['maxlength' => true ]) ?>
+    <?= $form->field($model, 'daily_cap')->textInput(['maxlength' => true]) ?>
 
     <?= $form->field($model, 'country')->textInput(['maxlength' => true, 'disabled' => $disabled]) ?>
 
