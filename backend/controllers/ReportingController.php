@@ -253,7 +253,8 @@ class ReportingController extends Controller
                     '<html>
                         <body>
                         <strong>MEDIA BUYER AUTOMATIC REPORT '. $dateTime.'</strong>
-                            <a href="'.$url.'">Download</a>
+                        <br>
+                        <a href="'.$url.'">Download</a>
                         </body>
                     </html>'
                 );    
@@ -280,6 +281,7 @@ class ReportingController extends Controller
                     <a href="http://cron.spladx.co/reporting/downloadmbautoreport?date='.$date.'">Download</a>
                     <hr>
                     <strong>Media Buyers Reports:</strong>
+                    <br>
                     '.$mbLinks.'
                 </body>
             </html>'
