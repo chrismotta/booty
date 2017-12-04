@@ -9,17 +9,12 @@
 	 
 	class LeverageAPI extends Component
 	{
-		// uses hasoffers.com plattform
-		const URL = '{Token}';
-
 		protected $_msg;
 		protected $_status;
 
 		public function requestCampaigns ( $api_key, $user_id = null  )
 		{
-			$url    = 'http://leverage.echo226.com/2015-03-01/bulk?affiliate='.$user_id.'&auth='.$api_key;
-
-			//$url .= '&applicationStatus=Approved';
+			$url    = 'http://leverage.echo226.com/2015-03-01/bulk?affiliate='.$user_id.'&auth='.$api_key.'&applicationStatus=Approved';
 
 			if  ( isset($_GET['url']) && $_GET['url']==1 )
 			{
