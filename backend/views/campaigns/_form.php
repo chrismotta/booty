@@ -10,6 +10,8 @@ use yii\helpers\ArrayHelper;
 /* @var $form yii\widgets\ActiveForm */
 
 $affiliates = models\Affiliates::find()->asArray()->all();
+
+$disabled = isset($_GET['dev']) && $_GET['dev']==1 ? false : true;
 ?>
 
 <div class="box box-info">
@@ -36,7 +38,7 @@ $affiliates = models\Affiliates::find()->asArray()->all();
             'language' => 'us',
             'options' => [
                 'placeholder' => 'Select an affiliate...', 
-                'disabled' => true
+                'disabled' => $disabled
             ],
             'pluginOptions' => [
                 'maximumInputLength' => 50
@@ -44,38 +46,38 @@ $affiliates = models\Affiliates::find()->asArray()->all();
         ]);
     ?>
 
-    <?= $form->field($model, 'name')->textInput(['maxlength' => true, 'disabled' => true]) ?>
+    <?= $form->field($model, 'name')->textInput(['maxlength' => true, 'disabled' => $disabled]) ?>
 
-    <?= $form->field($model, 'payout')->textInput(['maxlength' => true, 'disabled' => true]) ?>
+    <?= $form->field($model, 'payout')->textInput(['maxlength' => true, 'disabled' => $disabled]) ?>
 
-    <?= $form->field($model, 'aff_daily_cap')->textInput(['maxlength' => true, 'disabled' => true]) ?>
+    <?= $form->field($model, 'aff_daily_cap')->textInput(['maxlength' => true, 'disabled' => $disabled]) ?>
 
     <?= $form->field($model, 'daily_cap')->textInput(['maxlength' => true ]) ?>
 
-    <?= $form->field($model, 'country')->textInput(['maxlength' => true, 'disabled' => true]) ?>
+    <?= $form->field($model, 'country')->textInput(['maxlength' => true, 'disabled' => $disabled]) ?>
 
-    <?= $form->field($model, 'connection_type')->textInput(['maxlength' => true, 'disabled' => true]) ?>
+    <?= $form->field($model, 'connection_type')->textInput(['maxlength' => true, 'disabled' => $disabled]) ?>
 
-    <?= $form->field($model, 'device_type')->textInput(['maxlength' => true, 'disabled' => true]) ?>
+    <?= $form->field($model, 'device_type')->textInput(['maxlength' => true, 'disabled' => $disabled]) ?>
 
-    <?= $form->field($model, 'ext_id')->textInput(['maxlength' => true, 'disabled' => true]) ?>
+    <?= $form->field($model, 'ext_id')->textInput(['maxlength' => true, 'disabled' => $disabled]) ?>
 
     </div>
     <div class="col-md-6">
     
-    <?= $form->field($model, 'os')->textInput(['maxlength' => true, 'disabled' => true]) ?>
+    <?= $form->field($model, 'os')->textInput(['maxlength' => true, 'disabled' => $disabled]) ?>
     
-    <?= $form->field($model, 'os_version')->textInput(['maxlength' => true, 'disabled' => true]) ?>
+    <?= $form->field($model, 'os_version')->textInput(['maxlength' => true, 'disabled' => $disabled]) ?>
 
-    <?= $form->field($model, 'carrier')->textInput(['maxlength' => true, 'disabled' => true]) ?>
+    <?= $form->field($model, 'carrier')->textInput(['maxlength' => true, 'disabled' => $disabled]) ?>
 
-    <?= $form->field($model, 'landing_url')->textInput(['maxlength' => true, 'disabled' => true]) ?>
+    <?= $form->field($model, 'landing_url')->textInput(['maxlength' => true, 'disabled' => $disabled]) ?>
 
-    <?= $form->field($model, 'creative_320x50')->textInput(['maxlength' => true, 'disabled' => true]) ?>
+    <?= $form->field($model, 'creative_320x50')->textInput(['maxlength' => true, 'disabled' => $disabled]) ?>
 
-    <?= $form->field($model, 'creative_300x250')->textInput(['maxlength' => true, 'disabled' => true]) ?>
+    <?= $form->field($model, 'creative_300x250')->textInput(['maxlength' => true, 'disabled' => $disabled]) ?>
 
-    <?= $form->field($model, 'app_id')->textInput(['maxlength' => true, 'disabled' => true]) ?>
+    <?= $form->field($model, 'app_id')->textInput(['maxlength' => true, 'disabled' => $disabled]) ?>
     </div>
 
 
