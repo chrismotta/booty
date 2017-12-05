@@ -113,17 +113,14 @@ class AffiliatesapiController extends \yii\web\Controller
                 'class'         => 'PerformanceGenieAPI',
                 'affiliate_id'  => 20,
             ],
-            /*
             [
                 'class'         => 'CurateMobileAPI',
                 'affiliate_id'  => 21,
-            ],
-            */             
+            ],            
             [
                 'class'         => 'LeverageAPI',
                 'affiliate_id'  => 22,
-            ], 
-
+            ],
             [
                 'class'         => 'ResultsMediaAPI',
                 'affiliate_id'  => 23,
