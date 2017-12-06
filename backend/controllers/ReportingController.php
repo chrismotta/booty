@@ -267,7 +267,7 @@ class ReportingController extends Controller
             $to = 'dev@splad.co,apastor@splad.co';
         else
         {
-            $to = 'dev@splad.co,apastor@splad.co,mghio@splad.co,tgonzalez@splad.co,pedro@themedialab.co,proman@splad.co';
+            $to = 'dev@splad.co,apastor@splad.co,mghio@splad.co,tgonzalez@splad.co,pedro@themedialab.co,proman@splad.co,martin@themedialab.co';
         }
 
         $this->_sendMail( 
