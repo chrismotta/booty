@@ -21,10 +21,12 @@ use Yii;
  */
 class Campaigns extends \yii\db\ActiveRecord
 {
-    public $affiliate;
     public $click_macro;
     public $delivery_freq;
     public $clusters_id;
+    public $affiliate;
+    public $available;
+    public $cluster;
     
     /**
      * @inheritdoc

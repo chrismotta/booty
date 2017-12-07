@@ -35,6 +35,83 @@ class CampaignsSearch extends Campaigns
         return Model::scenarios();
     }
 
+    public function searchByTarget($params)
+    {
+
+        $query = Campaigns::find();
+        $query->joinWith(['affiliates']);
+        $this->load($params);
+
+        $dataProvider = new ActiveDataProvider([
+            'query' => $query,
+            'sort' => ['attributes' => [ 'country', 'os', 'affiliate' ]]            
+        ]);
+
+        $query->select([
+            'Campaigns.country AS country',
+            'Campaigns.os AS os',
+            'Affiliates.name AS affiliate',
+            'COUNT(Campaigns.id) AS available',
+        ]);
+
+        // grid filtering conditions
+        $query->andFilterWhere(['like', 'Campaigns.country', $this->country])
+            ->andFilterWhere(['like', 'Campaigns.os', $this->os])
+            ->andFilterWhere(['like', 'Affiliates.name', $this->affiliate]);
+        
+        // fixed conditions
+        $query->andWhere([
+            'Affiliates.status' => 'active',
+            'Campaigns.status' => 'active',
+            'LENGTH(Campaigns.country)' => 6,
+        ]);
+
+        $query->groupBy([
+            'Campaigns.country',
+            'Campaigns.os',
+            'Affiliates.name'
+        ]);
+        
+        return $dataProvider;
+    }
+
+    public function searchByCluster($params)
+    {
+
+        $query = Clusters::find();
+        $query->joinWith(['campaigns', 'campaigns.affiliates']);
+        $this->load($params);
+
+        $dataProvider = new ActiveDataProvider([
+            'query' => $query,
+            'sort' => ['attributes' => [ 'name', 'affiliate' ]]            
+        ]);
+
+        $query->select([
+            'Clusters.name AS name',
+            'Affiliates.name AS affiliate',
+            'COUNT(Campaigns.id) AS available',
+        ]);
+        
+        // grid filtering conditions
+        $query->andFilterWhere(['like', 'Clusters.name', $this->name])
+            ->andFilterWhere(['like', 'Affiliates.name', $this->affiliate]);
+        
+        // fixed conditions
+        $query->andWhere([
+            'Clusters.status' => 'active',
+            'Affiliates.status' => 'active',
+            'Campaigns.status' => 'active',
+        ]);
+
+        $query->groupBy([
+            'Clusters.name',
+            'Affiliates.name'
+        ]);
+        
+        return $dataProvider;
+    }
+
     /**
      * Creates data provider instance with search query applied
      *

@@ -47,6 +47,28 @@ class CampaignsController extends Controller
         ]);
     }
 
+    public function actionBytarget()
+    {
+        $searchModel = new CampaignsSearch();
+        $dataProvider = $searchModel->searchByTarget(Yii::$app->request->queryParams);
+
+        return $this->render('bytarget', [
+            'searchModel' => $searchModel,
+            'dataProvider' => $dataProvider,
+        ]);
+    }
+
+    public function actionBycluster()
+    {
+        $searchModel = new CampaignsSearch();
+        $dataProvider = $searchModel->searchByCluster(Yii::$app->request->queryParams);
+
+        return $this->render('bycluster', [
+            'searchModel' => $searchModel,
+            'dataProvider' => $dataProvider,
+        ]);
+    }
+
     /**
      * Displays a single Campaigns model.
      * @param integer $id
