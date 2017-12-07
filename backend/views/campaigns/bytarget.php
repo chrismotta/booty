@@ -11,7 +11,7 @@ use yii\helpers\ArrayHelper;
 /* @var $searchModel app\models\CampaignsSearch */
 /* @var $dataProvider yii\data\ActiveDataProvider */
 
-$this->title = 'Campaigns Available by Target';
+$this->title = 'Active Campaigns by Targeting';
 $this->params['breadcrumbs'][] = ['label' => 'Affiliates', 'url' => ['/affiliates']];
 $this->params['breadcrumbs'][] = $this->title;
 

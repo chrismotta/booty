@@ -53,7 +53,7 @@
                                 'items' => [
                                     // ['label' => 'New', 'icon' => 'circle-thin', 'url' => '#',],
                                     ['label' => 'Admin', 'icon' => 'circle-thin', 'url' => ['/campaigns'],],
-                                    ['label' => 'Available by Target', 'icon' => 'circle-thin', 'url' => ['/campaigns/bytarget'],],
+                                    ['label' => 'Active by Targeting', 'icon' => 'circle-thin', 'url' => ['/campaigns/bytarget'],],
                                     ['label' => 'Assigned by Cluster', 'icon' => 'circle-thin', 'url' => ['/campaigns/bycluster'],],
                                 ],
                             ],
