@@ -102,7 +102,8 @@ class CampaignsSearch extends Campaigns
             'Clusters.status' => 'active',
             'Affiliates.status' => 'active',
             'Campaigns.status' => 'active',
-        ]);
+        ])
+            ->andWhere(['>', 'Clusters_has_Campaigns.delivery_freq', 0]);
 
         $query->groupBy([
             'Clusters.name',
