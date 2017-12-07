@@ -103,7 +103,7 @@
 							switch ( strtolower($rule->platform) )
 							{
 								case 'mobile':
-									$connTypes[] = 'mobile';
+									$connTypes[] = 'Carrier';
 								break;
 							}
 						}
