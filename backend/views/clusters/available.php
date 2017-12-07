@@ -74,6 +74,13 @@ echo Tabs::widget([
         'columns' => [
             'id',
             [
+                'attribute'=>'ext_id',
+                'format'=>'html',
+                'value' => function ($model, $key, $index, $column){
+                    return '<div class="ext_id_column" title="'.$model->ext_id.'">'.$model->ext_id.'</div>';
+                }
+            ],
+            [
                 'attribute'=>'affiliateName',
                 'value'=>'affiliates.name',
             ],
