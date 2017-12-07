@@ -25,7 +25,7 @@ class Clusters extends \yii\db\ActiveRecord
     public $static_campaign;
     public $carrier;
     public $affiliate;
-    public $available;
+    public $assigned;
     // public $cluster;
 
     /**

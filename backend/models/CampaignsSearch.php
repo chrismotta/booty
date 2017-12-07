@@ -84,13 +84,13 @@ class CampaignsSearch extends Campaigns
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
-            'sort' => ['attributes' => [ 'name', 'affiliate', 'available' ]]            
+            'sort' => ['attributes' => [ 'name', 'affiliate', 'assigned' ]]            
         ]);
 
         $query->select([
             'Clusters.name AS name',
             'Affiliates.name AS affiliate',
-            'COUNT(Campaigns.id) AS available',
+            'COUNT(Campaigns.id) AS assigned',
         ]);
         
         // grid filtering conditions

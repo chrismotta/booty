@@ -48,7 +48,7 @@ $this->params['breadcrumbs'][] = $this->title;
         'columns' => [
             'name',
             'affiliate',
-            'available',
+            'assigned',
         /*
             'id',
             [
