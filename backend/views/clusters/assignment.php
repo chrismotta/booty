@@ -69,6 +69,7 @@ echo Tabs::widget([
         'condensed' => true,
         'columns' => [
             'id',
+            'ext_id',
             [
                 'attribute'=>'affiliateName',
                 'value'=>'affiliates.name',

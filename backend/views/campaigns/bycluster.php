@@ -46,7 +46,10 @@ $this->params['breadcrumbs'][] = $this->title;
         'filterModel' => $searchModel,
         'layout' => \Yii::$app->params['gridDefalutLayout'],
         'columns' => [
-            'name',
+            [
+                'attribute' => 'name',
+                'label'     => 'Cluster',
+            ],
             'affiliate',
             'assigned',
         /*
