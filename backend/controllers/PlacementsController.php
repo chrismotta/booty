@@ -77,6 +77,7 @@ class PlacementsController extends Controller
                 'payout'          => $model->payout,
                 'model'           => $model->model,
                 'cluster_id'      => isset($model->clusters->id) ? $model->clusters->id : null,
+                'publisher_id'    => $model->Publishers_id,
                 'status'          => $model->status,
                 'size'            => $model->size,
                 'imps'            => (int)$model->imps,
@@ -104,6 +105,7 @@ class PlacementsController extends Controller
         $this->layout = 'iframe';
         return $this->actionUpdate($id);
     }
+
     public function actionUpdate($id)
     {
         $model = $this->findModel($id);
@@ -122,6 +124,7 @@ class PlacementsController extends Controller
             $cache->hset( 'placement:'.$model->id, 'status', $model->status );
             $cluster_id = isset($model->clusters->id) ? $model->clusters->id : null;
             $cache->hset( 'placement:'.$model->id, 'cluster_id', $cluster_id );
+            $cache->hset( 'placement:'.$model->id, 'publisher_id', $model->Publishers_id );
             $cache->hset( 'placement:'.$model->id, 'size', $model->size );
             $cache->hset( 'placement:'.$model->id, 'imps', (int)$model->imps );
             $cache->hset( 'placement:'.$model->id, 'health_check_imps', (int)$model->health_check_imps );

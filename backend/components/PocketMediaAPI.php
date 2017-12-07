@@ -10,7 +10,7 @@
 	class PocketMediaAPI extends Component
 	{
 		// uses hasoffers.com plattform
-		const URL = 'https://pocketmedia.api.hasoffers.com/Apiv3/json?Target=Affiliate_Offer&Method=findMyApprovedOffers';
+		const URL = 'https://pocketmedia.api.hasoffers.com/Apiv3/json?Target=Affiliate_Offer&Method=findMyApprovedOffers&contain[]=TrackingLink&contain[]=Country';
 
 		protected $_msg;
 		protected $_status;
@@ -54,143 +54,74 @@
 			}			
 
 			$result = [];
-			$params = 'Target=Affiliate_Offer&Method=getTargetCountries&api_key='.$api_key;
 
-			foreach ( $response->data AS $ext_id => $offer )
+			//$dbCarriers = models\Carriers::find()->all();
+
+			foreach ( $response->data AS $ext_id => $campaign )
 			{
-				$campaign = (array)$offer->Offer;
-
-				if ( $campaign['approval_status'] == 'approved' )
-					$params .= '&ids[]='.$ext_id;
-			}
-
-			$url = 'https://pocketmedia.api.hasoffers.com/Apiv3/json?';
-
-			curl_setopt($curl, CURLOPT_URL, $url);
-			curl_setopt($curl, CURLOPT_HEADER, false);
-			curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-			curl_setopt($curl, CURLOPT_POST, 1);
-			curl_setopt($curl, CURLOPT_POSTFIELDS, $params );
-
-			$countryData    = json_decode(curl_exec($curl));
-			$countries 	   = [];
-
-			foreach ( $countryData->response->data AS $countryData )
-			{
-				$offerId = $countryData->offer_id;
-
-				foreach ( $countryData->countries AS $code => $country )
-				{
-					$countries[$offerId][] = $code;	
-				}				
-			}
-
-			$dbCarriers = models\Carriers::find()->all();
-
-			foreach ( $response->data AS $ext_id => $offer )
-			{
-				$campaign = (array)$offer->Offer;
-
-				if ( $campaign['approval_status'] != 'approved' )
+				if ( $campaign->Offer->approval_status != 'approved' )
 					continue;
 
-				// get tracking url data
-				$url = 'https://pocketmedia.api.hasoffers.com/Apiv3/json?Target=Affiliate_Offer&Method=generateTrackingLink&offer_id='.$ext_id.'&api_key='.$api_key;
-
-				curl_setopt($curl, CURLOPT_URL, $url);
-				curl_setopt($curl, CURLOPT_HEADER, false);
-				curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-				curl_setopt($curl, CURLOPT_POST, 0);
-
-				$urlData = json_decode(curl_exec($curl), true, 512, JSON_OBJECT_AS_ARRAY);
-
-				if ( isset($urlData['response']['data']['click_url']) )
-					$landingUrl = $urlData['response']['data']['click_url'];
-				else
-					$landingUrl = null;
-
-				// get targeting data
-				$url = 'https://pocketmedia.api.hasoffers.com/Apiv3/json?Target=Affiliate_OfferTargeting&Method=getRuleTargetingForOffer&offer_id='.$ext_id.'&api_key='.$api_key;
-
-				curl_setopt($curl, CURLOPT_URL, $url);
-				curl_setopt($curl, CURLOPT_HEADER, false);
-				curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-
-
-				$targetResponse = json_decode(curl_exec($curl), true, 512, JSON_OBJECT_AS_ARRAY);
-
-				$reqOs 		 = [];
-				$reqOsVer 	 = [];
-				$reqCarriers = [];
-
-				$targetData = (array)$targetResponse;
-
-				if ( $targetData['response']['data'] )
+				switch ( strtolower($campaign->Offer->status) )
 				{
-					foreach ( $targetData['response']['data'] as $rule )
+					case 'active':
+						$status = 'active';
+					break;
+					default:
+						$status = 'aff_paused';
+					break;
+				}				
+
+				$country = [];
+				foreach ( $campaign->Country as $code => $data )
+				{
+					switch ( strtoupper($code) )
 					{
-						if ( $rule['action']!='allow' )
-							continue;
-
-						if ( $rule['rule']['req_mobile_carrier'] )
-							$reqCarriers[]  = $rule['rule']['req_mobile_carrier'];
-
-						if ( $rule['rule']['req_device_os'] )
-							$reqOs[] 		= $rule['rule']['req_device_os'];
-
-						if ( $rule['rule']['req_device_os_version'] )
-							$reqOsVer[]     = $rule['rule']['req_device_os_version'];	
-					}	
-
-					switch ( strtolower($campaign['status']) )
-					{
-						case 'active':
-							$status = 'active';
+						case 'UK':
+							$country[] = 'GB';
 						break;
 						default:
-							$status = 'aff_paused';
+							$country[] = strtoupper($code);
 						break;
-					}									
-				}
+					}					
+				}					
+
+				$os 	  	= ApiHelper::getOs($campaign->Offer->name);
+
+				$devices 	= ApiHelper::getDeviceTypes($campaign->Offer->name);
+				//$carriers 	= ApiHelper::getCarriers( $reqCarriers, $dbCarriers );
+				$p 			= ApiHelper::getAppIdFromUrl( $campaign->Offer->preview_url );
+
+
+				if ( $campaign->Offer->currency )
+					$currency = $campaign->Offer->currency;
 				else
-				{
-					$status = 'aff_paused';
-				}			
-
-				$os 	  	= ApiHelper::getOs($reqOs);
-				$osVersions = ApiHelper::getValues($reqOsVer);
-				$carriers 	= ApiHelper::getCarriers( $reqCarriers, $dbCarriers );
-				$p = ApiHelper::getAppIdFromUrl( $campaign['preview_url'] );
+					$currency = 'USD';
 
 
-				$result[] = [
+				$result[] = [	
 					'ext_id' 			=> $ext_id,
-					'name'				=> $campaign['name'],
-					'desc'				=> preg_replace('/[\xF0-\xF7].../s', '', $campaign['description']),
-					'payout' 			=> $campaign['default_payout'],
-					'landing_url'		=> $landingUrl,
-					'country'			=> isset($countries[$ext_id]) ? $countries[$ext_id] : null,
-					'device_type'		=> null,
+					'name'				=> $campaign->Offer->name,
+					'desc'				=> preg_replace('/[\xF0-\xF7].../s', '', $campaign->Offer->description),
+					'payout' 			=> $campaign->Offer->default_payout,
+					'landing_url'		=> $campaign->TrackingLink->click_url,
+					'country'			=> empty($country) ? null : $country,
+					'device_type'		=> empty($devices) ? null : $devices,
 					'connection_type'	=> null,
-					'carrier'			=> empty($carriers) ? null : $carriers,
+					'carrier'			=> null,
 					'os'				=> empty($os) ? null : $os, 
-					'os_version'		=> empty($osVersions) ? null : $osVersions, 
+					'os_version'		=> null, 
 					'package_id'		=> empty($p) ? null : $p,
 					'status'			=> $status,
-					'currency'			=> $campaign['currency']
+					'currency'			=> $currency
 				];
 
 				unset( $campaign );
-				unset( $reqOs );
-				unset( $reqCarriers );
 				unset( $os );
-				unset( $reqOsVer );
 				unset( $osVersions );
-				unset( $carriers );
-				unset( $urlData );
-				unset( $targetData );
-				unset( $targetResponse );
-				
+				unset( $country );
+				unset( $devices );
+				//unset( $carriers );
 			}
 
 			if  ( isset($_GET['test']) && $_GET['test']==1 )

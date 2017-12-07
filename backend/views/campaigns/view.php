@@ -36,6 +36,8 @@ $this->params['breadcrumbs'][] = $this->title;
             'info:ntext',
             'ext_id',
             'payout',
+            'aff_daily_cap',
+            'daily_cap',
             'status',
             [
                 'attribute'=>'country',

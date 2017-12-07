@@ -29,6 +29,8 @@ class EtlController extends \yii\web\Controller
     private $_noalerts;
     private $_db;
     private $_test;
+    private $_fixloaded;
+    private $_skipcheck;
 
     private $_count;
 
@@ -52,16 +54,18 @@ class EtlController extends \yii\web\Controller
         {
             die('invalid limit');
         }
-      
-        $this->_showsql   = isset( $_GET['showsql'] ) && $_GET['showsql'] ? true : false;
-        $this->_noalerts  = isset( $_GET['noalerts'] ) && $_GET['noalerts'] ? true : false;
-        $this->_sqltest   = isset( $_GET['sqltest'] ) && $_GET['sqltest'] ? true : false;
 
-        $this->_timestamp = time();
+        $this->_showsql       = isset( $_GET['showsql'] ) && $_GET['showsql'] ? true : false;
+        $this->_noalerts      = isset( $_GET['noalerts'] ) && $_GET['noalerts'] ? true : false;
+        $this->_sqltest       = isset( $_GET['sqltest'] ) && $_GET['sqltest'] ? true : false;
+        $this->_fixloaded     = isset( $_GET['fixloaded'] ) && $_GET['fixloaded'] ? true : false;       
+        $this->_skipcheck     = isset( $_GET['skipcheck'] ) && $_GET['skipcheck'] ? true : false;
+
+        $this->_timestamp     = time();
 
         $this->_db = isset( $_GET['db'] ) ? $_GET['db'] : 'current';
 
-        $this->_alertSubject = 'AD NIGMA - ETL2 ERROR ' . date( "Y-m-d H:i:s", $this->_timestamp );
+        $this->_alertSubject  = 'AD NIGMA - ETL2 ERROR ' . date( "Y-m-d H:i:s", $this->_timestamp );
 
 
 		ini_set('memory_limit','3000M');
@@ -218,8 +222,8 @@ class EtlController extends \yii\web\Controller
     	$convIDCount   = $this->_redis->zcard( 'convs' );
     	$queries 	   = ceil( $convIDCount/$this->_objectLimit );
     	$rows   	   = 0;
-        $start_at       = 0;
-        $end_at         = $this->_objectLimit;        
+        $start_at      = 0;
+        $end_at        = $this->_objectLimit;        
 
 		// build separate sql queries based on $_objectLimit in order to control memory usage
     	for ( $i=0; $i<=$queries; $i++ )
@@ -315,7 +319,6 @@ class EtlController extends \yii\web\Controller
     	$rows 			= 0;
 
 
-
     	// build separate sql queries based on $_objectLimit in order to control memory usage
     	for ( $i=0; $i<$queries; $i++ )
     	{
@@ -385,15 +388,18 @@ class EtlController extends \yii\web\Controller
                 if ( $this->_sqltest )
                     return 0;
 
-                $return = \Yii::$app->db->createCommand( $sql )->execute();         
+                $return = \Yii::$app->db->createCommand( $sql )->execute();
 
-                if ( $return )
+                if ( $return || $this->_skipcheck )
                 {
                     foreach ( $clickIDs AS $clickID )
                     {
                         $this->_redis->zadd( 'loadedclicks', $this->_timestamp, $clickID );
                         $this->_redis->zrem( 'clickids', $clickID );
-                    }                                        
+                    }
+                    
+                    if ( !$return )
+                        return count($clickIDs);
                 }
 
                 return $return;   			
@@ -746,10 +752,8 @@ class EtlController extends \yii\web\Controller
             }    
         }
 
-
         $uaCount = $this->_redis->zcard( 'useragents' );
         $queries = ceil( $uaCount/$this->_objectLimit );
-
 
         for ( $i=0; $i<=$queries; $i++ )
         {
@@ -1011,6 +1015,7 @@ class EtlController extends \yii\web\Controller
             break;
         }
     }
+
 
     private function _getYesterdayConvDatabase (  )
     {
@@ -1320,6 +1325,31 @@ class EtlController extends \yii\web\Controller
                     {
                         $cache->zadd( 'clusterlist:'.$model->id, $assign->delivery_freq, $assign->campaigns->id.':'.$assign->campaigns->affiliates->id.':'.$packageId );
                     }
+
+                    // set campaign's cap in redis
+                    if ( isset($assign->campaigns->daily_cap) )
+                    {
+                        $cache->zadd( 
+                            'clustercaps:'.$model->id, 
+                            $assign->campaigns->daily_cap,
+                            $assign->campaigns->id
+                        ); 
+                    }
+                    else if ( isset($campaign->aff_daily_cap) )
+                    {
+                        $cache->zadd( 
+                            'clustercaps:'.$model->id, 
+                            $assign->campaigns->aff_daily_cap,
+                            $assign->campaigns->id
+                        );
+                    }
+                    else
+                    {
+                        $cache->zrem( 
+                            'clustercaps:'.$model->id, 
+                            $assign->campaigns->id
+                        );                 
+                    }                    
                 }
             }
         }
@@ -1358,6 +1388,7 @@ class EtlController extends \yii\web\Controller
                 'payout'            => $model->payout,
                 'model'             => $model->model,
                 'cluster_id'        => isset($model->clusters->id) ? $model->clusters->id : null,
+                'publisher_id'      => $model->Publishers_id,
                 'status'            => $model->status,
                 'size'              => $model->size,
                 'imps'              => $imps,

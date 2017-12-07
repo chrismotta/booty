@@ -34,3 +34,6 @@ phpunit.phar
 
 # vagrant runtime
 /.vagrant
+
+/backend/web/mbautoreport
+/backend/web/autoreport

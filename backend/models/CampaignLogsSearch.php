@@ -48,8 +48,70 @@ class CampaignLogsSearch extends CampaignLogs
         return Model::scenarios();
     }
 
+
+    public function searchMediaBuyersReport($date = null, $daysBefore=4 )
+    {
+        $date = $date ? '"'.$date.'"' : 'CURDATE()';
+        $query = CampaignLogs::find();
+
+        $dataProvider = new ActiveDataProvider([
+            'query'      => $query,
+            'pagination' => false,
+        ]);
+
+        $query->joinWith([
+            'campaign',
+        ]);
+
+        $query->rightJoin([
+            'F_ClusterLogs ON (F_ClusterLogs.session_hash=F_CampaignLogs.session_hash)',
+        ]);
+
+        $query->leftJoin([
+            'D_Placement ON ( F_ClusterLogs.D_Placement_id=D_Placement.id )',
+        ]);
+
+        $query->select([
+            'DATE(IF(conv_time is not null, conv_time, imp_time)) as date',  
+            'F_ClusterLogs.D_Placement_id as placement_id', 
+            'D_Placement.name as placement_name', 
+            'pub_id',
+            'subpub_id',
+            'country',
+            'os',
+            'os_version',
+            'connection_type',
+            'carrier',
+            'imp_status',
+            'ceil(sum(if(clicks>0,imps/clicks,imps))) as imps',
+            'count(conv_time) as convs',
+            'sum(revenue) as revenue',
+            'sum(if(clicks>0, cost/clicks, cost)) as cost',
+            'sum(revenue) - sum(if(clicks>0, cost/clicks, cost)) as profit',
+            ]);
+
+        $query->groupBy([
+            'DATE(IF(conv_time is not null, conv_time, imp_time))', 
+            'cluster_id', 
+            'F_ClusterLogs.D_Placement_id',
+            'pub_id',
+            'subpub_id',
+            'country',
+            'os',
+            'os_version',
+            'connection_type',
+            'carrier',            
+            'imp_status',
+            ]);
+
+        $query->where('DATE(IF(conv_time is not null, conv_time, imp_time)) >= SUBDATE('.$date.','.$daysBefore.')');
+
+        return $dataProvider; 
+    }
+
     public function searchCsv($daysBefore=4) {
         
+        $date = isset($_GET['date']) ? '"'.$_GET['date'].'"' : 'CURDATE()';
         $query = CampaignLogs::find();
 
         $dataProvider = new ActiveDataProvider([
@@ -104,7 +166,7 @@ class CampaignLogsSearch extends CampaignLogs
             'imp_status',
             ]);
 
-        $query->where('DATE(IF(conv_time is not null, conv_time, imp_time)) >= SUBDATE(CURDATE(),'.$daysBefore.')');
+        $query->where('DATE(IF(conv_time is not null, conv_time, imp_time)) >= SUBDATE('.$date.','.$daysBefore.')');
 
         return $dataProvider; 
 

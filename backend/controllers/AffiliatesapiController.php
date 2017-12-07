@@ -29,7 +29,10 @@ class AffiliatesapiController extends \yii\web\Controller
 	protected function _apiRules ( )
 	{
 		return [
-
+            [
+                'class'         => 'TestAPI',
+                'affiliate_id'  => 1,
+            ],              
 			[
 				'class' 		=> 'RegamingAPI',
 				'affiliate_id'	=> 2,
@@ -38,6 +41,10 @@ class AffiliatesapiController extends \yii\web\Controller
 				'class' 		=> 'SlaviaMobileAPI',
 				'affiliate_id'	=> 3,
 			],	
+            [
+                'class'         => 'PocketMediaAPI',
+                'affiliate_id'  => 4,
+            ],
             [
                 'class'         => 'MobobeatAPI',
                 'affiliate_id'  => 5,
@@ -55,7 +62,6 @@ class AffiliatesapiController extends \yii\web\Controller
                 'class'         => 'iWoopAPI',
                 'affiliate_id'  => 8,
             ],
-
             [
                 'class'         => 'AppclientsAPI',
                 'affiliate_id'  => 9,
@@ -103,11 +109,22 @@ class AffiliatesapiController extends \yii\web\Controller
                 'class'         => 'PersonalyAPI',
                 'affiliate_id'  => 19,
             ],
-
             [
                 'class'         => 'PerformanceGenieAPI',
                 'affiliate_id'  => 20,
-            ],                                                          
+            ],
+            [
+                'class'         => 'CurateMobileAPI',
+                'affiliate_id'  => 21,
+            ],            
+            [
+                'class'         => 'LeverageAPI',
+                'affiliate_id'  => 22,
+            ],
+            [
+                'class'         => 'ResultsMediaAPI',
+                'affiliate_id'  => 23,
+            ]                   
 		];
 	}
 
@@ -231,73 +248,6 @@ class AffiliatesapiController extends \yii\web\Controller
     }
 
 
-    public function actionPocketmedia( )
-    {
-        set_error_handler( array( $this, 'handleErrors' ), E_ALL );
-        set_time_limit(0);
-
-        $this->_changes = '';
-        $this->_alerts  = '';
-        $this->_redis   = new \Predis\Client( \Yii::$app->params['predisConString'] );
-
-        $this->_runAPI(
-            [
-                'class'         => 'PocketMediaAPI',
-                'affiliate_id'  => 4,
-            ]              
-        );
-
-
-        echo '
-            <html>
-                <head>
-                    <style>
-                        td {
-                            padding:10px;
-                            border:1px solid;
-                        }
-                        table{
-                            border:1px solid;
-                            border-collapse:collapse;
-                        }
-                    </style>
-                </head>
-                <body>
-                    <h1>Errors</h1>
-                    <table>
-                        <thead>
-                            <td>API</td>
-                            <td>HTTP STATUS</td>                                
-                            <td>MESSAGE</td>
-                            <td>PARAMS</td>
-                        </thead>
-                        <tbody>'.$this->_sendAlerts().'</tbody>
-                    </table>   
-                    <br>
-                    <hr>
-                    <h1>Notifications</h1>
-                    <table>
-                        <thead>
-                            <td>API</td>
-                            <td>CAMPAIGN ID</td>
-                            <td>EXT ID</td>
-                            <td>PAYOUT</td>
-                            <td>COUNTRY</td>
-                            <td>CARRIER</td>
-                            <td>CONNECTION</td>
-                            <td>DEVICE</td>
-                            <td>OS</td>
-                            <td>OS VERSION</td>
-                            <td>STATUS</td>
-                            <td>AFFECTED CLUSTERS</td>
-                        </thead>
-                        <tbody>'.$this->_sendNotifications().'</tbody>
-                    </table>                    
-                </body>
-            </html>         
-        ';        
-    }
-
     public function handleErrors ( $code, $message, $file, $line )
     {
         $message = json_encode([
@@ -387,6 +337,27 @@ class AffiliatesapiController extends \yii\web\Controller
                         if ( $rate )
                             $campaign->payout = (float)$campaignData['payout']/$rate;
                     }
+
+                    // change status if affiliate's cap is 0
+                    if ( 
+                        isset($campaignData['daily_cap']) 
+                        && $campaignData['daily_cap'] == 0
+                    )
+                    {
+                        $campaignData['status'] = 'cap_reached';
+                        $campaign->status       = 'cap_reached';
+                    }
+
+                    if ( isset($campaignData['daily_cap']) && $campaignData['daily_cap']>=0 )
+                    {
+                        $campaign->aff_daily_cap   = (float)$campaignData['daily_cap'];
+                    }
+                    else
+                    {
+                        $campaignData['daily_cap'] = null;
+                        $campaign->aff_daily_cap   = null;
+                    }
+
 
                     $campaign->landing_url     = $campaignData['landing_url'];
 
@@ -585,7 +556,7 @@ class AffiliatesapiController extends \yii\web\Controller
                     && !in_array( strtolower($cluster->os_version), array_map('strtolower',$apiData['os_version'] ) ) 
                 )
                 {
-                    continue;
+                    //continue;
                 }
 
                 // if carrier is not open in cluster or campaign and cluster's is not included between campaign's then skip autoasign
@@ -641,7 +612,7 @@ class AffiliatesapiController extends \yii\web\Controller
                     'placeholders' => $affiliate->placeholders,
                     'macros'       => $affiliate->macros,
                     'ext_id'       => $campaign->ext_id
-                ]);           
+                ]);
 
                 $packageIds = $apiData['package_id'] ? $apiData['package_id'] : []; 
 
@@ -651,7 +622,16 @@ class AffiliatesapiController extends \yii\web\Controller
                         'clusterlist:'.$chc->Clusters_id, 
                         $chc->delivery_freq,
                         $campaign->id.':'.$campaign->affiliates->id.':'.$packageId
-                    );                 
+                    );                                  
+                }
+
+                if ( is_int($apiData['daily_cap']) && (int)$apiData['daily_cap']>=0 )
+                {
+                    $this->_redis->zadd( 
+                        'clustercaps:'.$chc->Clusters_id, 
+                        $apiData['daily_cap'],
+                        $campaign->id
+                    );
                 }
             break;
         }
@@ -673,6 +653,7 @@ class AffiliatesapiController extends \yii\web\Controller
                     case 'no_url':
                     case 'no_appid':
                     case 'no_payout':
+                    case 'cap_reached':
                         $this->_removeCampaignFromClusterList( $chc, $campaign );
 
                         // remove campaign data
@@ -680,6 +661,8 @@ class AffiliatesapiController extends \yii\web\Controller
                     break;
                     case 'active':
                         $this->_updateClusterListOnPackageDiff( $chc, $campaign, $apiData );
+
+                        $this->_updateDailyCapInRedis( $chc, $campaign, $apiData );
 
                         // update campaign data
                         $this->_redis->hmset( 'campaign:'.$campaign->id, [
@@ -697,6 +680,7 @@ class AffiliatesapiController extends \yii\web\Controller
             case 'no_url':
             case 'no_appid':
             case 'no_payout':
+            case 'cap_reached':
                 switch ( $apiData['status'] )
                 {
                     case 'active':
@@ -717,7 +701,35 @@ class AffiliatesapiController extends \yii\web\Controller
     }
 
 
-
+    private function _updateDailyCapInRedis ( $chcs, $campaign, $apiData )
+    {
+        if ( 
+            $campaign->aff_daily_cap != (int)$apiData['daily_cap'] 
+        )
+        {            
+            foreach ( $chcs as $chc )
+            {
+                if ( 
+                    isset($apiData['daily_cap'])
+                    && (int)$apiData['daily_cap']>=0 
+                )
+                {                    
+                    $this->_redis->zadd( 
+                        'clustercaps:'.$chc->Clusters_id, 
+                        $apiData['daily_cap'],
+                        $campaign->id
+                    );
+                }            
+                else if ( !isset($campaign->daily_cap) )
+                {
+                    $this->_redis->zrem( 
+                        'clustercaps:'.$chc->Clusters_id, 
+                        $campaign->id
+                    );
+                }                
+            }
+        }        
+    }
 
     private function _updateClusterListOnPackageDiff ( $chcs, $campaign, $apiData )
     {
@@ -729,14 +741,14 @@ class AffiliatesapiController extends \yii\web\Controller
         // check if package id difference exists between versions
         if ( !empty($result['add']) || !empty($result['rem']) )
         {
-            foreach ( $chcs as $assign )
+            foreach ( $chcs as $chc )
             {
                 // add new packages not present in the old version
                 foreach ( $result['add'] as $packageId )
                 {
                     $this->_redis->zadd( 
-                        'clusterlist:'.$assign['Clusters_id'], 
-                        $assign['delivery_freq'],
+                        'clusterlist:'.$chc['Clusters_id'], 
+                        $chc['delivery_freq'],
                         $campaign->id.':'.$campaign->affiliates->id.':'.$packageId
                     );  
                 }
@@ -745,7 +757,7 @@ class AffiliatesapiController extends \yii\web\Controller
                 foreach ( $result['rem'] as $packageId )
                 {
                     $this->_redis->zrem( 
-                        'clusterlist:'.$assign['Clusters_id'], 
+                        'clusterlist:'.$chc['Clusters_id'], 
                         $campaign->id.":".$campaign->affiliates->id.':'.$packageId
                     );  
                 }                                                              
@@ -754,18 +766,23 @@ class AffiliatesapiController extends \yii\web\Controller
     }
 
 
-    private function _removeCampaignFromClusterList ( $chc, $campaign )
+    private function _removeCampaignFromClusterList ( $chcs, $campaign )
     {
         $oldPackageIds = $campaign->app_id ? json_decode($campaign->app_id, true) : [];
 
-        foreach ( $chc as $assign )
+        foreach ( $chcs as $chc )
         {
+            $this->_redis->zrem( 
+                'clustercaps:'.$chc['Clusters_id'], 
+                $campaign->id
+            );   
+
             foreach ( $oldPackageIds as $os => $packageId )
             {
                 if ( $packageId )
                 {
                     $this->_redis->zrem( 
-                        'clusterlist:'.$assign['Clusters_id'], 
+                        'clusterlist:'.$chc['Clusters_id'], 
                        $campaign->id.":".$campaign->affiliates->id.':'.$packageId
                     );                           
                 }                    
@@ -774,17 +791,26 @@ class AffiliatesapiController extends \yii\web\Controller
     }
 
 
-    public function _addCampaignToClusterList ( $chc, $campaign, $apiData  )
+    public function _addCampaignToClusterList ( $chcs, $campaign, $apiData  )
     {
         $packageIds = $apiData['package_id'] ? $apiData['package_id'] : []; 
 
-        foreach ( $chc as $assign )
+        foreach ( $chcs as $chc )
         {
+            if ( $apiData['daily_cap'] && (int)$apiData['daily_cap']>=0 )
+            {
+                $this->_redis->zadd( 
+                    'clustercaps:'.$chc['Clusters_id'], 
+                    $apiData['daily_cap'],
+                    $campaign->id
+                );                                      
+            }
+
             foreach ( $packageIds as $packageId )
             {
                 $this->_redis->zadd( 
-                    'clusterlist:'.$assign['Clusters_id'], 
-                    $assign['delivery_freq'],
+                    'clusterlist:'.$chc['Clusters_id'], 
+                    $chc['delivery_freq'],
                     $campaign->id.':'.$campaign->affiliates->id.':'.$packageId
                 );                 
             }
