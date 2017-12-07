@@ -198,3 +198,8 @@ td.paused {
     white-space: normal; 
     word-wrap: break-word;
 }
+
+.ext_id_column {
+    width: 60px;
+    overflow: auto;
+}
