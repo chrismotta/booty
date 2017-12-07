@@ -44,7 +44,7 @@ class CampaignsSearch extends Campaigns
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
-            'sort' => ['attributes' => [ 'country', 'os', 'affiliate' ]]            
+            'sort' => ['attributes' => [ 'country', 'os', 'affiliate', 'available' ]]            
         ]);
 
         $query->select([
@@ -84,7 +84,7 @@ class CampaignsSearch extends Campaigns
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
-            'sort' => ['attributes' => [ 'name', 'affiliate' ]]            
+            'sort' => ['attributes' => [ 'name', 'affiliate', 'available' ]]            
         ]);
 
         $query->select([
