@@ -153,11 +153,17 @@
 							$id = $campaign->id . ':'.$country[0];
 
 
+						if ( $campaign->cap && $campaign->cap>0 )
+							$cap = $campaign->cap;
+						else
+							$cap = null; 
+
 						$result[] = [	
 							'ext_id' 			=> $id,
 							'name'				=> $campaign->title,
 							'desc'				=> preg_replace('/[\xF0-\xF7].../s', '', $campaign->description), 
 							'payout' 			=> $payment->revenue,
+							'daily_cap'			=> $cap,
 							'landing_url'		=> $campaign->link,
 							'country'			=> $country,
 							'device_type'		=> $deviceTypes,
