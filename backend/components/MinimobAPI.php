@@ -128,11 +128,18 @@
 					}
 				}
 
+				if ( $campaign->dailyConversionCap && $campaign->dailyConversionCap>0 )
+					$cap = $campaign->dailyConversionCap;
+				else
+					$cap = null; 
+
 				$result[] = [
 					'ext_id' 			=> $campaign->id,
 					'name'				=> $campaign->name,
 					'desc'				=> preg_replace('/[\xF0-\xF7].../s', '', $campaign->description),
 					'payout' 			=> $campaign->payout,
+					'currency'			=> $campaign->payoutCurrency,
+					'daily_cap'			=> $cap,
 					'landing_url'		=> $campaign->objectiveUrl,
 					'country'			=> empty($country) ? null : $country,
 					'device_type'		=> null,
@@ -142,7 +149,6 @@
 					'os_version'		=> null, 
 					'package_id'		=> empty($packageIds) ? null : $packageIds,
 					'status'			=> $status,
-					'currency'			=> $campaign->payoutCurrency
 				];
 
 				unset( $campaign );
