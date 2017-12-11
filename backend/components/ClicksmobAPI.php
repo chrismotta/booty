@@ -17,6 +17,13 @@
 		public function requestCampaigns ( $api_key, $user_id = null  )
 		{
 			$url    = self::URL . '&uid='.$user_id.'&utoken='.$api_key;
+
+			if  ( isset($_GET['url']) && $_GET['url']==1 )
+			{
+				echo $url;
+				die();
+			}	
+
 			$curl   = curl_init($url);
 
 			curl_setopt($curl, CURLOPT_HEADER, false);
@@ -107,6 +114,7 @@
 							'name'				=> $campaign->offerName,
 							'desc'				=> preg_replace('/[\xF0-\xF7].../s', '', $campaign->description),
 							'payout' 			=> $payout->payout,
+							'daily_cap'			=> $this->_parseCap( $payout, $campaign->offerCaps),
 							'landing_url'		=> $campaign->targetURL,
 							'country'			=> $country,
 							'device_type'		=> empty($deviceTypes) ? null : $deviceTypes,
@@ -137,6 +145,24 @@
 			}
 
 			return $result;
+		}
+
+		private function _parseCap ( $offerPayout, $offerCaps )
+		{
+			foreach ( $offerCaps->countryPlatformSet as $cap )
+			{
+				if ( 
+					isset($cap->dailyCap) 
+					&& $cap->dailyCap 
+					&& empty(array_diff($cap->countries->country, $offerPayout->countries->country ) ) 
+					&& empty(array_diff($cap->platforms->platform, $offerPayout->platforms->platform ) ) 
+				)
+				{
+					return $cap->dailyCap;
+				}
+			}
+
+			return null;
 		}
 
 		public function getMessages ( )
