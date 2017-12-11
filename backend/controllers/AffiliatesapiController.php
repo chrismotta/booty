@@ -128,7 +128,11 @@ class AffiliatesapiController extends \yii\web\Controller
             [
                 'class'         => 'AdperioAPI',
                 'affiliate_id'  => 24,
-            ]                                
+            ],
+            [
+                'class'         => 'SabiaMediaAPI',
+                'affiliate_id'  => 25,
+            ]                                            
 		];
 	}
 
