@@ -154,7 +154,7 @@ class ReportingController extends Controller
         if ( $test==1 )
             $to = 'dev@splad.co,apastor@splad.co';
         else
-            $to = 'dev@splad.co,apastor@splad.co,mghio@splad.co,tgonzalez@splad.co';
+            $to = 'dev@splad.co,apastor@splad.co,mghio@splad.co,tgonzalez@splad.co,martin@themedialab.co';
 
         $this->_sendMail( 
             'Splad - Automatic Report<no-reply@spladx.co>', 
