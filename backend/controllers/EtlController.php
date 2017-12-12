@@ -247,8 +247,8 @@ class EtlController extends \yii\web\Controller
 
         $convs  = $this->_redis->zrange( 
             'convs', 
-            $start_at, 
-            $end_at, 
+            0, 
+            $this->_objectLimit, 
             [
                 'WITHSCORES' => true
             ]            
