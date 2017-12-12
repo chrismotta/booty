@@ -17,13 +17,13 @@
 		{
 
 			$url    = 'https://'.$user_id.':'.$api_key.'@'.self::URL;
-			$curl   = curl_init($url);
+			$curl   = curl_init();
 
 			curl_setopt($curl, CURLOPT_HEADER, false);
 			curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+			curl_setopt($curl, CURLOPT_URL, $url );
 
 			$json_response = curl_exec($curl);
-
 			$response = json_decode($json_response);
 
 			$this->_status = curl_getinfo( $curl, CURLINFO_HTTP_CODE );
@@ -41,72 +41,95 @@
 				$this->_msg = 'Response without body';
 				return false;
 			}
-			else if ( !isset($response->data->items) )
+			else if ( !isset($response->data->items[0]->Id) )
 			{
-				$this->_msg = 'No campaign data in response';
-				return false;				
+				$this->_msg = 'No campaign data in response';				
+				return false;
+			}
+			else
+			{
+				$next = true;
 			}
 
 			$result = [];
-		
-			foreach ( $response->data->items AS $campaign )
+
+			while ( $next )
 			{
-				if ( !isset( $campaign->ProductURL ) )
-					continue;
-
-				$countries = [];
-
-				if ( $campaign->GeoProvisioning )
+				foreach ( $response->data->items AS $campaign )
 				{
-					$countryCode = $this->getCountryCode($campaign->GeoProvisioning);
+					if ( !isset( $campaign->ProductURL ) )
+						continue;
 
-					if ( $countryCode )
-						$countries[] = $countryCode;
-				}		
+					$countries = [];
 
-				$oss		 = ApiHelper::getOs($campaign->PlatformProvisioning, false);
-				$deviceTypes = ApiHelper::getDeviceTypes($campaign->PlatformProvisioning, false);				
+					if ( $campaign->GeoProvisioning )
+					{
+						$countryCode = $this->getCountryCode($campaign->GeoProvisioning);
 
-				switch ( strtolower($campaign->Status) )
-				{
-					case 'active':
-						$status = 'active';
-					break;
-					default:
-						$status = 'aff_paused';
-					break;
+						if ( $countryCode )
+							$countries[] = $countryCode;
+					}		
+
+					$oss		 = ApiHelper::getOs($campaign->PlatformProvisioning, false);
+					$deviceTypes = ApiHelper::getDeviceTypes($campaign->PlatformProvisioning, false);				
+
+					switch ( strtolower($campaign->Status) )
+					{
+						case 'active':
+							$status = 'active';
+						break;
+						default:
+							$status = 'aff_paused';
+						break;
+					}
+
+					if ( $campaign->PreviewURL )
+					{
+						$packageIds = ApiHelper::getAppIdFromUrl( $campaign->PreviewURL );	
+					}
+					else
+					{
+						$packageIds = [];
+					}						
+
+					$result[] = [
+						'ext_id' 			=> $campaign->Id,
+						'name'				=> $campaign->Name,
+						'desc'				=> null,
+						'payout' 			=> $campaign->DefaultPrice,
+						'landing_url'		=> $campaign->ProductURL,
+						'country'			=> $countries,
+						'device_type'		=> $deviceTypes,
+						'connection_type'	=> null,
+						'carrier'			=> null,
+						'os'				=> $oss,
+						'os_version'		=> null,
+						'package_id'		=> empty($packageIds) ? null : $packageIds,
+						'status'			=> $status,
+						'currency'			=> 'USD'
+					];
+
+					unset( $countries );
+					unset( $deviceTypes);
+					unset( $oss );
+					unset( $packageIds );					
 				}
 
-				if ( $campaign->PreviewURL )
+				if ( isset($resoponse->data->links->next) && $resoponse->data->links->next )
 				{
-					$packageIds = ApiHelper::getAppIdFromUrl( $campaign->PreviewURL );	
+					curl_setopt($curl, CURLOPT_URL, $resoponse->data->links->next );
+					$json_response = curl_exec($curl);
+					$response = json_decode($json_response);
+
+					if ( $response && isset($response->data->items[0]->Id) )
+						$next = true;
+					else
+						$next = false;									
 				}
 				else
 				{
-					$packageIds = [];
-				}						
-
-				$result[] = [
-					'ext_id' 			=> $campaign->Id,
-					'name'				=> $campaign->Name,
-					'desc'				=> null,
-					'payout' 			=> $campaign->DefaultPrice,
-					'landing_url'		=> $campaign->ProductURL,
-					'country'			=> $countries,
-					'device_type'		=> $deviceTypes,
-					'connection_type'	=> null,
-					'carrier'			=> null,
-					'os'				=> $oss,
-					'os_version'		=> null,
-					'package_id'		=> empty($packageIds) ? null : $packageIds,
-					'status'			=> $status,
-					'currency'			=> 'USD'
-				];
-
-				unset( $countries );
-				unset( $deviceTypes);
-				unset( $oss );
-				unset( $packageIds );					
+					$next = false;
+				}
 			}
 
 			if  ( isset($_GET['test']) && $_GET['test']==1 )

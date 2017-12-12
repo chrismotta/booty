@@ -315,6 +315,8 @@ class ClustersController extends Controller
                             );                 
                         }
 
+                        $cache->zadd( 'clusterimps:'.$id, 0, $campaign->id );
+
                         $return[] = $campaignID.': assignation ok';
 
                     }else{
@@ -382,13 +384,15 @@ class ClustersController extends Controller
                         foreach ( $packageIds as $packageId )
                         {
                             $cache->zrem( 'clusterlist:'.$id, $campaign->id.':'.$campaign->affiliates->id.':'.$packageId );
-                        }
-
-                        $cache->zrem( 
-                            'clustercaps:'.$id, 
-                            $campaign->id
-                        );                          
+                        }                         
                     }
+
+                    $cache->zrem( 
+                        'clustercaps:'.$id, 
+                        $campaign->id
+                    );                     
+
+                    $cache->zrem( 'clusterimps:'.$id, $campaign->id );                    
 
                     $return[] = $campaignID.': unassign ok';
 
@@ -450,6 +454,9 @@ class ClustersController extends Controller
             return 'error:2';
 
         $chc->delivery_freq = $delivery_freq;
+        $chc->prev_freq     = null;
+        $chc->autostopped   = false;
+        
         if($chc->save())
             return 'ok';
         else

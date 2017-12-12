@@ -17,26 +17,26 @@
 		public function requestCampaigns ( $api_key, $user_id = null  )
 		{
 			// ONLY FOR TESTING
-			/*
 			$result[] = [
 				'ext_id' 			=> 'test_mobo_id',
-				'name'				=> 'test_mobo',
+				'name'				=> 'test_mobo 2',
 				'desc'				=> 'bla bla', 
 				'payout' 			=> 1,
 				'landing_url'		=> 'http://google.com',
-				'country'			=> ['US'],
-				'device_type'		=> ['tablet'],
-				'connection_type'	=> ['WiFi'],
-				'carrier'			=> null,
+				'country'			=> ['AR'],
+				'device_type'		=> ['Desktop'],
+				'connection_type'	=> ['Carrier'],
+				'carrier'			=> ['Movistar'],
 				'os'				=> ['iOS'],
-				'os_version'		=> null,
+				'os_version'		=> ['10.1'],
 				'package_id'		=> ['ios'=>"4444444"],
 				'status'			=> 'active',
-				'currency'			=> 'USD'
+				'currency'			=> 'USD',
+				'daily_cap'			=> 10
 			];
 
 			return $result;
-			*/
+
 		
 			$url    = self::URL . '&apiKey='.$api_key;
 			$curl   = curl_init($url);
@@ -158,6 +158,8 @@
 					'name'				=> $campaign->name,
 					'desc'				=> preg_replace('/[\xF0-\xF7].../s', '', $campaign->description), 
 					'payout' 			=> $campaign->payout,
+					'currency'			=> 'USD',
+					'cap'				=> $campaign->cap,
 					'landing_url'		=> $campaign->tracking_url,
 					'country'			=> $country,
 					'device_type'		=> $deviceTypes,
@@ -167,7 +169,6 @@
 					'os_version'		=> null,
 					'package_id'		=> empty($packageIds) ? null : $packageIds,
 					'status'			=> $status,
-					'currency'			=> 'USD'
 				];
 
 				unset ( $campaign );

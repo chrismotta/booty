@@ -170,11 +170,25 @@
 					}
 				}
 
+				$cap = null;
+
+				if ( isset($campaign->capping->capping_timeframe) )
+				{
+					switch ( strtolower($campaign->capping->capping_timeframe) )
+					{
+						case 'day':
+							$cap = $campaign->capping->cap_amount;
+						break;
+					}
+				}
+
 				$result[] = [
 					'ext_id' 			=> $campaign->attributes->id,
 					'name'				=> $campaign->attributes->title,
 					'desc'				=> preg_replace('/[\xF0-\xF7].../s', '', $campaign->attributes->description),
 					'payout' 			=> $campaign->attributes->rate,
+					'currency'			=> $campaign->attributes->currency,
+					'daily_cap'			=> $cap,
 					'landing_url'		=> $campaign->attributes->tracking_url,
 					'country'			=> empty($country) ? null : $country,
 					'device_type'		=> empty( $deviceTypes ) ? null : $deviceTypes,
@@ -184,7 +198,6 @@
 					'os_version'		=> empty( $osVersion ) ? null : $osVersion,
 					'package_id'		=> empty($packageIds) ? null : $packageIds,
 					'status'			=> $status,
-					'currency'			=> $campaign->attributes->currency
 				];
 
 				unset( $campaign );

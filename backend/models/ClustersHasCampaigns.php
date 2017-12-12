@@ -32,7 +32,8 @@ class ClustersHasCampaigns extends \yii\db\ActiveRecord
         return [
             [['Clusters_id', 'Campaigns_id'], 'required'],
             [['Clusters_id', 'Campaigns_id'], 'integer'],
-            [['Clusters_id', 'Campaigns_id', 'delivery_freq'], 'integer'],
+            [['Clusters_id', 'Campaigns_id', 'delivery_freq', 'prev_freq'], 'integer'],
+            [['autostopped'], 'boolean'],
             [['Campaigns_id'], 'exist', 'skipOnError' => true, 'targetClass' => Campaigns::className(), 'targetAttribute' => ['Campaigns_id' => 'id']],
             [['Clusters_id'], 'exist', 'skipOnError' => true, 'targetClass' => Clusters::className(), 'targetAttribute' => ['Clusters_id' => 'id']],
         ];
@@ -47,6 +48,8 @@ class ClustersHasCampaigns extends \yii\db\ActiveRecord
             'Clusters_id' => 'Clusters ID',
             'Campaigns_id' => 'Campaigns ID',
             'delivery_freq' => 'Delivery Frequency', 
+            'prev_freq'     => 'Previous Frequency',
+            'autostopped'   => 'Autostopped'
         ];
     }
 

@@ -110,6 +110,8 @@
 					'name'				=> $campaign->name,
 					'desc'				=> preg_replace('/[\xF0-\xF7].../s', '', $campaign->description), //extract utf8mb4 characters
 					'payout' 			=> $campaign->payout_amount,
+					'currency'			=> 'USD',
+					//'daily_cap'			=> $campaign->daily_remaining_leads,
 					'landing_url'		=> $campaign->click_url,
 					'country'			=> $country,
 					'device_type'		=> null,
@@ -119,7 +121,6 @@
 					'os_version'		=> $os_version,
 					'package_id'		=> empty($packageIds) ? null : $packageIds,
 					'status'			=> 'active',
-					'currency'			=> 'USD',
 					'creative_320x50'	=> $creatives['320x50'],
 				];
 

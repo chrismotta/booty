@@ -121,6 +121,11 @@
 	 					$connTypes[] = 'WiFi';
 	 				}
 
+	 				if ( isset($data->capValue->daily) )
+	 					$cap = $data->capValue->daily;
+	 				else
+	 					$cap = null;
+
 	 				$ext_id = $campaign->id.':'.$code;
 
 	 				if ( $code=='UK' )
@@ -131,7 +136,9 @@
 						'name'				=> $campaign->title, 
 						'desc'				=> preg_replace('/[\xF0-\xF7].../s', '', $campaign->description),
 						'payout' 			=> isset( $data ) ? (float)$data->payout : null, 
-						'landing_url'		=> $data->url, 
+						'currency'			=> $data->payoutCurrency,
+						'landing_url'		=> $data->url,
+						'daily_cap'			=> $cap, 
 						'country'			=> isset( $code ) ? [ $code ] : null,
 						'device_type'		=> empty($devices) ? null : $devices,
 						'connection_type'	=> empty($connTypes) ? null : $connTypes, 
@@ -140,7 +147,7 @@
 						'os_version'		=> empty($v) ? null : $v, 
 						'package_id'		=> empty($p) ? null : $p,
 						'status'			=> $status, 
-						'currency'			=> $data->payoutCurrency
+
 					];	 				
 
 					unset ( $carriers );

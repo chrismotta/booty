@@ -15,7 +15,9 @@ class EtlController extends \yii\web\Controller
 {
     const ALERT_FROM         = 'Splad - ETL Controller<no-reply@spladx.co>';
     const ALERT_TO           = 'dev@splad.co,apastor@splad.co';
-    const CLUSTER_TRUST_IMPS = 10000;
+    
+    const NO_CONV_LIMIT      = 20000; // imps
+    const CONV_WAIT_TIME     = 2; // days
 
 	private $_redis;
 	private $_objectLimit;
@@ -29,7 +31,6 @@ class EtlController extends \yii\web\Controller
     private $_noalerts;
     private $_db;
     private $_test;
-    private $_fixloaded;
     private $_skipcheck;
 
     private $_count;
@@ -57,8 +58,7 @@ class EtlController extends \yii\web\Controller
 
         $this->_showsql       = isset( $_GET['showsql'] ) && $_GET['showsql'] ? true : false;
         $this->_noalerts      = isset( $_GET['noalerts'] ) && $_GET['noalerts'] ? true : false;
-        $this->_sqltest       = isset( $_GET['sqltest'] ) && $_GET['sqltest'] ? true : false;
-        $this->_fixloaded     = isset( $_GET['fixloaded'] ) && $_GET['fixloaded'] ? true : false;       
+        $this->_sqltest       = isset( $_GET['sqltest'] ) && $_GET['sqltest'] ? true : false;     
         $this->_skipcheck     = isset( $_GET['skipcheck'] ) && $_GET['skipcheck'] ? true : false;
 
         $this->_timestamp     = time();
@@ -138,7 +138,7 @@ class EtlController extends \yii\web\Controller
 
         try
         {
-            $this->actionCheckclusterconvs();
+            //$this->actionCheckclusterconvs();
         } 
         catch (Exception $e) {
             $msg .= "ETL CHECK CLUSTER CONVERSIONS ERROR: ".$e->getCode().'<hr>';
@@ -181,7 +181,7 @@ class EtlController extends \yii\web\Controller
 
         try
         {
-            $this->actionPopulatefilters();
+            //$this->actionPopulatefilters();
         } 
         catch (Exception $e) {
             $msg .= "ETL FILTERS POPULATE ERROR: ".$e->getCode().'<hr>';
@@ -245,13 +245,18 @@ class EtlController extends \yii\web\Controller
 		$params 	= [];
 		$paramCount = 0;
 
-		$convIDs 	= $this->_redis->zrange( 'convs', $start_at, $end_at );
+		$convs 	= $this->_redis->zrange( 
+            'convs', 
+            $start_at, 
+            $end_at, 
+            [
+                'WITHSCORES' => true
+            ]            
+        );
 
 		// ad each conversion to SQL query
-		foreach ( $convIDs as $clickID )
+		foreach ( $convs as $clickID => $convTime )
 		{
-			$convTime    	= $this->_redis->get( 'conv:'.$clickID );
-
 			$param 			= ':i'.$paramCount;
 			$params[$param] = $clickID;
 			$cost 			= 0;
@@ -278,16 +283,93 @@ class EtlController extends \yii\web\Controller
 		if ( $sql != '' )
         {
 			$return = \Yii::$app->db->createCommand( $sql )->bindValues( $params )->execute();
-
-            /*
-            foreach ( $convIDs AS $clickID )
+            $inTimeConvs = [];
+            
+            // verify which conversions arrived in time            
+            foreach ( $convs AS $clickID => $convTime )
             {
-                $this->_redis->zadd( 'loadedconvs', $this->_timestamp, $clickID );
-                $this->_redis->zrem( 'convs', $clickID );
-            }
-            */
+                if ( $this->_timestamp-$convTime <= self::CONV_WAIT_TIME*60*60*24 )
+                    $inTimeConvs[] = "'".$clickID."'";
+            }   
 
-            return $return;
+            // re-enable autostopped cluster assignments for campaigns which conversion/s arrived in time
+            if ( !empty($inTimeConvs) )
+            {
+                $sql = '
+                    SELECT
+                        c.D_Campaign_id AS campaign_id,                      
+                        cl.cluster_id AS cluster_id
+                    FROM F_CampaignLogs c 
+                    LEFT JOIN F_ClusterLogs cl ON cl.session_hash=c.session_hash 
+                    WHERE 
+                        c.conv_time >= date(NOW() - INTERVAL '.self::CONV_WAIT_TIME.' DAY) 
+                        AND c.click_id IN ('.implode($inTimeConvs).') 
+                    GROUP BY c.D_Campaign_id, cl.cluster_id;
+                ';
+
+                $chcs = \Yii::$app->db->createCommand( $sql )->queryAll();
+
+                if ( !empty($chcs) )
+                {
+                    $this->_redis->select(0);
+
+                    foreach ( $chcs as $chc )
+                    {
+                        $this->_redis->zadd( 'clusterimps:'.$chc['cluster_id'], 0, $chc['campaign_id'] );                         
+
+                        $chci = models\ClustersHasCampaigns::findOne([
+                            'Campaigns_id' => $chc['campaign_id'], 
+                            'Clusters_id' => $chc['cluster_id'] 
+                        ]);
+
+                        if ( $chci && $chci->autostopped )
+                        {
+                            $chci->delivery_freq = $chci->prev_freq;                      
+                            $chci->autostopped   = false;
+
+                            if ( $chci->save() )
+                            {
+                                models\CampaignsChangelog::log( $chc['campaign_id'], 'autostop_off', null, $chc['cluster_id'] );
+
+                                if ( $chci->campaigns->app_id )
+                                {
+                                    $packageIds = json_decode($chci->campaigns->app_id);
+
+                                    foreach ( $packageIds as $packageId )
+                                    {
+                                        $this->_redis->zadd( 
+                                            'clusterlist:'.$chc['cluster_id'], 
+                                            $chci->delivery_freq, 
+                                            $chc['campaign_id'].':'.$chci->campaigns->affiliates->id.':'.$packageId
+                                        );
+                                    }
+                                }                               
+                            }
+                        }
+
+                        unset( $chci );
+                    }
+
+                    switch ( $this->_db )
+                    {
+                        case 'yesterday':
+                            $this->_redis->select( $this->_getYesterdayConvDatabase() );
+                        break;
+                        case 'current':
+                            $this->_redis->select( $this->_getCurrentConvDatabase() );
+                        break;
+                    }    
+                }                            
+            }
+
+
+            foreach ( $convs AS $clickID => $convTime )
+            {
+                //$this->_redis->zadd( 'loadedconvs', $this->_timestamp, $clickID );
+                //$this->_redis->zrem( 'convs', $clickID );                
+            }
+
+            return count($convs);
         }
 
         return 0;
@@ -299,6 +381,34 @@ class EtlController extends \yii\web\Controller
     	$this->_campaignLogs();
     	$this->_clusterLogs();
     }
+
+
+    private function _selectTrafficDb ()
+    {
+        switch ( $this->_db )
+        {
+            case 'yesterday':
+                $this->_redis->select( $this->_getYesterdayDatabase() );
+            break;
+            case 'current':
+                $this->_redis->select( $this->_getCurrentDatabase() );
+            break;
+        }         
+    }
+
+
+    private function _selectConvDb ()
+    {
+        switch ( $this->_db )
+        {
+            case 'yesterday':
+                $this->_redis->select( $this->_getYesterdayConvDatabase() );
+            break;
+            case 'current':
+                $this->_redis->select( $this->_getCurrentConvDatabase() );
+            break;
+        }         
+    }    
 
 
     private function _campaignLogs ( )
@@ -380,8 +490,6 @@ class EtlController extends \yii\web\Controller
     		{
 	    		$sql .= $values . ' ON DUPLICATE KEY UPDATE click_time=VALUES(click_time);';
 
-	    		// save on elastic search
-	    		// $this->_elasticSearch->bulk($params);
                 if ( $this->_showsql || $this->_sqltest )
                     echo '<br><br>SQL: '.$sql. '<br><br>';
 
@@ -1162,85 +1270,48 @@ class EtlController extends \yii\web\Controller
     {
         $campaigns = $this->_redis->zrangebyscore( 
             'clusterimps:'.$id,  
-            10000, 
-            '+inf', 
-            [
-                'WITHSCORES' => true, 
-            ]
-        );       
+            self::NO_CONV_LIMIT, 
+            '+inf'
+        );
 
-        $disabled = 0;
-
-        foreach ( $campaigns AS $cid => $score )
+        foreach ( $campaigns AS $cid )
         {
-            if ( (int)$score >= self::CLUSTER_TRUST_IMPS )
+            $chc = models\ClustersHasCampaigns::findOne( 
+                ['Campaigns_id' => $cid, 'Clusters_id' => $id] 
+            );
+
+            if ( $chc )
             {
-                $sql = '
-                    SELECT 
-                        count(c.D_Campaign_id) AS c
-                    FROM F_CampaignLogs c
-                    LEFT JOIN F_ClusterLogs cl ON c.session_hash = cl.session_hash 
-                    WHERE 
-                        c.conv_time IS NOT NULL 
-                        AND cl.cluster_id = :id 
-                        AND c.D_Campaign_id = :cid 
-                    LIMIT 1
-                ';
+                $chc->prev_freq     = $chc->delivery_freq;
+                $chc->autostopped   = true;
+                $chc->delivery_freq = 0;
 
-                $campaign = \Yii::$app->db->createCommand( $sql )->bindValues(
-                    [
-                        ':id'   => $id,
-                        ':cid'  => $cid
-                    ]
-                )->queryOne();
-
-                if ( $campaign )
+                if ( $chc->save() )
                 {
-                    if ( $campaign['c']<1 )
+                    models\CampaignsChangelog::log( $cid, 'no_conv_limit', null, $id );
+
+                    if ( $chc->campaigns->app_id )
                     {
-                        $chc = models\ClustersHasCampaigns::findOne( 
-                            ['Campaigns_id' => $cid, 'Clusters_id' => $id] 
-                        );
+                        $packageIds = json_decode($chc->campaigns->app_id);
 
-                        if ( $chc )
+                        foreach ( $packageIds as $packageId )
                         {
-                            $disabled++;
-
-                            $chc->delivery_freq = 0;
-
-                            if ( $chc->save() )
-                            {
-                                models\CampaignsChangelog::log( $cid, 'no_conv_limit', null, $id );
-                                
-                                if ( $chc->campaigns->app_id )
-                                {
-                                    $packageIds = json_decode($chc->campaigns->app_id);
-
-                                    foreach ( $packageIds as $packageId )
-                                    {
-                                        $this->_redis->zadd( 
-                                            'clusterlist:'.$id, 
-                                            0, 
-                                            $cid.':'.$chc->campaigns->affiliates->id.':'.$packageId
-                                        );
-                                    }
-                                }
-
-                                $this->_redis->zrem( 'clusterimps:'.$id, $cid );
-                            }                
-
-                            unset ($chc);
+                            $this->_redis->zadd( 
+                                'clusterlist:'.$id, 
+                                0, 
+                                $cid.':'.$chc->campaigns->affiliates->id.':'.$packageId
+                            );
                         }
                     }
-                    else
-                    {
-                        $this->_redis->zadd( 'clustertrust:'.$id, 0, $cid );
-                    }
-                }             
+
+                    $this->_redis->zrem( 'clusterimps:'.$id, $cid );
+                }                
+
+                unset ($chc);
             }
         }
 
-        return $disabled;
+        return count($campaigns);
 
     }
 
@@ -1402,8 +1473,8 @@ class EtlController extends \yii\web\Controller
     }        
 
 
-   public function actionPopulatecampaigns ( )
-   {
+    public function actionPopulatecampaigns ( )
+    {
         $this->_redis->select( 0 );
 
         $start = time();
@@ -1427,29 +1498,24 @@ class EtlController extends \yii\web\Controller
     }
 
 
-    public function actionRepairfilters ( )
+    public function actionDailymaintenance ( )
     {
-        $filters = [
-            'carriers',
-            'countries',
-            'exchange_ids',
-            'pub_ids',
-            'subpub_ids',
-            'device_ids'
-        ];
+        $this->_db = 'yesterday';
 
-        foreach ( $filters as $filter )
+        $this->actionIndex();
+
+        if ( 
+            $this->_redis->zcard( 'loadedlogs') === 0 
+            && $this->_redis->zcard( 'loadedclicks') === 0
+        )
         {
-            $values = \Yii::$app->redis->zrange( $filter, 0, \Yii::$app->redis->zcard($filter) );
-
-            foreach ( $values as $value )
-            {
-                \Yii::$app->redis->zrem( $filter, $value );
-
-                if ( $value && $value!='NULL' && $value!='"NULL"' )
-                    \Yii::$app->redis->zadd( $filter, 0, preg_replace('(")', '', $value ) );  
-            }
-        }        
+            $this->_actionCheckclusterlogs();
+            $this->_actionCheckcampaignlogs();
+        }
+        else
+        {
+            
+        }
     }
 
 }

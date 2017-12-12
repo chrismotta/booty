@@ -98,12 +98,17 @@
 				else
 					$currency = 'USD';
 
+				if ( isset($campaign->Offer->payout_cap) && $campaign->Offer->payout_cap>0 )
+					$cap = ceil( (float)$campaign->Offer->default_payout / (float)$campaign->Offer->payout_cap );
+				else
+					$cap = null;
 
 				$result[] = [	
 					'ext_id' 			=> $ext_id,
 					'name'				=> $campaign->Offer->name,
 					'desc'				=> preg_replace('/[\xF0-\xF7].../s', '', $campaign->Offer->description),
 					'payout' 			=> $campaign->Offer->default_payout,
+					'daily_cap'			=> $cap,
 					'landing_url'		=> $campaign->TrackingLink->click_url,
 					'country'			=> empty($country) ? null : $country,
 					'device_type'		=> empty($devices) ? null : $devices,
