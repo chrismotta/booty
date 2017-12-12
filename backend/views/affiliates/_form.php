@@ -65,8 +65,7 @@ $users = User::find()->asArray()->all();
     <?= $form->field($model, 'status')->dropDownList([ 
         'active' => 'Active', 
         'paused' => 'Paused', 
-        'pending_integration' => 'Pending Integration', 
-        'pending_test' => 'Pending Test', 
+        'development' => 'Development', 
         ], ['prompt' => '']) ?>
 
     </div>
