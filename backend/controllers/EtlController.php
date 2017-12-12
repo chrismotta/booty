@@ -19,10 +19,10 @@ class EtlController extends \yii\web\Controller
     const NO_CONV_LIMIT      = 20000; // imps
     const CONV_WAIT_TIME     = 2; // days
 
-	private $_redis;
-	private $_objectLimit;
-	private $_timestamp;
-	private $_limit;
+    private $_redis;
+    private $_objectLimit;
+    private $_timestamp;
+    private $_limit;
     private $_placementSql;
     private $_showsql;
     private $_sqltest;
@@ -36,11 +36,11 @@ class EtlController extends \yii\web\Controller
     private $_count;
 
 
-	public function __construct ( $id, $module, $config = [] )
-	{
-		parent::__construct( $id, $module, $config );
+    public function __construct ( $id, $module, $config = [] )
+    {
+        parent::__construct( $id, $module, $config );
 
-    	$this->_redis = new \Predis\Client( \Yii::$app->params['predisConString'] );
+        $this->_redis = new \Predis\Client( \Yii::$app->params['predisConString'] );
 
         $this->_objectLimit = isset( $_GET['objectlimit'] ) ? $_GET['objectlimit'] : 50000;
 
@@ -68,11 +68,11 @@ class EtlController extends \yii\web\Controller
         $this->_alertSubject  = 'AD NIGMA - ETL2 ERROR ' . date( "Y-m-d H:i:s", $this->_timestamp );
 
 
-		ini_set('memory_limit','3000M');
-		set_time_limit(0);
+        ini_set('memory_limit','3000M');
+        set_time_limit(0);
 
         $this->_count = 0;
-	}
+    }
 
 
     public function actionIndex( )
@@ -138,7 +138,7 @@ class EtlController extends \yii\web\Controller
 
         try
         {
-            //$this->actionCheckclusterconvs();
+            $this->actionCheckclusterconvs();
         } 
         catch (Exception $e) {
             $msg .= "ETL CHECK CLUSTER CONVERSIONS ERROR: ".$e->getCode().'<hr>';
@@ -218,34 +218,34 @@ class EtlController extends \yii\web\Controller
             break;
         } 
 
-    	$start 		   = time();
-    	$convIDCount   = $this->_redis->zcard( 'convs' );
-    	$queries 	   = ceil( $convIDCount/$this->_objectLimit );
-    	$rows   	   = 0;
+        $start         = time();
+        $convIDCount   = $this->_redis->zcard( 'convs' );
+        $queries       = ceil( $convIDCount/$this->_objectLimit );
+        $rows          = 0;
         $start_at      = 0;
         $end_at        = $this->_objectLimit;        
 
-		// build separate sql queries based on $_objectLimit in order to control memory usage
-    	for ( $i=0; $i<=$queries; $i++ )
-    	{
-    		$rows    += $this->_buildConvQuery ( $start_at, $end_at );
+        // build separate sql queries based on $_objectLimit in order to control memory usage
+        for ( $i=0; $i<=$queries; $i++ )
+        {
+            $rows    += $this->_buildConvQuery ( $start_at, $end_at );
 
             $start_at += $this->_objectLimit-1;
             $end_at   += $this->_objectLimit;            
-    	}
+        }
 
-		$elapsed = time() - $start;
-		echo 'Conversions: '.$rows.' rows - queries: '.$queries.' - load time: '.$elapsed.' seg.<hr/>';
+        $elapsed = time() - $start;
+        echo 'Conversions: '.$rows.' rows - queries: '.$queries.' - load time: '.$elapsed.' seg.<hr/>';
     }
 
 
     private function _buildConvQuery ( $start_at, $end_at )
     {
-		$sql 		= '';
-		$params 	= [];
-		$paramCount = 0;
+        $sql        = '';
+        $params     = [];
+        $paramCount = 0;
 
-		$convs 	= $this->_redis->zrange( 
+        $convs  = $this->_redis->zrange( 
             'convs', 
             $start_at, 
             $end_at, 
@@ -254,35 +254,35 @@ class EtlController extends \yii\web\Controller
             ]            
         );
 
-		// ad each conversion to SQL query
-		foreach ( $convs as $clickID => $convTime )
-		{
-			$param 			= ':i'.$paramCount;
-			$params[$param] = $clickID;
-			$cost 			= 0;
+        // ad each conversion to SQL query
+        foreach ( $convs as $clickID => $convTime )
+        {
+            $param          = ':i'.$paramCount;
+            $params[$param] = $clickID;
+            $cost           = 0;
 
-			$sql .= '
-				UPDATE IGNORE F_CampaignLogs cpl 
+            $sql .= '
+                UPDATE IGNORE F_CampaignLogs cpl 
                     LEFT JOIN F_ClusterLogs cl ON ( cpl.session_hash = cl.session_hash ) 
-					LEFT JOIN Campaigns c ON ( cpl.D_Campaign_id = c.id ) 
-					LEFT JOIN Placements p ON ( cl.D_Placement_id = p.id ) 
-				SET 
-					cpl.conv_time="'.\date( 'Y-m-d H:i:s', $convTime ).'", 
-					cpl.revenue = c.payout, 
-					cl.cost = CASE 
-						WHEN p.model = "RS" THEN (c.payout*p.payout)/100 
+                    LEFT JOIN Campaigns c ON ( cpl.D_Campaign_id = c.id ) 
+                    LEFT JOIN Placements p ON ( cl.D_Placement_id = p.id ) 
+                SET 
+                    cpl.conv_time="'.\date( 'Y-m-d H:i:s', $convTime ).'", 
+                    cpl.revenue = c.payout, 
+                    cl.cost = CASE 
+                        WHEN p.model = "RS" THEN (c.payout*p.payout)/100 
                         ELSE cl.cost  
                     END 
-				WHERE 
-					click_id = '.$param.' 
-			;';
+                WHERE 
+                    click_id = '.$param.' 
+            ;';
 
-			$paramCount++;
-		}
+            $paramCount++;
+        }
 
-		if ( $sql != '' )
+        if ( $sql != '' )
         {
-			$return = \Yii::$app->db->createCommand( $sql )->bindValues( $params )->execute();
+            $return = \Yii::$app->db->createCommand( $sql )->bindValues( $params )->execute();
             $inTimeConvs = [];
             
             // verify which conversions arrived in time            
@@ -302,7 +302,7 @@ class EtlController extends \yii\web\Controller
                     FROM F_CampaignLogs c 
                     LEFT JOIN F_ClusterLogs cl ON cl.session_hash=c.session_hash 
                     WHERE 
-                        c.conv_time >= date(NOW() - INTERVAL '.self::CONV_WAIT_TIME.' DAY) 
+                        c.click_time >= date(c.conv_time - INTERVAL '.self::CONV_WAIT_TIME.' DAY) 
                         AND c.click_id IN ('.implode($inTimeConvs).') 
                     GROUP BY c.D_Campaign_id, cl.cluster_id;
                 ';
@@ -324,19 +324,24 @@ class EtlController extends \yii\web\Controller
 
                         if ( $chci && $chci->autostopped )
                         {
-                            $chci->delivery_freq = $chci->prev_freq;                      
-                            $chci->autostopped   = false;
+                            if ( $chci->prev_freq )
+                                $chci->delivery_freq = $chci->prev_freq;                      
+                            else
+                                $chci->delivery_freq = 2;
+
+                            $chci->prev_freq     = null;
+                            $chci->autostopped   = false;                            
 
                             if ( $chci->save() )
                             {
                                 models\CampaignsChangelog::log( $chc['campaign_id'], 'autostop_off', null, $chc['cluster_id'] );
 
                                 if ( $chci->campaigns->app_id )
-                                {
+                                {                                
                                     $packageIds = json_decode($chci->campaigns->app_id);
 
                                     foreach ( $packageIds as $packageId )
-                                    {
+                                    {                                    
                                         $this->_redis->zadd( 
                                             'clusterlist:'.$chc['cluster_id'], 
                                             $chci->delivery_freq, 
@@ -365,8 +370,8 @@ class EtlController extends \yii\web\Controller
 
             foreach ( $convs AS $clickID => $convTime )
             {
-                //$this->_redis->zadd( 'loadedconvs', $this->_timestamp, $clickID );
-                //$this->_redis->zrem( 'convs', $clickID );                
+                $this->_redis->zadd( 'loadedconvs', $this->_timestamp, $clickID );
+                $this->_redis->zrem( 'convs', $clickID );                
             }
 
             return count($convs);
@@ -378,8 +383,8 @@ class EtlController extends \yii\web\Controller
 
     public function actionImps ( )
     {
-    	$this->_campaignLogs();
-    	$this->_clusterLogs();
+        $this->_campaignLogs();
+        $this->_clusterLogs();
     }
 
 
@@ -423,46 +428,46 @@ class EtlController extends \yii\web\Controller
             break;
         }   
 
-    	$start 			= time();
-    	$clickIDCount   = $this->_redis->zcard( 'clickids' );
-    	$queries 		= ceil( $clickIDCount/$this->_objectLimit );
-    	$rows 			= 0;
+        $start          = time();
+        $clickIDCount   = $this->_redis->zcard( 'clickids' );
+        $queries        = ceil( $clickIDCount/$this->_objectLimit );
+        $rows           = 0;
 
 
-    	// build separate sql queries based on $_objectLimit in order to control memory usage
-    	for ( $i=0; $i<$queries; $i++ )
-    	{
-    		$rows += $this->_buildCampaignLogsQuery( );
+        // build separate sql queries based on $_objectLimit in order to control memory usage
+        for ( $i=0; $i<$queries; $i++ )
+        {
+            $rows += $this->_buildCampaignLogsQuery( );
 
-    	}
+        }
 
-		$elapsed = time() - $start;
-		echo 'Campaign Logs: '.$rows.' rows - queries: '.$queries.' - load time: '.$elapsed.' seg.<hr/>';
+        $elapsed = time() - $start;
+        echo 'Campaign Logs: '.$rows.' rows - queries: '.$queries.' - load time: '.$elapsed.' seg.<hr/>';
     }
 
 
     private function _buildCampaignLogsQuery (  )
     {
-    	$sql = '
-    		INSERT INTO F_CampaignLogs (
+        $sql = '
+            INSERT INTO F_CampaignLogs (
                 click_id,
-    			D_Campaign_id,
+                D_Campaign_id,
                 session_hash,
-    			click_time
-    		)
-			VALUES  
-    	';
+                click_time
+            )
+            VALUES  
+        ';
 
-    	$values = '';
+        $values = '';
         
-    	$clickIDs = $this->_redis->zrange( 'clickids', 0, $this->_objectLimit );
+        $clickIDs = $this->_redis->zrange( 'clickids', 0, $this->_objectLimit );
 
-		if ( $clickIDs )
-		{
-			// add each campaign log to sql query
-    		foreach ( $clickIDs as $clickID )
-    		{
-    			$campaignLog = $this->_redis->hgetall( 'campaignlog:'.$clickID );
+        if ( $clickIDs )
+        {
+            // add each campaign log to sql query
+            foreach ( $clickIDs as $clickID )
+            {
+                $campaignLog = $this->_redis->hgetall( 'campaignlog:'.$clickID );
 
                 if ( $campaignLog )
                 {
@@ -484,11 +489,11 @@ class EtlController extends \yii\web\Controller
                     // free memory cause there is no garbage collection until block ends
                     unset( $campaignLog );                    
                 }
-    		}
+            }
 
-    		if ( $values != '' )
-    		{
-	    		$sql .= $values . ' ON DUPLICATE KEY UPDATE click_time=VALUES(click_time);';
+            if ( $values != '' )
+            {
+                $sql .= $values . ' ON DUPLICATE KEY UPDATE click_time=VALUES(click_time);';
 
                 if ( $this->_showsql || $this->_sqltest )
                     echo '<br><br>SQL: '.$sql. '<br><br>';
@@ -510,13 +515,13 @@ class EtlController extends \yii\web\Controller
                         return count($clickIDs);
                 }
 
-                return $return;   			
-    		}
-		}
+                return $return;             
+            }
+        }
 
         unset( $clickIDs );
 
-		return 0;
+        return 0;
     }
 
 
@@ -532,67 +537,67 @@ class EtlController extends \yii\web\Controller
             break;
         }    
 
-    	$start 			     = time();
-    	$clusterLogCount     = $this->_redis->zcard( 'sessionhashes' );
-    	$queries 		     = ceil( $clusterLogCount/$this->_objectLimit );
-    	$rows   		     = 0;    
+        $start               = time();
+        $clusterLogCount     = $this->_redis->zcard( 'sessionhashes' );
+        $queries             = ceil( $clusterLogCount/$this->_objectLimit );
+        $rows                = 0;    
 
-    	// build separate sql queries based on $_objectLimit in order to control memory usage
-    	for ( $i=0; $i<$queries; $i++ )
-    	{
-    		$rows += $this->_buildClusterLogsQuery();
-    	}
+        // build separate sql queries based on $_objectLimit in order to control memory usage
+        for ( $i=0; $i<$queries; $i++ )
+        {
+            $rows += $this->_buildClusterLogsQuery();
+        }
 
-		$elapsed = time() - $start;
+        $elapsed = time() - $start;
 
-		echo 'Cluster Logs: '.$rows.' rows - queries: '.$queries.' - load time: '.$elapsed.' seg.<hr/>';
+        echo 'Cluster Logs: '.$rows.' rows - queries: '.$queries.' - load time: '.$elapsed.' seg.<hr/>';
     }
 
 
     private function _buildClusterLogsQuery ( )
     {
-    	$sql = '
-    		INSERT INTO F_ClusterLogs (
+        $sql = '
+            INSERT INTO F_ClusterLogs (
                 session_hash,
-    			D_Placement_id,
+                D_Placement_id,
                 pub_id,
                 subpub_id,
-    			cluster_id,
+                cluster_id,
                 cluster_name,
-    			imps,
+                imps,
                 clicks,
-    			imp_time,
+                imp_time,
                 imp_status,
-    			cost,
+                cost,
                 exchange_id,
-    			country,
-    			connection_type,
-    			carrier,
+                country,
+                connection_type,
+                carrier,
                 device_id,
-    			device,
-    			device_model,
-    			device_brand,
-    			os,
-    			os_version,
-    			browser,
-    			browser_version
-    		)
-			VALUES  
-    	';
+                device,
+                device_model,
+                device_brand,
+                os,
+                os_version,
+                browser,
+                browser_version
+            )
+            VALUES  
+        ';
 
-    	$values = '';    		
+        $values = '';           
 
-		$sessionHashes = $this->_redis->zrange( 'sessionhashes', 0, $this->_objectLimit );
+        $sessionHashes = $this->_redis->zrange( 'sessionhashes', 0, $this->_objectLimit );
 
-		if ( $sessionHashes )
-		{
+        if ( $sessionHashes )
+        {
             $placements          = [];
             $clusters            = [];
             $this->_placementSql = '';
 
-			// add each clusterLog to sql query
-    		foreach ( $sessionHashes as $sessionHash )
-    		{
+            // add each clusterLog to sql query
+            foreach ( $sessionHashes as $sessionHash )
+            {
                 $clusterLog = $this->_redis->hgetall( 'clusterlog:'.$sessionHash );
 
                 if ( $clusterLog )
@@ -798,11 +803,11 @@ class EtlController extends \yii\web\Controller
                     // free memory 
                     unset ( $clusterLog );
                 }
-    		}
+            }
 
-    		if ( $values != '' )
-    		{
-	    		$sql .= $values . ' ON DUPLICATE KEY UPDATE cost=VALUES(cost), imps=VALUES(imps);';
+            if ( $values != '' )
+            {
+                $sql .= $values . ' ON DUPLICATE KEY UPDATE cost=VALUES(cost), imps=VALUES(imps);';
 
                 if ( $this->_showsql || $this->_sqltest )
                     echo '<br><br>SQL: '.$sql.'<br><br>';
@@ -810,7 +815,7 @@ class EtlController extends \yii\web\Controller
                 if ( $this->_sqltest )
                     return 0;
 
-	    		$return = \Yii::$app->db->createCommand( $sql )->execute();			
+                $return = \Yii::$app->db->createCommand( $sql )->execute();         
 
                 if ( $return )
                 {
@@ -823,10 +828,10 @@ class EtlController extends \yii\web\Controller
                 }
 
                 return $return;
-    		}
-		}
+            }
+        }
 
-		return 0;
+        return 0;
     }
 
 
@@ -896,39 +901,39 @@ class EtlController extends \yii\web\Controller
 
     public function actionPlacements ( )
     {
-    	$start = time();
+        $start = time();
 
-    	$sql = '
-    		INSERT INTO D_Placement (
+        $sql = '
+            INSERT INTO D_Placement (
                 id,
-    			Publishers_id,
-    			name,
-    			Publishers_name,
-    			model,
-    			status
-    		)
-    		SELECT
+                Publishers_id,
+                name,
+                Publishers_name,
+                model,
+                status
+            )
+            SELECT
                 p.id, 
-    			pub.id,
-    			p.name,
-    			pub.name,
-    			p.model,
-    			p.status
-    		FROM Placements AS p 
-    		LEFT JOIN Publishers AS pub ON ( p.Publishers_id = pub.id ) 
-    		ON DUPLICATE KEY UPDATE
-    			Publishers_id = pub.id, 
-    			name = p.name, 
-    			Publishers_name = pub.name, 
-    			model = p.model, 
-    			status = p.status 
-    	;';
+                pub.id,
+                p.name,
+                pub.name,
+                p.model,
+                p.status
+            FROM Placements AS p 
+            LEFT JOIN Publishers AS pub ON ( p.Publishers_id = pub.id ) 
+            ON DUPLICATE KEY UPDATE
+                Publishers_id = pub.id, 
+                name = p.name, 
+                Publishers_name = pub.name, 
+                model = p.model, 
+                status = p.status 
+        ;';
 
-    	$rows = \Yii::$app->db->createCommand( $sql )->execute();
+        $rows = \Yii::$app->db->createCommand( $sql )->execute();
 
-		$elapsed = time() - $start;
+        $elapsed = time() - $start;
 
-		echo 'Placements: '.$rows.' - Elapsed time: '.$elapsed.' seg.<hr/>';
+        echo 'Placements: '.$rows.' - Elapsed time: '.$elapsed.' seg.<hr/>';
     }
 
 
@@ -1081,33 +1086,33 @@ class EtlController extends \yii\web\Controller
 
     public function actionCampaigns ( )
     {
-    	$start = time();
+        $start = time();
 
-    	$sql = '
-    		INSERT INTO D_Campaign (
+        $sql = '
+            INSERT INTO D_Campaign (
                 id,
-    			Affiliates_id,
-    			name,
-    			Affiliates_name
-    		)
-    		SELECT 
+                Affiliates_id,
+                name,
+                Affiliates_name
+            )
+            SELECT 
                 c.id,
-    			a.id,
-    			c.name,
-    			a.name
-    		FROM Campaigns AS c 
-    		LEFT JOIN Affiliates AS a ON ( c.Affiliates_id = a.id )
-    		ON DUPLICATE KEY UPDATE 
-    			Affiliates_id = a.id,
-    			name = c.name,
-    			Affiliates_name = a.name
-    	;';
+                a.id,
+                c.name,
+                a.name
+            FROM Campaigns AS c 
+            LEFT JOIN Affiliates AS a ON ( c.Affiliates_id = a.id )
+            ON DUPLICATE KEY UPDATE 
+                Affiliates_id = a.id,
+                name = c.name,
+                Affiliates_name = a.name
+        ;';
 
-    	$rows = \Yii::$app->db->createCommand( $sql )->execute();
+        $rows = \Yii::$app->db->createCommand( $sql )->execute();
 
-		$elapsed = time() - $start;
+        $elapsed = time() - $start;
 
-		echo 'Campaigns: '.$rows.' rows - Elapsed time: '.$elapsed.' seg.<hr/>';
+        echo 'Campaigns: '.$rows.' rows - Elapsed time: '.$elapsed.' seg.<hr/>';
     }
 
 

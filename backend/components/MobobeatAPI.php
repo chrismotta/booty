@@ -17,6 +17,7 @@
 		public function requestCampaigns ( $api_key, $user_id = null  )
 		{
 			// ONLY FOR TESTING
+			/*
 			$result[] = [
 				'ext_id' 			=> 'test_mobo_id',
 				'name'				=> 'test_mobo 2',
@@ -36,7 +37,7 @@
 			];
 
 			return $result;
-
+			*/
 		
 			$url    = self::URL . '&apiKey='.$api_key;
 			$curl   = curl_init($url);
