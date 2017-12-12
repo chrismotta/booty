@@ -277,8 +277,8 @@ class AffiliatesapiController extends \yii\web\Controller
             $api        = new $className;
             $affiliate  = models\Affiliates::findOne( ['id' => $rule['affiliate_id'] ] );
 
-            // if affiliate is paused, do not run
-            if ( $affiliate->status == 'paused' )
+            // if affiliate is not active nor testing, do not run
+            if ( $affiliate->status != 'active' && $affiliate->status != 'pending_test' )
                 return false;
 
             $campaignsData  = $api->requestCampaigns( $affiliate->api_key, $affiliate->user_id );
@@ -449,7 +449,7 @@ class AffiliatesapiController extends \yii\web\Controller
                     if ( $campaign->save() )
                     {
                         // autoassign campaigns to clusters
-                        if ( $affiliate->assignation_method == 'automatic' )
+                        if ( $affiliate->assignation_method == 'automatic'  )
                             $this->_autoassign( $affiliate, $campaign, $campaignData, $clusters );
                        
                         // if campaign already exists and was assigned, update redis. Otherwise, save if was auto-assigned
@@ -522,6 +522,9 @@ class AffiliatesapiController extends \yii\web\Controller
     {
         foreach  ( $clusters as $cluster )
         {
+            if ( $cluster->assignation_method!='automatic' )
+                continue;
+
             if ( $campaign->status=='active' && $campaign->payout>=$cluster['min_payout'] )
             {
                 // if country / os are open or cluster setting is not included in campaign setting, do not autoasign to this cluster
@@ -530,7 +533,7 @@ class AffiliatesapiController extends \yii\web\Controller
                     || !$cluster->os
                     || !$apiData['country'] 
                     || !$cluster->country
-                    || !in_array( strtolower($cluster->os), array_map('strtolower',$apiData['os'] ) )  
+                    || !in_array( strtolower($cluster->os), array_map('strtolower',$apiData['os'] ) ) 
                     || !in_array( strtolower($cluster->country), array_map('strtolower',$apiData['country'] ) ) 
                 )
                 {
