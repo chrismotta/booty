@@ -433,7 +433,6 @@ class ClustersController extends Controller
             'Campaigns_id' => $Campaigns_id,
         ]);
 
-        /*
         if ( $chc->campaigns->app_id && ( $delivery_freq || $delivery_freq==0 ) )
         {
             $cache = new \Predis\Client( \Yii::$app->params['predisConString'] );
@@ -441,16 +440,16 @@ class ClustersController extends Controller
             $packageIds = json_decode($chc->campaigns->app_id);
 
             $prevDeliveryFreq = $chc->delivery_freq;
-
+/*
             if ( $chc->campaigns->status=='active' )
             {
                 foreach ( $packageIds as $packageId )
                 {
                     $cache->zadd( 'clusterlist:'.$Clusters_id, $delivery_freq, $chc->campaigns->id.':'.$chc->campaigns->affiliates->id.':'.$packageId );
                 }
-            }
+            }*/
         }
-        */
+
 
         if(!isset($chc))
             return 'error:2';
