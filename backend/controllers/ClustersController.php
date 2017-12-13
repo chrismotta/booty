@@ -433,6 +433,7 @@ class ClustersController extends Controller
             'Campaigns_id' => $Campaigns_id,
         ]);
 
+        /*
         if ( $chc->campaigns->app_id && ( $delivery_freq || $delivery_freq==0 ) )
         {
             $cache = new \Predis\Client( \Yii::$app->params['predisConString'] );
@@ -449,6 +450,7 @@ class ClustersController extends Controller
                 }
             }
         }
+        */
 
         if(!isset($chc))
             return 'error:2';
