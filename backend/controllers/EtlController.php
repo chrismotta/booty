@@ -138,7 +138,7 @@ class EtlController extends \yii\web\Controller
 
         try
         {
-            $this->actionCheckclusterconvs();
+            //$this->actionCheckclusterconvs();
         } 
         catch (Exception $e) {
             $msg .= "ETL CHECK CLUSTER CONVERSIONS ERROR: ".$e->getCode().'<hr>';
