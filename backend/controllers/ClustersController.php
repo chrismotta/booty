@@ -421,8 +421,8 @@ class ClustersController extends Controller
             $Campaigns_id = isset($_POST['editableKey']) ? $_POST['editableKey'] : null;
             $delivery_freq = isset($_POST['Campaigns'][$_POST['editableIndex']]['delivery_freq']) ? $_POST['Campaigns'][$_POST['editableIndex']]['delivery_freq'] : null;
         }else{
-            $Campaigns_id = 1554;
-            $delivery_freq = 666;
+            $Campaigns_id = $_GET['cid'];
+            $delivery_freq = $_GET['fq'];
         }
 
         // debug //
