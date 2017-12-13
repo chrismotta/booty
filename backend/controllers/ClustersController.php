@@ -417,8 +417,13 @@ class ClustersController extends Controller
     public function actionChangefreq($Clusters_id){
         \Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
 
-        $Campaigns_id = isset($_POST['editableKey']) ? $_POST['editableKey'] : null;
-        $delivery_freq = isset($_POST['Campaigns'][$_POST['editableIndex']]['delivery_freq']) ? $_POST['Campaigns'][$_POST['editableIndex']]['delivery_freq'] : null;
+        if(isset($_POST['editableKey'])){
+            $Campaigns_id = isset($_POST['editableKey']) ? $_POST['editableKey'] : null;
+            $delivery_freq = isset($_POST['Campaigns'][$_POST['editableIndex']]['delivery_freq']) ? $_POST['Campaigns'][$_POST['editableIndex']]['delivery_freq'] : null;
+        }else{
+            $Campaigns_id = 1554;
+            $delivery_freq = 666;
+        }
 
         // debug //
         // $file = fopen("/home/chris/test/editable.txt","w");
@@ -451,6 +456,7 @@ class ClustersController extends Controller
             }
         }
 
+// die('die');
 
         if(!isset($chc))
             return 'error:2';
