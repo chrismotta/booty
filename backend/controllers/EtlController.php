@@ -121,7 +121,7 @@ class EtlController extends \yii\web\Controller
             die($msg);
         }
 
-
+ 
         try
         {
             $this->actionConvs();
@@ -138,7 +138,7 @@ class EtlController extends \yii\web\Controller
 
         try
         {
-            //$this->actionCheckclusterconvs();
+            $this->actionCheckclusterconvs();
         } 
         catch (Exception $e) {
             $msg .= "ETL CHECK CLUSTER CONVERSIONS ERROR: ".$e->getCode().'<hr>';
@@ -1291,6 +1291,9 @@ class EtlController extends \yii\web\Controller
                 $chc->autostopped   = true;
                 $chc->delivery_freq = 0;
 
+                models\CampaignsChangelog::log( $cid, 'no_conv_limit', null, $id );
+
+                /*
                 if ( $chc->save() )
                 {
                     models\CampaignsChangelog::log( $cid, 'no_conv_limit', null, $id );
@@ -1311,7 +1314,7 @@ class EtlController extends \yii\web\Controller
 
                     $this->_redis->zrem( 'clusterimps:'.$id, $cid );
                 }                
-
+                */
                 unset ($chc);
             }
         }
