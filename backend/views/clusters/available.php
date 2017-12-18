@@ -147,6 +147,12 @@ echo Tabs::widget([
                     return $model->formatValues('carrier', 'warning');
                 }
             ],
+            [
+                'attribute'=>'aff_daily_cap',
+            ],
+            [
+                'attribute'=>'daily_cap',
+            ],            
 
             // [
             //     'class' => '\kartik\grid\DataColumn',
