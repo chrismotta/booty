@@ -100,6 +100,8 @@ $filterByAffiliate = ArrayHelper::map(
                     return $model->formatValues('os', 'info');
                 }
             ],
+            'aff_daily_cap',
+            'daily_cap',            
             // [
             //     'attribute'=>'os_version',
             //     'format'=>'html',

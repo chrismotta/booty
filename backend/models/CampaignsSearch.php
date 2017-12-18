@@ -129,7 +129,8 @@ class CampaignsSearch extends Campaigns
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
-            'sort' => ['attributes' => [ 'id','name', 'landing_url','payout', 'ext_id', 'affiliate', 'country', 'os', 'carrier', 'device_type', 'os_version', 'connection_type', 'status']]            
+            'sort' => ['attributes' => [ 'id','name', 'landing_url','payout', 'ext_id', 'affiliate', 'country', 'os', 'carrier', 'device_type', 'os_version', 'connection_type', 'status', 'aff_daily_cap',
+            'daily_cap', ]]            
         ]);
 
         $query->select([
@@ -146,6 +147,8 @@ class CampaignsSearch extends Campaigns
             'Campaigns.country',
             'Campaigns.device_type',
             'Campaigns.status',
+            'aff_daily_cap',
+            'daily_cap',            
         ]);
 
         $this->load($params);
