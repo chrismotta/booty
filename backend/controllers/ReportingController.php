@@ -131,6 +131,7 @@ class ReportingController extends Controller
             'placement_id',
             'placement_name',
             'pub_id',
+            'app_id',
             'subpub_id',
             'imp_status',
             'imps',
@@ -424,6 +425,29 @@ class ReportingController extends Controller
                             $row[] = $model->$idField;
                         else
                             $row[] = $model->$field . ' ('.$model->$idField.')';
+                    break;
+                    case 'app_id':
+                        $appIds = json_decode($model->app_id);
+
+                        if ( $appIds )
+                        {
+                            $v = '';
+
+                            foreach ( $appIds as $os => $value )
+                            {
+                                if ( $v != '' )
+                                    $v .= ', ';
+
+                                $v .= $value;
+                            }
+
+                            $row[] = $v;                            
+                        }
+                        else
+                        {
+                            $row[] = null;
+                        }
+
                     break;
                     default:
                         $row[] = $model->$field;

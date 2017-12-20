@@ -83,6 +83,7 @@ class CampaignLogsSearch extends CampaignLogs
             'connection_type',
             'carrier',
             'imp_status',
+            'app_id',
             'ceil(sum(if(clicks>0,imps/clicks,imps))) as imps',
             'count(conv_time) as convs',
             'sum(revenue) as revenue',
