@@ -45,7 +45,7 @@ class Campaigns extends \yii\db\ActiveRecord
             [['Affiliates_id', 'ext_id'], 'required'],
             [['id', 'Affiliates_id', 'daily_cap'], 'integer'],
             [['payout'], 'number'],
-            [['status', 'info'], 'string'],
+            [['status', 'info', 'app_id'], 'string'],
             [['country' ], 'string'],
             [['name', 'landing_url', 'creative_320x50', 'creative_300x250', 'os_version', 'carrier', 'os', 'connection_type', 'device_type', 'app_id'], 'string', 'max' => 255],
             [['os', 'connection_type', 'carrier', 'country', 'device_type', 'os_version'], 'default', 'value' => NULL],

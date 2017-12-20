@@ -21,7 +21,7 @@ class CampaignsSearch extends Campaigns
     {
         return [
             [['id', 'Affiliates_id'], 'integer'],
-            [['name', 'landing_url', 'creative_320x50', 'creative_300x250', 'affiliateName', 'ext_id', 'affiliate', 'country', 'os', 'connection_type', 'os_version', 'carrier', 'device_type', 'status'], 'safe'],
+            [['name', 'landing_url', 'creative_320x50', 'creative_300x250', 'affiliateName', 'ext_id', 'app_id', 'affiliate', 'country', 'os', 'connection_type', 'os_version', 'carrier', 'device_type', 'status'], 'safe'],
             [['payout'], 'number'],
         ];
     }
@@ -339,6 +339,7 @@ class CampaignsSearch extends Campaigns
             ->andFilterWhere(['like', 'creative_300x250', $this->creative_300x250])
             ->andFilterWhere(['like', 'Affiliates.name', $this->affiliateName])
             ->andFilterWhere(['like', 'Campaigns.ext_id', $this->ext_id])
+            ->andFilterWhere(['like', 'Campaigns.app_id', $this->app_id])
             // ->andFilterWhere(['like', 'country', $this->country])
             // ->andFilterWhere(['like', 'os', $this->os])
             // ->andFilterWhere(['>=', 'os_version', $this->os_version])

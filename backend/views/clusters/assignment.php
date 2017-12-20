@@ -83,8 +83,20 @@ echo Tabs::widget([
             [
                 'attribute'=>'name',
                 'contentOptions' => [
-                    'class'=>'wrap-long-names'
+                    'class'=>'wrap-long-names',
+                    'style'=>['max-width'=>'120px']
                 ],
+            ],
+            [
+                'attribute'=>'app_id',
+                'contentOptions' => [
+                    'class'=>'wrap-long-names',
+                    'style'=>['max-width'=>'120px'],
+                ],
+                'format'=>'html',
+                'value' => function($model, $key, $index){
+                    return $model->formatValues('app_id', 'default');
+                }
             ],
 
             'payout',
@@ -123,13 +135,13 @@ echo Tabs::widget([
                     return $model->formatValues('os_version', 'default');
                 }
             ],
-            [
+            /*[
                 'attribute'=>'carrier',
                 'format'=>'html',
                 'value' => function($model, $key, $index){
                     return $model->formatValues('carrier', 'warning');
                 }
-            ],
+            ],*/
 
             [
                 'class' => 'kartik\grid\EditableColumn',
