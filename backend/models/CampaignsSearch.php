@@ -236,6 +236,7 @@ class CampaignsSearch extends Campaigns
             ->andFilterWhere(['like', 'creative_300x250', $this->creative_300x250])
             ->andFilterWhere(['like', 'Affiliates.name', $this->affiliateName])
             ->andFilterWhere(['like', 'Campaigns.ext_id', $this->ext_id])
+            ->andFilterWhere(['like', 'Campaigns.app_id', $this->app_id])
             // ->andFilterWhere(['like', 'country', $this->country])
             // ->andFilterWhere(['like', 'os', $this->os])
             // ->andFilterWhere(['>=', 'os_version', $this->os_version])
