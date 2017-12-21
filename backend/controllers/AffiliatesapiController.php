@@ -278,7 +278,7 @@ class AffiliatesapiController extends \yii\web\Controller
             $affiliate  = models\Affiliates::findOne( ['id' => $rule['affiliate_id'] ] );
 
             // if affiliate is not active nor testing, do not run
-            if ( $affiliate->status != 'active' && $affiliate->status != 'pending_test' )
+            if ( $affiliate->status != 'active' && $affiliate->status != 'development' )
                 return false;
 
             $campaignsData  = $api->requestCampaigns( $affiliate->api_key, $affiliate->user_id );
@@ -520,6 +520,9 @@ class AffiliatesapiController extends \yii\web\Controller
 
     private function _autoassign ( $affiliate, $campaign, $apiData, $clusters )
     {
+        if ( $affiliate->status!='active' )
+            return false;
+
         foreach  ( $clusters as $cluster )
         {
             if ( $cluster->assignation_method!='automatic' )
