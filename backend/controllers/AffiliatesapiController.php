@@ -282,7 +282,20 @@ class AffiliatesapiController extends \yii\web\Controller
                 return false;
 
             $campaignsData  = $api->requestCampaigns( $affiliate->api_key, $affiliate->user_id );
-         
+
+            if  ( isset($_GET['test']) && $_GET['test']==1 )
+            {
+                header('Content-Type: text/json');
+                echo json_encode( $campaignsData, JSON_PRETTY_PRINT );
+                die();
+            }
+
+            if  ( isset($_GET['count']) && $_GET['count']==1 )
+            {
+                header('Content-Type: text/json');
+                echo count($campaignsData);
+                die();
+            }            
 
             $externalIds = [];
 
