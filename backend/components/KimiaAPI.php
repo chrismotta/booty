@@ -91,14 +91,14 @@
 
 				if ( empty($packageIds) )
 				{
-					if ( $campaign->package_name )
+					if ( isset($campaign->package_name) && $campaign->package_name )
 					{
 						$packageIds = [
 							'android' => $campaign->package_name
 						];
 					}
 
-					if ( $campaign->apple_bundle_id )
+					if ( isset($campaign->apple_bundle_id) && $campaign->apple_bundle_id )
 					{
 						$packageIds = [
 							'ios' => ApiHelper::cleanAppleId($campaign->apple_bundle_id)
