@@ -123,6 +123,10 @@ class CampaignLogsSearch extends CampaignLogs
             'campaign',
         ]);
 
+        $query->leftJoin([
+            'Campaigns ON ( Campaigns.id=F_CampaignLogs.D_Campaign_id )',
+        ]);        
+
         $query->rightJoin([
             'F_ClusterLogs ON (F_ClusterLogs.session_hash=F_CampaignLogs.session_hash)',
         ]);
@@ -135,7 +139,7 @@ class CampaignLogsSearch extends CampaignLogs
             'DATE(IF(conv_time is not null, conv_time, imp_time)) as date', 
             'cluster_id',
             'F_ClusterLogs.cluster_name as cluster_name', 
-            'Affiliates_id as affiliate_id', 
+            'D_Campaign.Affiliates_id as affiliate_id', 
             'Affiliates_name as affiliate_name', 
             'F_CampaignLogs.D_Campaign_id as campaign_id', 
             'D_Campaign.name as campaign_name',  
@@ -145,6 +149,7 @@ class CampaignLogsSearch extends CampaignLogs
             'D_Placement.name as placement_name', 
             'pub_id',
             'subpub_id',
+            'Campaigns.app_id as app_id',            
             'imp_status',
             'ceil(sum(if(clicks>0,imps/clicks,imps))) as imps',
             'count(click_id) as clicks',
@@ -157,7 +162,7 @@ class CampaignLogsSearch extends CampaignLogs
         $query->groupBy([
             'DATE(IF(conv_time is not null, conv_time, imp_time))', 
             'cluster_id', 
-            'Affiliates_id', 
+            'D_Campaign.Affiliates_id', 
             'F_CampaignLogs.D_Campaign_id', 
             'Publishers_id', 
             'F_ClusterLogs.D_Placement_id',

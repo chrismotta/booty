@@ -63,6 +63,7 @@ class CampaignLogs extends \yii\db\ActiveRecord
     public $unique_imps;
     public $userroles;
     public $imp_status;
+    public $app_id;
 
     public function __construct($config=[]){
 
