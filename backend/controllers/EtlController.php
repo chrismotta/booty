@@ -328,7 +328,7 @@ class EtlController extends \yii\web\Controller
                             'Clusters_id' => $chc['cluster_id'] 
                         ]);
 
-                        if ( $chci && $chci->autostopped )
+                        if ( $chci && ( $chci->autostopped==true || $chci->autostopped==1 ) )
                         {
                             if ( $chci->prev_freq )
                                 $chci->delivery_freq = $chci->prev_freq;                      
