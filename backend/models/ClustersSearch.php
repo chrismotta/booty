@@ -59,7 +59,8 @@ class ClustersSearch extends Clusters
             'Clusters.connection_type',
             'Clusters.country',
             'Clusters.device_type',
-            'Carriers.carrier_name AS carrier'
+            'Carriers.carrier_name AS carrier',
+            'Clusters.min_payout',
         ]);
 
         $this->load($params);
