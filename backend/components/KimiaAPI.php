@@ -130,6 +130,19 @@
 			}
 
 
+            if  ( isset($_GET['test']) && $_GET['test']==1 )
+            {
+                header('Content-Type: text/json');
+                echo json_encode( $result, JSON_PRETTY_PRINT );
+                die();
+            }
+
+            if  ( isset($_GET['count']) && $_GET['count']==1 )
+            {
+                header('Content-Type: text/json');
+                echo count($result);
+                die();
+            }   
 			
 
 			return $result;
