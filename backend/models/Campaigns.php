@@ -77,7 +77,7 @@ class Campaigns extends \yii\db\ActiveRecord
             'delivery_freq'    => 'Freq.', 
             'ext_id'           => 'Ext. ID',
             'status'           => 'Status',
-            'daily_cap'        => 'Daily Cap',
+            'daily_cap'        => 'Manual Daily Cap',
             'aff_daily_cap'    => 'Affiliate Daily Cap',
         ];
     }

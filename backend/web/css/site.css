@@ -188,9 +188,11 @@ td.paused {
 
 .wrap-long-names {
     max-width: 200px; 
-    overflow: auto; 
+    overflow-x: auto;
+    overflow-y: hidden;
     white-space: normal; 
     word-wrap: break-word;
+    max-height: 100px;
 }
 .wrap-long-hashes {
     max-width: 100px; 
@@ -201,5 +203,9 @@ td.paused {
 
 .ext_id_column {
     width: 60px;
+    overflow: auto;
+}
+.mult_value_column {
+    height: 100px;
     overflow: auto;
 }

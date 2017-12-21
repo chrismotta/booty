@@ -121,7 +121,7 @@ class EtlController extends \yii\web\Controller
             die($msg);
         }
 
-
+ 
         try
         {
             $this->actionConvs();
@@ -138,7 +138,7 @@ class EtlController extends \yii\web\Controller
 
         try
         {
-            //$this->actionCheckclusterconvs();
+            $this->actionCheckclusterconvs();
         } 
         catch (Exception $e) {
             $msg .= "ETL CHECK CLUSTER CONVERSIONS ERROR: ".$e->getCode().'<hr>';
@@ -241,9 +241,9 @@ class EtlController extends \yii\web\Controller
 
     private function _buildConvQuery ( $start_at, $end_at )
     {
-        $sql        = '';
-        $params     = [];
-        $paramCount = 0;
+        $sql              = '';
+        $params           = [];
+        $paramCount       = 0;
 
         $convs  = $this->_redis->zrange( 
             'convs', 
@@ -282,19 +282,25 @@ class EtlController extends \yii\web\Controller
 
         if ( $sql != '' )
         {
-            $return = \Yii::$app->db->createCommand( $sql )->bindValues( $params )->execute();
-            $inTimeConvs = [];
-            
-            // verify which conversions arrived in time            
-            foreach ( $convs AS $clickID => $convTime )
-            {
-                if ( $this->_timestamp-$convTime <= self::CONV_WAIT_TIME*60*60*24 )
-                    $inTimeConvs[] = "'".$clickID."'";
-            }   
+            $return = \Yii::$app->db->createCommand( $sql )->bindValues( $params )->execute();  
 
             // re-enable autostopped cluster assignments for campaigns which conversion/s arrived in time
-            if ( !empty($inTimeConvs) )
+            if ( $return === 0 || $return>0 )
             {
+                // free RAM
+                unset( $sql );
+                unset( $params );
+
+                $clickIDs = '';
+
+                foreach ( $convs AS $clickID => $convTime )
+                {
+                    if ( $clickIDs != '' )
+                        $clickIDs .= ',';
+
+                    $clickIDs .= '"'.$clickID.'"';
+                }
+
                 $sql = '
                     SELECT
                         c.D_Campaign_id AS campaign_id,                      
@@ -303,7 +309,7 @@ class EtlController extends \yii\web\Controller
                     LEFT JOIN F_ClusterLogs cl ON cl.session_hash=c.session_hash 
                     WHERE 
                         c.click_time >= date(c.conv_time - INTERVAL '.self::CONV_WAIT_TIME.' DAY) 
-                        AND c.click_id IN ('.implode($inTimeConvs).') 
+                        AND c.click_id IN ( '.$clickIDs.' ) 
                     GROUP BY c.D_Campaign_id, cl.cluster_id;
                 ';
 
@@ -1291,6 +1297,9 @@ class EtlController extends \yii\web\Controller
                 $chc->autostopped   = true;
                 $chc->delivery_freq = 0;
 
+                models\CampaignsChangelog::log( $cid, 'no_conv_limit', null, $id );
+
+                /*
                 if ( $chc->save() )
                 {
                     models\CampaignsChangelog::log( $cid, 'no_conv_limit', null, $id );
@@ -1311,7 +1320,7 @@ class EtlController extends \yii\web\Controller
 
                     $this->_redis->zrem( 'clusterimps:'.$id, $cid );
                 }                
-
+                */
                 unset ($chc);
             }
         }

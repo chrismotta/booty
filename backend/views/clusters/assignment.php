@@ -83,9 +83,12 @@ echo Tabs::widget([
             [
                 'attribute'=>'name',
                 'contentOptions' => [
-                    'class'=>'wrap-long-names',
-                    'style'=>['max-width'=>'120px']
+                    'style'=>['max-width'=>'100px']
                 ],
+                'format'=>'html',
+                'value' => function($model, $key, $index){
+                    return '<div class="wrap-long-names" title="'.$model->name.'">'.$model->name.'</div>';
+                }
             ],
             [
                 'attribute'=>'app_id',
@@ -135,13 +138,26 @@ echo Tabs::widget([
                     return $model->formatValues('os_version', 'default');
                 }
             ],
-            /*[
-                'attribute'=>'carrier',
-                'format'=>'html',
-                'value' => function($model, $key, $index){
-                    return $model->formatValues('carrier', 'warning');
-                }
-            ],*/
+            
+            // [
+            //     'attribute'=>'carrier',
+            //     'format'=>'html',
+            //     'value' => function($model, $key, $index){
+            //         return $model->formatValues('carrier', 'warning');
+            //     }
+            // ],
+
+            [
+                'attribute'=>'aff_daily_cap',
+                'label' => 'Aff. Daily Cap',
+                'mergeHeader' => true,
+                
+            ],
+            [
+                'attribute'=>'daily_cap',
+                'label' => 'Man. Daily Cap',
+                'mergeHeader' => true,
+            ], 
 
             [
                 'class' => 'kartik\grid\EditableColumn',

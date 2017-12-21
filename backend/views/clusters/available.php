@@ -87,15 +87,18 @@ echo Tabs::widget([
             [
                 'attribute'=>'name',
                 'contentOptions' => [
-                    'class'=>'wrap-long-names',
-                    'style'=>['max-width'=>'120px']
+                    'style'=>['max-width'=>'110px']
                 ],
+                'format'=>'html',
+                'value' => function($model, $key, $index){
+                    return '<div class="wrap-long-names" title="'.$model->name.'">'.$model->name.'</div>';
+                }
             ],
             [
                 'attribute'=>'app_id',
                 'contentOptions' => [
                     'class'=>'wrap-long-names',
-                    'style'=>['max-width'=>'120px'],
+                    'style'=>['max-width'=>'110px'],
                 ],
                 'format'=>'html',
                 'value' => function($model, $key, $index){
@@ -110,7 +113,7 @@ echo Tabs::widget([
                 ],
                 'format'=>'html',
                 'value' => function($model, $key, $index){
-                    return $model->formatValues('country', 'success');
+                    return '<div class="mult_value_column" title="'.$model->ext_id.'">'.$model->formatValues('country', 'success').'</div>';
                 }
             ],
             [
@@ -154,6 +157,7 @@ echo Tabs::widget([
                     return $model->formatValues('os_version', 'default');
                 }
             ],
+
             // [
             //     'attribute' => 'carrier',
             //     'filterOptions' => [
@@ -164,6 +168,18 @@ echo Tabs::widget([
             //         return $model->formatValues('carrier', 'warning');
             //     }
             // ],
+            
+            [
+                'attribute'=>'aff_daily_cap',
+                'label' => 'Aff. Daily Cap',
+                'mergeHeader' => true,
+                
+            ],
+            [
+                'attribute'=>'daily_cap',
+                'label' => 'Man. Daily Cap',
+                'mergeHeader' => true,
+            ],            
 
             // [
             //     'class' => '\kartik\grid\DataColumn',
