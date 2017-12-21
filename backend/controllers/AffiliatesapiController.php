@@ -198,7 +198,7 @@ class AffiliatesapiController extends \yii\web\Controller
             {
                 $this->_runAPI( $rule, $clusters );
             }            
-            if ( $affiliate_id == $rule['affiliate_id'] )
+            else if ( $affiliate_id == $rule['affiliate_id'] )
             {                
                 $this->_runAPI( $rule, $clusters );
                 break;
@@ -282,6 +282,20 @@ class AffiliatesapiController extends \yii\web\Controller
                 return false;
 
             $campaignsData  = $api->requestCampaigns( $affiliate->api_key, $affiliate->user_id );
+
+            if  ( isset($_GET['test']) && $_GET['test']==1 )
+            {
+                header('Content-Type: text/json');
+                echo json_encode( $campaignsData, JSON_PRETTY_PRINT );
+                die();
+            }
+
+            if  ( isset($_GET['count']) && $_GET['count']==1 )
+            {
+                header('Content-Type: text/json');
+                echo count($campaignsData);
+                die();
+            }            
 
             $externalIds = [];
 
