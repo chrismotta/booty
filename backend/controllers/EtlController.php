@@ -1340,9 +1340,6 @@ class EtlController extends \yii\web\Controller
                 $chc->autostopped   = true;
                 $chc->delivery_freq = 0;
 
-                models\CampaignsChangelog::log( $cid, 'no_conv_limit', null, $id );
-
-                /*
                 if ( $chc->save() )
                 {
                     models\CampaignsChangelog::log( $cid, 'no_conv_limit', null, $id );
@@ -1363,13 +1360,12 @@ class EtlController extends \yii\web\Controller
 
                     $this->_redis->zrem( 'clusterimps:'.$id, $cid );
                 }                
-                */
+
                 unset ($chc);
             }
         }
 
         return count($campaigns);
-
     }
 
 
