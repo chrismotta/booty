@@ -220,7 +220,7 @@ else
       <!-- Main row -->
       <div class="row">
         <!-- Left col -->
-        <section class="col-lg-7 connectedSortable">
+        <section class="col-lg-12 connectedSortable">
           <!-- Custom tabs (Charts with tabs)-->
           <div class="nav-tabs-custom bg-gray">
             <!-- Tabs within a box -->
@@ -237,7 +237,7 @@ else
                   <?= ChartJs::widget([
                       'type' => 'line',
                       'options' => [
-                          'height' => 200,
+                          'height' => 150,
                           'width' => 400
                       ],
                       'data' => [
@@ -288,6 +288,7 @@ else
         </section>
         <!-- /.Left col -->
 
+        <?php /*
         <!-- right col (We are only adding the ID to make the widgets sortable)-->
         <section class="col-lg-5 connectedSortable">
 
@@ -353,7 +354,7 @@ else
           </div>
           <!-- /.box -->
         </section>
-
+        */ ?>
           
     </section>
 

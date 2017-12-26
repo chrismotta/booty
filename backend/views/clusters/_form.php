@@ -43,7 +43,7 @@ $carriers        = models\Carriers::find()->asArray()->all();
 
     <?= $form->field($model, 'min_payout')->textInput(['maxlength' => true]) ?>
 
-    <?= $form->field($model, 'assignation_method')->dropDownList([ 'manual' => 'Manual', 'automatic' => 'Automatic', ], ['prompt' => '']) ?>
+    <?= $form->field($model, 'assignation_method')->dropDownList([ 'manual' => 'Manual', 'automatic' => 'Automatic', ]) ?>
 
     <?= 
         '<label class="control-label">Static Campaign</label>';

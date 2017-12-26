@@ -60,7 +60,7 @@ $users = User::find()->asArray()->all();
         ]);            
     ?>
 
-    <?= $form->field($model, 'assignation_method')->dropDownList([ 'manual' => 'Manual', 'automatic' => 'Automatic', ], ['prompt' => '']) ?>
+    <?= $form->field($model, 'assignation_method')->dropDownList([ 'manual' => 'Manual', 'automatic' => 'Automatic', ]) ?>
 
     <?= $form->field($model, 'status')->dropDownList([ 
         'active' => 'Active', 

@@ -10,7 +10,7 @@ use yii\helpers\ArrayHelper;
 /* @var $form yii\widgets\ActiveForm */
 
 // $publishers       = models\Publishers::find()->asArray()->all();
-$clusters         = models\Clusters::find()->asArray()->all();
+$clusters         = models\Clusters::find()->where(['status'=>'active'])->asArray()->all();
 ?>
 
 <div class="box box-info">
