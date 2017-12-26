@@ -1319,6 +1319,20 @@ class EtlController extends \yii\web\Controller
         echo 'Check cluster conversions: '.$disabled.' campaigns with delivery frequency set to 0 - Elapsed time: '.$elapsed.' seg.<hr/>';        
     }
 
+    private function _checkPausedCampaigns ( $cluster_id )
+    {
+        /*
+        $chc = models\ClustersHasCampaigns::findAll( 
+            [
+                'Campaigns_id' => $cid, 
+                'Clusters_id' => $id,
+                'Campaigns.status' => 'aff_paused' 
+                'Campaigns.paused' =>
+            ] 
+        );
+        */        
+    }
+
 
     private function _checkClusterConvs (  $id )
     {
@@ -1340,7 +1354,6 @@ class EtlController extends \yii\web\Controller
                 $chc->autostopped   = true;
                 $chc->delivery_freq = 0;
 
-                /*
                 if ( $chc->save() )
                 {
                     models\CampaignsChangelog::log( $cid, 'no_conv_limit', null, $id );
@@ -1361,7 +1374,6 @@ class EtlController extends \yii\web\Controller
 
                     $this->_redis->zrem( 'clusterimps:'.$id, $cid );
                 }                
-                */
                
                 unset ($chc);
             }
