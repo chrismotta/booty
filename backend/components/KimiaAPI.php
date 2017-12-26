@@ -91,14 +91,14 @@
 
 				if ( empty($packageIds) )
 				{
-					if ( $campaign->package_name )
+					if ( isset($campaign->package_name) && $campaign->package_name )
 					{
 						$packageIds = [
 							'android' => $campaign->package_name
 						];
 					}
 
-					if ( $campaign->apple_bundle_id )
+					if ( isset($campaign->apple_bundle_id) && $campaign->apple_bundle_id )
 					{
 						$packageIds = [
 							'ios' => ApiHelper::cleanAppleId($campaign->apple_bundle_id)
@@ -130,6 +130,19 @@
 			}
 
 
+            if  ( isset($_GET['test']) && $_GET['test']==1 )
+            {
+                header('Content-Type: text/json');
+                echo json_encode( $result, JSON_PRETTY_PRINT );
+                die();
+            }
+
+            if  ( isset($_GET['count']) && $_GET['count']==1 )
+            {
+                header('Content-Type: text/json');
+                echo count($result);
+                die();
+            }   
 			
 
 			return $result;

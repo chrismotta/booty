@@ -328,7 +328,7 @@ class EtlController extends \yii\web\Controller
                             'Clusters_id' => $chc['cluster_id'] 
                         ]);
 
-                        if ( $chci && $chci->autostopped )
+                        if ( $chci && ( $chci->autostopped==true || $chci->autostopped==1 ) )
                         {
                             if ( $chci->prev_freq )
                                 $chci->delivery_freq = $chci->prev_freq;                      
@@ -591,7 +591,18 @@ class EtlController extends \yii\web\Controller
             VALUES  
         ';
 
-        $values = '';           
+        $requestDataSql = '
+            INSERT INTO D_RequestData (
+                session_hash,
+                user_agent,
+                ip,
+                referer
+            )
+            VALUES 
+        ';
+
+        $values = '';
+        $requestValues = '';           
 
         $sessionHashes = $this->_redis->zrange( 'sessionhashes', 0, $this->_objectLimit );
 
@@ -754,6 +765,34 @@ class EtlController extends \yii\web\Controller
                         '.$clusterLog['browser_version'].'
                     )';
 
+
+                    if ( $requestValues != '' )
+                        $requestValues .= ',';
+
+                    if ( isset($clusterLog['ua']) && $clusterLog['ua'] )
+                        $clusterLog['ua'] = '"'.$this->_escapeSql($clusterLog['ua']).'"';
+                    else
+                        $clusterLog['ua'] = 'NULL';
+
+
+                    if ( isset($clusterLog['ip']) && $clusterLog['ip'] )
+                        $clusterLog['ip'] = '"'.$this->_escapeSql($clusterLog['ip']).'"';
+                    else
+                        $clusterLog['ip'] = 'NULL';                    
+
+
+                    if ( isset($clusterLog['referer']) && $clusterLog['referer'] )
+                        $clusterLog['referer'] = '"'.$this->_escapeSql($clusterLog['referer']).'"';
+                    else
+                        $clusterLog['referer'] = 'NULL';
+
+                    $requestValues .= '( 
+                        "'.$sessionHash.'",
+                        '.$clusterLog['ua'].',
+                        '.$clusterLog['ip'].',
+                        '.$clusterLog['referer'].'
+                    )';                    
+
                     // add placements to placements update query
                     if ( !\in_array( $clusterLog['placement_id'], $placements ) )
                     {
@@ -799,7 +838,7 @@ class EtlController extends \yii\web\Controller
 
                     if ( $pubidFilter != 'NULL' )
                         \Yii::$app->redis->zadd( 'pub_ids', 0, $pubidFilter );
-                    
+
                     if ( $subpubidFilter != 'NULL' )
                         \Yii::$app->redis->zadd( 'subpub_ids', 0, $subpubidFilter );
 
@@ -814,14 +853,18 @@ class EtlController extends \yii\web\Controller
             if ( $values != '' )
             {
                 $sql .= $values . ' ON DUPLICATE KEY UPDATE cost=VALUES(cost), imps=VALUES(imps);';
+                $requestDataSql .= $requestValues . ' ON DUPLICATE KEY UPDATE ip=VALUES(ip);';
 
-                if ( $this->_showsql || $this->_sqltest )
-                    echo '<br><br>SQL: '.$sql.'<br><br>';
-
+                if ( $this->_showsql ){
+                    echo '<br><br>SQL: '.$sql.'<br><br>';                    
+                    echo '<br><br>SQL: '.$requestDataSql.'<br><br>';                    
+                }
+                
                 if ( $this->_sqltest )
                     return 0;
 
                 $return = \Yii::$app->db->createCommand( $sql )->execute();         
+                \Yii::$app->db->createCommand( $requestDataSql )->execute();
 
                 if ( $return )
                 {
@@ -1276,6 +1319,20 @@ class EtlController extends \yii\web\Controller
         echo 'Check cluster conversions: '.$disabled.' campaigns with delivery frequency set to 0 - Elapsed time: '.$elapsed.' seg.<hr/>';        
     }
 
+    private function _checkPausedCampaigns ( $cluster_id )
+    {
+        /*
+        $chc = models\ClustersHasCampaigns::findAll( 
+            [
+                'Campaigns_id' => $cid, 
+                'Clusters_id' => $id,
+                'Campaigns.status' => 'aff_paused' 
+                'Campaigns.paused' =>
+            ] 
+        );
+        */        
+    }
+
 
     private function _checkClusterConvs (  $id )
     {
@@ -1297,9 +1354,6 @@ class EtlController extends \yii\web\Controller
                 $chc->autostopped   = true;
                 $chc->delivery_freq = 0;
 
-                models\CampaignsChangelog::log( $cid, 'no_conv_limit', null, $id );
-
-                /*
                 if ( $chc->save() )
                 {
                     models\CampaignsChangelog::log( $cid, 'no_conv_limit', null, $id );
@@ -1320,13 +1374,12 @@ class EtlController extends \yii\web\Controller
 
                     $this->_redis->zrem( 'clusterimps:'.$id, $cid );
                 }                
-                */
+               
                 unset ($chc);
             }
         }
 
         return count($campaigns);
-
     }
 
 
