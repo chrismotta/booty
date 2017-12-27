@@ -43,7 +43,7 @@ class Clusters extends \yii\db\ActiveRecord
     {
         return [
             [['name', 'StaticCampaigns_id'], 'required'],
-            [['StaticCampaigns_id', 'Carriers_id'], 'integer'],
+            [['StaticCampaigns_id', 'Carriers_id', 'autostop_limit'], 'integer'],
             [['os_version', 'min_payout'], 'number'],
             [['connection_type', 'os', 'os_version', 'device_type'], 'string', 'skipOnEmpty'=>true ],
             [['os', 'connection_type', 'country', 'device_type'], 'default', 'value' => NULL],            
@@ -71,7 +71,8 @@ class Clusters extends \yii\db\ActiveRecord
             'device_type' => 'Device Type',
             'carrier'   => 'Carrier',
             'os_version'    => 'OS Version',
-            'assignation_method' => 'Assignation Method'
+            'assignation_method' => 'Assignation Method',
+            'autostop_limit'    => 'Autostop Limit'
         ];
     }
 

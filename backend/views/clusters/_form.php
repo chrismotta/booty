@@ -33,11 +33,11 @@ $carriers        = models\Carriers::find()->asArray()->all();
 
     <?= $form->field($model, 'device_type')->dropDownList([ 'Desktop' => 'Desktop', 'Smartphone' => 'Smartphone', 'Tablet' => 'Tablet', 'Other' => 'Other' ], ['prompt' => '']) ?>
 
+    <?= $form->field($model, 'os')->dropDownList([ 'Android' => 'Android', 'iOS' => 'iOS', 'Windows' => 'Windows', 'BlackBerry' => 'BlackBerry' ], ['prompt' => '']) ?>
+
     </div>
     <div class="col-md-6">
 
-
-    <?= $form->field($model, 'os')->dropDownList([ 'Android' => 'Android', 'iOS' => 'iOS', 'Windows' => 'Windows', 'BlackBerry' => 'BlackBerry' ], ['prompt' => '']) ?>
 
     <?= $form->field($model, 'os_version')->textInput(['type' => 'text']) ?>
 
@@ -65,8 +65,10 @@ $carriers        = models\Carriers::find()->asArray()->all();
             'pluginOptions' => [
                 'maximumInputLength' => 50
             ],
-        ]);            
+        ]);           
     ?>
+
+    <?= $form->field($model, 'autostop_limit')->textInput(['maxlength' => true]) ?> 
 
     </div>
     <div class="col-md-12">

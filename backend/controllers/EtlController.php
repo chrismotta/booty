@@ -18,6 +18,7 @@ class EtlController extends \yii\web\Controller
     
     const NO_CONV_LIMIT      = 20000; // imps
     const CONV_WAIT_TIME     = 2; // days
+    const AUTOARCHIVE_TIME   = 14; // days
 
     private $_redis;
     private $_objectLimit;
@@ -1302,7 +1303,10 @@ class EtlController extends \yii\web\Controller
 
         if ( $clusterId )
         {
-            $disabled = $this->_checkClusterConvs( $clusterId );
+            $model = Models\Clusters::findOne( $cluster_id );
+
+            if ( $model )
+                $disabled = $this->_checkClusterConvs( $model );
         }
         else
         {
@@ -1310,7 +1314,7 @@ class EtlController extends \yii\web\Controller
 
             foreach ( $clusters as $model )
             {
-                $disabled += $this->_checkClusterConvs( $model->id );
+                $disabled += $this->_checkClusterConvs( $model );
             }
         }
 
@@ -1319,33 +1323,22 @@ class EtlController extends \yii\web\Controller
         echo 'Check cluster conversions: '.$disabled.' campaigns with delivery frequency set to 0 - Elapsed time: '.$elapsed.' seg.<hr/>';        
     }
 
-    private function _checkPausedCampaigns ( $cluster_id )
-    {
-        /*
-        $chc = models\ClustersHasCampaigns::findAll( 
-            [
-                'Campaigns_id' => $cid, 
-                'Clusters_id' => $id,
-                'Campaigns.status' => 'aff_paused' 
-                'Campaigns.paused' =>
-            ] 
-        );
-        */        
-    }
 
-
-    private function _checkClusterConvs (  $id )
+    private function _checkClusterConvs ( $model )
     {
+        if ( !$model->autostop_limit )
+            return 0;
+
         $campaigns = $this->_redis->zrangebyscore( 
-            'clusterimps:'.$id,  
-            self::NO_CONV_LIMIT, 
+            'clusterimps:'.$model->id,  
+            $model->autostop_limit, 
             '+inf'
         );
 
         foreach ( $campaigns AS $cid )
         {
             $chc = models\ClustersHasCampaigns::findOne( 
-                ['Campaigns_id' => $cid, 'Clusters_id' => $id] 
+                ['Campaigns_id' => $cid, 'Clusters_id' => $model->id] 
             );
 
             if ( $chc )
@@ -1356,7 +1349,7 @@ class EtlController extends \yii\web\Controller
 
                 if ( $chc->save() )
                 {
-                    models\CampaignsChangelog::log( $cid, 'no_conv_limit', null, $id );
+                    models\CampaignsChangelog::log( $cid, 'no_conv_limit', null, $model->id );
 
                     if ( $chc->campaigns->app_id )
                     {
@@ -1365,14 +1358,14 @@ class EtlController extends \yii\web\Controller
                         foreach ( $packageIds as $packageId )
                         {
                             $this->_redis->zadd( 
-                                'clusterlist:'.$id, 
+                                'clusterlist:'.$model->id, 
                                 0, 
                                 $cid.':'.$chc->campaigns->affiliates->id.':'.$packageId
                             );
                         }
                     }
 
-                    $this->_redis->zrem( 'clusterimps:'.$id, $cid );
+                    $this->_redis->zrem( 'clusterimps:'.$model->id, $cid );
                 }                
                
                 unset ($chc);
@@ -1576,8 +1569,6 @@ class EtlController extends \yii\web\Controller
             && $this->_redis->zcard( 'loadedclicks') === 0
         )
         {
-            $this->_actionCheckclusterlogs();
-            $this->_actionCheckcampaignlogs();
         }
         else
         {
