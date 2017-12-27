@@ -9,10 +9,11 @@ use backend\components;
 
 class AffiliatesapiController extends \yii\web\Controller
 {
-    CONST FROM = 'Splad - API Controller<no-reply@spladx.co>';
-	const NOTIFY_INBOX = 'dev@splad.co,apastor@splad.co';
-	const ALERTS_INBOX = 'dev@splad.co,apastor@splad.co';
+    CONST FROM               = 'Splad - API Controller<no-reply@spladx.co>';
+	const NOTIFY_INBOX       = 'dev@splad.co,apastor@splad.co';
+	const ALERTS_INBOX       = 'dev@splad.co,apastor@splad.co';
     const OPEN_EXRATES_APPID = '3ec50944b9564026a90c196286b3e810';
+    const AUTOARCHIVE_TIME   = 14; // days
 
 
 	protected $_notifications;
@@ -340,7 +341,35 @@ class AffiliatesapiController extends \yii\web\Controller
                         case 'paused':
                         break;
                         default:
-                            $campaign->status = $campaignData['status'];
+                            // evaluate auto-archive conditions and set status
+                            if ( 
+                                $campaignData['status']=='aff_paused' 
+                                && (
+                                    $campaign->status != $campaignData['status']
+                                    || !isset($campaign->paused)                                    
+                                )
+                            )
+                            {
+                                $campaign->paused = date('Y-m-d');
+                            }
+                            else if ( $campaignData['status']!='aff_paused' )
+                            {
+                                $campaign->paused = null;                            
+                            }
+
+                            if ( 
+                                $campaignData['status'] == 'aff_paused' 
+                                && isset( $campaign->paused ) 
+                                && time()-strtotime($campaign->paused) >= self::AUTOARCHIVE_TIME*86400 
+                            )
+                            {
+                                $campaign->status = 'archived';
+                                $this->_unassignCampaign( $campaign, $clusters, 'autoarchived');
+                            }
+                            else
+                            {
+                                $campaign->status = $campaignData['status'];
+                            }
                         break;
                     }                         
 
@@ -350,6 +379,7 @@ class AffiliatesapiController extends \yii\web\Controller
                     $campaign->ext_id        = $campaignData['ext_id'];
                     $campaign->info          = $campaignData['desc'];
 
+                    // set currency with conversion when it's necessary
                     if ( $campaignData['currency']=='USD' )
                         $campaign->payout = (float)$campaignData['payout'];
                     else
@@ -463,8 +493,7 @@ class AffiliatesapiController extends \yii\web\Controller
                     if ( $campaign->save() )
                     {
                         // autoassign campaigns to clusters
-                        if ( $affiliate->assignation_method == 'automatic'  )
-                            $this->_autoassign( $affiliate, $campaign, $campaignData, $clusters );
+                        $this->_autoassign( $affiliate, $campaign, $campaignData, $clusters );
                        
                         // if campaign already exists and was assigned, update redis. Otherwise, save if was auto-assigned
                         if ( $campaignClone )
@@ -495,6 +524,43 @@ class AffiliatesapiController extends \yii\web\Controller
         }
 
         return true;
+    }
+
+
+    private function _unassignCampaign ( $campaign, $clusters, $logStatus = null, $logDesc = null )
+    {
+        $c = 0;
+
+        foreach ( $clusters as $cluster )
+        {
+            if ( $campaign->unlink($cluster->id) )
+            {
+                if ( $logStatus )
+                    models\CampaignsChangelog::log( $campaign->id, $logStatus, $logDesc, $cluster->id );
+
+                // unassign in redis
+                $packageIds = json_decode($campaign->app_id, true);
+
+                if(isset($packageIds)){
+
+                    foreach ( $packageIds as $packageId )
+                    {
+                        $this->_redis->zrem( 'clusterlist:'.$cluster->id, $campaign->id.':'.$campaign->Affiliates_id.':'.$packageId );
+                    }                         
+                }
+
+                $this->_redis->zrem( 
+                    'clustercaps:'.$cluster->id, 
+                    $campaign->id
+                );                     
+
+                $this->_redis->zrem( 'clusterimps:'.$cluster->id, $campaign->id );
+
+                $c++;
+            }
+        }
+
+        return $c;        
     }
 
 
@@ -534,15 +600,21 @@ class AffiliatesapiController extends \yii\web\Controller
 
     private function _autoassign ( $affiliate, $campaign, $apiData, $clusters )
     {
-        if ( $affiliate->status!='active' )
+        if ( 
+            $affiliate->assignation_method != 'automatic' 
+            || $affiliate->status != 'active' 
+            || $campaign->status != 'active' 
+        )
+        {
             return false;
+        }
 
         foreach  ( $clusters as $cluster )
         {
             if ( $cluster->assignation_method!='automatic' )
                 continue;
 
-            if ( $campaign->status=='active' && $campaign->payout>=$cluster['min_payout'] )
+            if ( $campaign->payout>=$cluster['min_payout'] )
             {
                 // if country / os are open or cluster setting is not included in campaign setting, do not autoasign to this cluster
                 if ( 
@@ -626,6 +698,8 @@ class AffiliatesapiController extends \yii\web\Controller
                 unset ( $chc );                
             }
         }
+
+        return true;
     }
 
     // save assigned campaign
