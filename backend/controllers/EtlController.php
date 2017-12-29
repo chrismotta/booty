@@ -285,100 +285,97 @@ class EtlController extends \yii\web\Controller
         {
             $return = \Yii::$app->db->createCommand( $sql )->bindValues( $params )->execute();  
 
+            // free RAM
+            unset( $sql );
+            unset( $params );
+
+
             // re-enable autostopped cluster assignments for campaigns which conversion/s arrived in time
-            if ( $return === 0 || $return>0 )
-            {
-                // free RAM
-                unset( $sql );
-                unset( $params );
-
-                $clickIDs = '';
-
-                foreach ( $convs AS $clickID => $convTime )
-                {
-                    if ( $clickIDs != '' )
-                        $clickIDs .= ',';
-
-                    $clickIDs .= '"'.$clickID.'"';
-                }
-
-                $sql = '
-                    SELECT
-                        c.D_Campaign_id AS campaign_id,                      
-                        cl.cluster_id AS cluster_id
-                    FROM F_CampaignLogs c 
-                    LEFT JOIN F_ClusterLogs cl ON cl.session_hash=c.session_hash 
-                    WHERE 
-                        c.click_time >= date(c.conv_time - INTERVAL '.self::CONV_WAIT_TIME.' DAY) 
-                        AND c.click_id IN ( '.$clickIDs.' ) 
-                    GROUP BY c.D_Campaign_id, cl.cluster_id;
-                ';
-
-                $chcs = \Yii::$app->db->createCommand( $sql )->queryAll();
-
-                if ( !empty($chcs) )
-                {
-                    $this->_redis->select(0);
-
-                    foreach ( $chcs as $chc )
-                    {
-                        $this->_redis->zadd( 'clusterimps:'.$chc['cluster_id'], 0, $chc['campaign_id'] );                         
-
-                        $chci = models\ClustersHasCampaigns::findOne([
-                            'Campaigns_id' => $chc['campaign_id'], 
-                            'Clusters_id' => $chc['cluster_id'] 
-                        ]);
-
-                        if ( $chci && ( $chci->autostopped==true || $chci->autostopped==1 ) )
-                        {
-                            if ( $chci->prev_freq )
-                                $chci->delivery_freq = $chci->prev_freq;                      
-                            else
-                                $chci->delivery_freq = 2;
-
-                            $chci->prev_freq     = null;
-                            $chci->autostopped   = false;                            
-
-                            if ( $chci->save() )
-                            {
-                                models\CampaignsChangelog::log( $chc['campaign_id'], 'autostop_off', null, $chc['cluster_id'] );
-
-                                if ( $chci->campaigns->app_id )
-                                {                                
-                                    $packageIds = json_decode($chci->campaigns->app_id);
-
-                                    foreach ( $packageIds as $packageId )
-                                    {                                    
-                                        $this->_redis->zadd( 
-                                            'clusterlist:'.$chc['cluster_id'], 
-                                            $chci->delivery_freq, 
-                                            $chc['campaign_id'].':'.$chci->campaigns->affiliates->id.':'.$packageId
-                                        );
-                                    }
-                                }                               
-                            }
-                        }
-
-                        unset( $chci );
-                    }
-
-                    switch ( $this->_db )
-                    {
-                        case 'yesterday':
-                            $this->_redis->select( $this->_getYesterdayConvDatabase() );
-                        break;
-                        case 'current':
-                            $this->_redis->select( $this->_getCurrentConvDatabase() );
-                        break;
-                    }    
-                }                            
-            }
-
+            $clickIDs = '';
 
             foreach ( $convs AS $clickID => $convTime )
             {
+                if ( $clickIDs != '' )
+                    $clickIDs .= ',';
+
+                $clickIDs .= '"'.$clickID.'"';
+            }
+
+            $sql = '
+                SELECT
+                    c.D_Campaign_id AS campaign_id,                      
+                    cl.cluster_id AS cluster_id
+                FROM F_CampaignLogs c 
+                LEFT JOIN F_ClusterLogs cl ON cl.session_hash=c.session_hash 
+                WHERE 
+                    c.click_time >= date(c.conv_time - INTERVAL '.self::CONV_WAIT_TIME.' DAY) 
+                    AND c.click_id IN ( '.$clickIDs.' ) 
+                GROUP BY c.D_Campaign_id, cl.cluster_id;
+            ';
+
+            $chcs = \Yii::$app->db->createCommand( $sql )->queryAll();
+
+            if ( !empty($chcs) )
+            {
+                $this->_redis->select(0);
+
+                foreach ( $chcs as $chc )
+                {
+                    $this->_redis->zadd( 'clusterimps:'.$chc['cluster_id'], 0, $chc['campaign_id'] );                         
+
+                    $chci = models\ClustersHasCampaigns::findOne([
+                        'Campaigns_id' => $chc['campaign_id'], 
+                        'Clusters_id' => $chc['cluster_id'] 
+                    ]);
+
+                    if ( $chci && ( $chci->autostopped==true || $chci->autostopped==1 ) )
+                    {
+                        if ( $chci->prev_freq )
+                            $chci->delivery_freq = $chci->prev_freq;
+                        else
+                            $chci->delivery_freq = 2;
+
+                        $chci->prev_freq     = null;
+                        $chci->autostopped   = false;                            
+                        if ( $chci->save() )
+                        {
+                            models\CampaignsChangelog::log( $chc['campaign_id'], 'autostop_off', null, $chc['cluster_id'] );
+
+                            if ( $chci->campaigns->app_id )
+                            {                                
+                                $packageIds = json_decode($chci->campaigns->app_id);
+
+                                foreach ( $packageIds as $packageId )
+                                {                                    
+                                    $this->_redis->zadd( 
+                                        'clusterlist:'.$chc['cluster_id'], 
+                                        $chci->delivery_freq, 
+                                        $chc['campaign_id'].':'.$chci->campaigns->affiliates->id.':'.$packageId
+                                    );
+                                }
+                            }                               
+                        }
+                    }
+
+                    unset( $chci );
+                }
+
+                switch ( $this->_db )
+                {
+                    case 'yesterday':
+                        $this->_redis->select( $this->_getYesterdayConvDatabase() );
+                    break;
+                    case 'current':
+                        $this->_redis->select( $this->_getCurrentConvDatabase() );
+                    break;
+                }    
+            }                
+
+            // mark conversions as loaded
+            foreach ( $convs AS $clickID => $convTime )
+            {
                 $this->_redis->zadd( 'loadedconvs', $this->_timestamp, $clickID );
-                $this->_redis->zrem( 'convs', $clickID );                
+                $this->_redis->zrem( 'convs', $clickID );
             }
 
             return count($convs);
