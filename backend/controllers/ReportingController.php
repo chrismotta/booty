@@ -558,7 +558,140 @@ class ReportingController extends Controller
         }
 
         return $mbPrefixes;
-    }    
+    }   
+
+
+    public function actionFillpivotreport  ( $date = null, $offset = 4 )
+    {
+        $start    = time();
+        
+        $date = isset($_GET['date']) && $_GET['date'] ? $_GET['date'] : 'CURDATE()';
+
+        if ( !$date )
+        {
+            $where = '
+                DATE(IF(conv_time is not null, conv_time, imp_time)) = CURDATE()
+                OR ( 
+                    DATE(IF(conv_time is not null, conv_time, imp_time)) = SUBDATE(CURDATE(), 1) 
+                    AND HORUR(DATE(IF(conv_time is not null, conv_time, imp_time))) >= 24-'.$offset.'
+                ) 
+            ';
+        }
+        else
+        {
+            $where = '
+                DATE(IF(conv_time is not null, conv_time, imp_time)) = "'.$date.'" 
+            ';
+        }
+
+        $sql = '
+            INSERT IGNORE INTO Pivot_Report(
+                id,
+                date,
+                cluster_id,
+                cluster_name,
+                affiliate_id,
+                affiliate_name,
+                campaign_id,
+                campaign_name,
+                publisher_id,
+                publisher_name,
+                placement_id,
+                placement_name,
+                country,
+                carrier,
+                connection_type,
+                pub_id,
+                subpub_id,
+                app_id,
+                imp_status,
+                imps,
+                unique_users,
+                clicks,
+                convs,
+                revenue,
+                cost
+            )
+            SELECT * FROM ( 
+                SELECT
+                    MD5(CONCAT(
+                        DATE(IF(conv_time is not null, conv_time, imp_time)), 
+                        cluster_id, 
+                        IF(D_Campaign.Affiliates_id is not null, D_Campaign.Affiliates_id, ""),
+                        IF(F_CampaignLogs.D_Campaign_id is not null, F_CampaignLogs.D_Campaign_id, ""),
+                        IF(Publishers_id is not null, Publishers_id, ""),
+                        IF(F_ClusterLogs.D_Placement_id is not null, F_ClusterLogs.D_Placement_id, ""),
+                        IF(F_ClusterLogs.country is not null, F_ClusterLogs.country, ""),
+                        IF(F_ClusterLogs.carrier is not null, F_ClusterLogs.carrier, ""),
+                        IF(F_ClusterLogs.connection_type is not null, F_ClusterLogs.connection_type, ""),
+                        IF(pub_id is not null, pub_id, ""),
+                        IF(subpub_id is not null, subpub_id, ""),
+                        IF(Campaigns.app_id is not null, Campaigns.app_id, ""),
+                        imp_status 
+                    )) as id,
+                    DATE(IF(conv_time is not null, conv_time, imp_time)) as date, 
+                    cluster_id, 
+                    F_ClusterLogs.cluster_name as cluster_name, 
+                    D_Campaign.Affiliates_id as affiliate_id, 
+                    Affiliates_name as affiliate_name, 
+                    F_CampaignLogs.D_Campaign_id as campaign_id, 
+                    D_Campaign.name as campaign_name,  
+                    Publishers_id as publisher_id,
+                    Publishers_name as publisher_name,  
+                    F_ClusterLogs.D_Placement_id as placement_id, 
+                    D_Placement.name as placement_name, 
+                    F_ClusterLogs.country as country,
+                    F_ClusterLogs.carrier as carrier,
+                    F_ClusterLogs.connection_type as connection_type,
+                    pub_id,
+                    subpub_id,
+                    Campaigns.app_id as app_id,            
+                    imp_status,
+                    ceil(sum(if(clicks>0,imps/clicks,imps))) as imps,
+                    count(F_ClusterLogs.session_hash) as unique_users,
+                    count(click_id) as clicks,
+                    count(conv_time) as convs,
+                    sum(revenue) as revenue,
+                    sum(if(clicks>0, cost/clicks, cost)) as cost
+
+                FROM F_CampaignLogs 
+
+                LEFT JOIN D_Campaign ON (D_Campaign.id=F_CampaignLogs.D_Campaign_id)
+                LEFT JOIN Campaigns ON ( Campaigns.id=F_CampaignLogs.D_Campaign_id )
+                RIGHT JOIN F_ClusterLogs ON (F_ClusterLogs.session_hash=F_CampaignLogs.session_hash) 
+                LEFT JOIN D_Placement ON ( F_ClusterLogs.D_Placement_id=D_Placement.id ) 
+
+                WHERE '.$where.' 
+                    
+                GROUP BY 
+                    DATE(IF(conv_time is not null, conv_time, imp_time)), 
+                    cluster_id, 
+                    D_Campaign.Affiliates_id, 
+                    F_CampaignLogs.D_Campaign_id, 
+                    Publishers_id, 
+                    F_ClusterLogs.D_Placement_id,
+                    F_ClusterLogs.country,
+                    F_ClusterLogs.carrier,
+                    F_ClusterLogs.connection_type,
+                    pub_id,
+                    subpub_id,
+                    Campaigns.app_id,
+                    imp_status                         
+            ) as r 
+
+            ON DUPLICATE KEY UPDATE 
+                imps = r.imps, 
+                convs = r.convs,
+                cost = r.cost,
+                revenue = r.revenue;
+        ';
+
+        $return = \Yii::$app->db->createCommand( $sql )->execute();
+
+        $elapsed = time() - $start;
+
+        echo 'Report created: '.$return.' logs inserted - Elapsed time: '.$elapsed.' seg.<hr/>';           
+    }
 
     /**
      * Displays a single CampaignLogs model.
