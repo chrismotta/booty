@@ -561,10 +561,13 @@ class ReportingController extends Controller
     }   
 
 
-    public function actionFillpivotreport  ( $date = null, $offset = 4 )
+    public function actionFillpivotreport  ( $date = null, $offset = 4, $limit = 10 )
     {
+        ini_set('memory_limit','3000M');
+        set_time_limit(0);
+
         $start    = time();
-        
+
         $date = isset($_GET['date']) && $_GET['date'] ? $_GET['date'] : 'CURDATE()';
 
         if ( !$date )
@@ -676,7 +679,9 @@ class ReportingController extends Controller
                     pub_id,
                     subpub_id,
                     Campaigns.app_id,
-                    imp_status                         
+                    imp_status   
+
+                LIMIT '.$limit.'                     
             ) as r 
 
             ON DUPLICATE KEY UPDATE 
