@@ -1645,7 +1645,7 @@ class EtlController extends \yii\web\Controller
 
         if ( $clusterLogs )
         {
-            $sql = 'DELETE FROM F_CampaignLogs WHERE DATE(imp_time) = '.$date.';';
+            $sql = 'DELETE FROM F_ClusterLogs WHERE DATE(imp_time) = '.$date.';';
             
             \Yii::$app->db->createCommand( $sql )->execute();
         }
@@ -1681,7 +1681,7 @@ class EtlController extends \yii\web\Controller
         if ( $campaignLogs )
         {
             $sql = 'DELETE FROM F_CampaignLogs WHERE DATE(IF(conv_time is not null, conv_time, click_time)) = '.$date.';';
-            
+
             \Yii::$app->db->createCommand( $sql )->execute();
         }
 
