@@ -1573,4 +1573,122 @@ class EtlController extends \yii\web\Controller
         }
     }
 
+
+    public function actionStorelogs ( $date = null )
+    {
+        $start = time();
+
+        ini_set('memory_limit','3000M');
+        set_time_limit(0);        
+
+        if ( $date )
+            $date = '"'.$date.'"';
+        else
+            $date = 'CURDATE() - INTERVAL 1 DAY';
+
+
+        $sql = '
+            INSERT INTO F_ClusterLogs_Store (
+                session_hash,
+                D_Placement_id,
+                D_Campaign_id,
+                cluster_id,
+                cluster_name,
+                imps,
+                imp_time,
+                clicks,
+                country,
+                connection_type,
+                carrier,
+                device,
+                device_model,
+                device_brand,
+                os,
+                os_version,
+                browser,
+                browser_version,
+                cost,
+                exchange_id,
+                device_id,
+                imp_status
+            )
+            SELECT
+                session_hash,
+                D_Placement_id,
+                D_Campaign_id,
+                cluster_id,
+                cluster_name,
+                imps,
+                imp_time,
+                clicks,
+                country,
+                connection_type,
+                carrier,
+                device,
+                device_model,
+                device_brand,
+                os,
+                os_version,
+                browser,
+                browser_version,
+                cost,
+                exchange_id,
+                device_id,
+                imp_status
+
+            FROM F_ClusterLogs
+
+            WHERE DATE(imp_time) = '.$date.';      
+        ';
+
+        $clusterLogs = \Yii::$app->db->createCommand( $sql )->execute();
+
+        if ( $clusterLogs )
+        {
+            $sql = 'DELETE FROM F_CampaignLogs WHERE DATE(imp_time) = '.$date.';';
+            
+            \Yii::$app->db->createCommand( $sql )->execute();
+        }
+
+        $clusterLogsElapsed = time() - $start;
+
+        $sql = '
+            INSERT INTO F_CampaignLogs_Store(
+                click_id,
+                D_Campaign_id,
+                D_Placement_id,
+                session_hash,
+                click_time,
+                conv_time,
+                revenue
+            )
+            SELECT
+                click_id,
+                D_Campaign_id,
+                D_Placement_id,
+                session_hash,
+                click_time,
+                conv_time,
+                revenue
+
+            FROM F_CampaignLogs
+
+            WHERE DATE(IF(conv_time is not null, conv_time, click_time)) = '.$date.';      
+        ';
+
+        $campaignLogs = \Yii::$app->db->createCommand( $sql )->execute();
+
+        if ( $campaignLogs )
+        {
+            $sql = 'DELETE FROM F_CampaignLogs WHERE DATE(IF(conv_time is not null, conv_time, click_time)) = '.$date.';';
+            
+            \Yii::$app->db->createCommand( $sql )->execute();
+        }
+
+        $campaignLogsElapsed = time() - $start;
+
+        echo 'Cluster Logs Stored: '.count($clusterLogs).' - Elapsed time: '.$clusterLogsElapsed.' seg.<hr/>';        
+        echo 'Campaign Logs Stored: '.count($campaignLogs).' - Elapsed time: '.$campaignLogsElapsed.' seg.<hr/>';                
+    }
+
 }
