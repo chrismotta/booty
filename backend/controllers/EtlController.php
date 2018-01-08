@@ -1574,21 +1574,43 @@ class EtlController extends \yii\web\Controller
     }
 
 
-    public function actionStorelogs ( $date = null )
+    public function actionStorelogs ( $date_start = null, $date_end = null, $move = false )
     {
         $start = time();
 
         ini_set('memory_limit','3000M');
         set_time_limit(0);        
 
-        if ( $date )
-            $date = '"'.$date.'"';
+
+        if ( $date_start )
+        {
+            $tableName  = date('y_m', strtotime($date_start));
+            $date_start = '"'.$date_start.'"';
+
+            if ( $date_end )
+            {
+                $tableName2 = date('y_m', strtotime($date_end));
+                $date_end   = '"'.$date_end.'"';
+            }
+            else
+            {
+                $tableName2 = date('y_m');
+                $date_end = 'CURDATE() - INTERVAL 1 DAY';
+            }
+
+            if ( $tableName != $tableName2 )
+                die('Date range must be within the same month');
+        }
         else
-            $date = 'CURDATE() - INTERVAL 1 DAY';
+        {
+            $tableName  = date('y_m');
+            $date_start = 'CURDATE() - INTERVAL 1 DAY';
+            $date_end   = 'CURDATE() - INTERVAL 1 DAY';
+        }
 
 
         $sql = '
-            INSERT INTO F_ClusterLogs_Store (
+            INSERT INTO F_ClusterLogs_'.$tableName.' (
                 session_hash,
                 D_Placement_id,
                 D_Campaign_id,
@@ -1638,22 +1660,26 @@ class EtlController extends \yii\web\Controller
 
             FROM F_ClusterLogs
 
-            WHERE DATE(imp_time) = '.$date.';      
+            WHERE DATE(imp_time) BETWEEN '.$date_start.' AND '.$date_end.' 
+            
+            ON DUPLICATE KEY UPDATE cost=VALUES(cost), imps=VALUES(imps);
         ';
 
         $clusterLogs = \Yii::$app->db->createCommand( $sql )->execute();
 
-        if ( $clusterLogs )
+        if ( $move && $clusterLogs )
         {
-            $sql = 'DELETE FROM F_ClusterLogs WHERE DATE(imp_time) = '.$date.';';
+            $sql = 'DELETE FROM F_ClusterLogs WHERE DATE(imp_time) BETWEEN '.$date_start.' AND '.$date_end.';';
             
             \Yii::$app->db->createCommand( $sql )->execute();
         }
 
         $clusterLogsElapsed = time() - $start;
 
+        $start = time();
+
         $sql = '
-            INSERT INTO F_CampaignLogs_Store(
+            INSERT INTO F_CampaignLogs_'.$tableName.' (
                 click_id,
                 D_Campaign_id,
                 D_Placement_id,
@@ -1673,14 +1699,15 @@ class EtlController extends \yii\web\Controller
 
             FROM F_CampaignLogs
 
-            WHERE DATE(IF(conv_time is not null, conv_time, click_time)) = '.$date.';      
+            WHERE DATE(IF(conv_time is not null, conv_time, click_time)) BETWEEN '.$date_start.' AND '.$date_end.' 
+            ON DUPLICATE KEY UPDATE click_time=VALUES(click_time);
         ';
 
         $campaignLogs = \Yii::$app->db->createCommand( $sql )->execute();
 
-        if ( $campaignLogs )
+        if ( $move && $campaignLogs )
         {
-            $sql = 'DELETE FROM F_CampaignLogs WHERE DATE(IF(conv_time is not null, conv_time, click_time)) = '.$date.';';
+            $sql = 'DELETE FROM F_CampaignLogs WHERE DATE(IF(conv_time is not null, conv_time, click_time)) BETWEEN '.$date_start.' AND '.$date_end.';';
 
             \Yii::$app->db->createCommand( $sql )->execute();
         }
