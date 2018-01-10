@@ -1710,4 +1710,52 @@ class EtlController extends \yii\web\Controller
         echo 'Campaign Logs Stored: '.count($campaignLogs).' - Elapsed time: '.$campaignLogsElapsed.' seg.<hr/>';                
     }
 
+
+    public function actionClickcount ( $campaign_id )
+    {
+        $start           = time();
+
+        switch ( $this->_db )
+        {
+            case 'yesterday':
+                $this->_redis->select( $this->_getYesterdayDatabase() );
+            break;
+            case 'current':
+                $this->_redis->select( $this->_getCurrentDatabase() );
+            break;
+        }    
+
+        $clusterLogCount = $this->_redis->zcard( 'sessionhashes' );
+        $queries         = ceil( $clusterLogCount/$this->_objectLimit );
+        $clicks          = 0;
+
+
+        // build separate sql queries based on $_objectLimit in order to control memory usage
+        for ( $i=0; $i<$queries; $i++ )
+        {
+            $clickIDs = $this->_redis->zrange( 'clickids', 0, $this->_objectLimit );
+
+            if ( $clickIDs )
+            {
+                // add each campaign log to sql query
+                foreach ( $clickIDs as $clickID )
+                {
+                    $campaignLog = $this->_redis->hgetall( 'campaignlog:'.$clickID );
+
+                    if ( 
+                        $campaign_id==$campaignLog['campaign_id'] 
+                        && $campaignLog['click_time'] 
+                    )
+                    {
+                        $clicks++;
+                    }
+                }
+            }
+        }
+
+        $elapsed = time() - $start;
+
+        echo 'Clicks: '.$clicks.' - elapsed time: '.$elapsed.' seg.<hr/>';
+    }
+
 }
