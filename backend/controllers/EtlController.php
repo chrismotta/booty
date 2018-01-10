@@ -1711,7 +1711,7 @@ class EtlController extends \yii\web\Controller
     }
 
 
-    public function actionClickcount ( $campaign_id, $date = null )
+    public function actionClickcount ( $campaign_id, $date = null, $loaded = true )
     {
         if ( !$campaign_id )
             die('Please enter a valid Campaign ID');
@@ -1733,8 +1733,12 @@ class EtlController extends \yii\web\Controller
         else
             $tstamp = strtotime( date('Y-m-d') );
 
+        if ( $loaded )
+            $index = 'loadedclicks';
+        else
+            $index = 'clickids';
 
-        $clusterLogCount = $this->_redis->zcard( 'sessionhashes' );
+        $clusterLogCount = $this->_redis->zcard( $index );
         $queries         = ceil( $clusterLogCount/$this->_objectLimit );
         $clicks          = 0;
 
