@@ -1763,6 +1763,8 @@ class EtlController extends \yii\web\Controller
                     {
                         $clicks++;
                     }
+
+                    unset($campaignLog);
                 }
             }
         }
