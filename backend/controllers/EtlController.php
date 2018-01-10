@@ -1711,8 +1711,11 @@ class EtlController extends \yii\web\Controller
     }
 
 
-    public function actionClickcount ( $campaign_id )
+    public function actionClickcount ( $campaign_id, $date = null )
     {
+        if ( !$campaign_id )
+            die('Please enter a valid Campaign ID');
+
         $start           = time();
 
         switch ( $this->_db )
@@ -1724,6 +1727,12 @@ class EtlController extends \yii\web\Controller
                 $this->_redis->select( $this->_getCurrentDatabase() );
             break;
         }    
+
+        if ( $date )
+            $tstamp = strtotime( $date );
+        else
+            $tstamp = strtotime( date('Y-m-d') );
+
 
         $clusterLogCount = $this->_redis->zcard( 'sessionhashes' );
         $queries         = ceil( $clusterLogCount/$this->_objectLimit );
@@ -1743,8 +1752,9 @@ class EtlController extends \yii\web\Controller
                     $campaignLog = $this->_redis->hgetall( 'campaignlog:'.$clickID );
 
                     if ( 
-                        $campaign_id==$campaignLog['campaign_id'] 
-                        && $campaignLog['click_time'] 
+                        $campaign_id == $campaignLog['campaign_id'] 
+                        && $campaignLog['click_time'] >= $tstamp 
+                        && $campaignLog['click_time'] <= $tstamp+86400 
                     )
                     {
                         $clicks++;
