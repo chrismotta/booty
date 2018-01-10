@@ -1746,7 +1746,7 @@ class EtlController extends \yii\web\Controller
         // build separate sql queries based on $_objectLimit in order to control memory usage
         for ( $i=0; $i<$queries; $i++ )
         {
-            $clickIDs = $this->_redis->zrange( 'clickids', 0, $this->_objectLimit );
+            $clickIDs = $this->_redis->zrangebyscore( 'clickids', 0, $this->_objectLimit, $tstamp, $tstamp+86400 );
 
             if ( $clickIDs )
             {
@@ -1755,14 +1755,8 @@ class EtlController extends \yii\web\Controller
                 {
                     $campaignLog = $this->_redis->hgetall( 'campaignlog:'.$clickID );
 
-                    if ( 
-                        $campaign_id == $campaignLog['campaign_id'] 
-                        && $campaignLog['click_time'] >= $tstamp 
-                        && $campaignLog['click_time'] <= $tstamp+86400 
-                    )
-                    {
+                    if ( $campaign_id == $campaignLog['campaign_id'] )
                         $clicks++;
-                    }
 
                     unset($campaignLog);
                 }
