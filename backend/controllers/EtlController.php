@@ -1243,9 +1243,6 @@ class EtlController extends \yii\web\Controller
 
         $sql = '
             INSERT IGNORE INTO Dashboard (                
-                country,
-                Affiliates_id,
-                Publishers_id,
                 date,
                 imps,
                 unique_users,
@@ -1255,9 +1252,6 @@ class EtlController extends \yii\web\Controller
             ) 
             SELECT * FROM (
                 SELECT 
-                    cl.country               AS country, 
-                    c.Affiliates_id          AS Affiliates_id,
-                    p.Publishers_id          AS Publishers_id,
                     date(if(cp.conv_time is not null, cp.conv_time, cl.imp_time)) AS date, 
                     ceil(sum(if(cl.clicks>0,cl.imps/cl.clicks,cl.imps))) AS imps,
                     ceil(sum(if(cl.clicks>0, 1/cl.clicks, 1))) AS unique_users,
@@ -1267,14 +1261,11 @@ class EtlController extends \yii\web\Controller
 
                 FROM F_CampaignLogs cp 
 
-                LEFT JOIN D_Campaign c       ON ( cp.D_Campaign_id= c.id ) 
                 RIGHT JOIN F_ClusterLogs cl  ON ( cp.session_hash = cl.session_hash ) 
-                LEFT JOIN D_Placement p      ON ( cl.D_Placement_id = p.id )
+                WHERE date(if(cp.conv_time is not null, cp.conv_time, cl.imp_time))="'.$date.'"
 
-                WHERE date(if(cp.conv_time is not null, cp.conv_time, cl.imp_time))="'.$date.'" 
                 GROUP BY
-                    date(if(cp.conv_time is not null, cp.conv_time, cl.imp_time)),
-                    cl.country 
+                    date(if(cp.conv_time is not null, cp.conv_time, cl.imp_time)) 
             ) AS r
 
             ON DUPLICATE KEY UPDATE 
@@ -1282,7 +1273,6 @@ class EtlController extends \yii\web\Controller
                 unique_users = r.unique_users, 
                 installs = r.installs, 
                 cost = r.cost, 
-                country = r.country,
                 revenue = r.revenue;
         ';
 
