@@ -1755,8 +1755,14 @@ class EtlController extends \yii\web\Controller
                 {
                     $campaignLog = $this->_redis->hgetall( 'campaignlog:'.$clickID );
 
-                    if ( $campaign_id == $campaignLog['campaign_id'] )
+                    if ( 
+                        $campaign_id == $campaignLog['campaign_id'] 
+                        && $campaignLog['click_time'] >= $tstamp 
+                        && $campaignLog['click_time'] <= $tstamp+86400 
+                    )
+                    {
                         $clicks++;
+                    }
 
                     unset($campaignLog);
                 }
