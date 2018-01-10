@@ -1242,7 +1242,8 @@ class EtlController extends \yii\web\Controller
         $date = isset($_GET['date']) && $_GET['date'] ? $_GET['date'] : date( 'Y-m-d' );
 
         $sql = '
-            INSERT IGNORE INTO Dashboard (                
+            INSERT IGNORE INTO Dashboard ( 
+                country,               
                 date,
                 imps,
                 unique_users,
@@ -1252,6 +1253,7 @@ class EtlController extends \yii\web\Controller
             ) 
             SELECT * FROM (
                 SELECT 
+                    00 as country,
                     date(if(cp.conv_time is not null, cp.conv_time, cl.imp_time)) AS date, 
                     ceil(sum(if(cl.clicks>0,cl.imps/cl.clicks,cl.imps))) AS imps,
                     ceil(sum(if(cl.clicks>0, 1/cl.clicks, 1))) AS unique_users,
