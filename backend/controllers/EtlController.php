@@ -1566,6 +1566,17 @@ class EtlController extends \yii\web\Controller
     }
 
 
+    public function actionRedshift ( )
+    {
+        $db = new \PDO( 
+            'pgsql:host=dinky.cspssu6efoeo.us-east-1.redshift.amazonaws.com;port=5439;dbname=dinky',
+            'root',
+            'spl4dPr0j3ct'
+        );
+
+        var_dump($db);
+    }
+
     public function actionStorelogs ( $date_start = null, $date_end = null, $move = false )
     {
         $start = time();
