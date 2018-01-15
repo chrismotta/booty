@@ -1804,8 +1804,6 @@ class EtlController extends \yii\web\Controller
 
             $clusterLogs = \Yii::$app->db->createCommand( $q )->queryAll();
 
-            var_dump($clusterLogs);die();
-
             if ( $clusterLogs )
             {
                 foreach ( $clusterLogs as $row )
@@ -1890,6 +1888,8 @@ class EtlController extends \yii\web\Controller
             {
                 $results = false;
             }
+
+            $results = false;
 
         }
 
