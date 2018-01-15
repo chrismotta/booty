@@ -1875,9 +1875,11 @@ class EtlController extends \yii\web\Controller
 
                 if ( !$statement->execute() )
                 {
-                    var_dump($statement->errorInfo());die();
+                    var_dump($statement->errorInfo());
 
                     echo '<hr>'. $insert;
+
+                    die();
                 }
 
                 $rows += $statement->rowCount();
