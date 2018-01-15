@@ -1789,6 +1789,9 @@ class EtlController extends \yii\web\Controller
                     if ( !$row['D_Placement_id'] || $row['D_Placement_id']=='' || !preg_match( '/^[0-9]+$/',$row['D_Placement_id'] ) )
                         $row['D_Placement_id'] = 'NULL';
 
+                    if ( !$row['D_Campaign_id'] || $row['D_Campaign_id']=='' || !preg_match( '/^[0-9]+$/',$row['D_Campaign_id'] ) )
+                        $row['D_Campaign_id'] = 'NULL';                    
+
                     if ( $row['pub_id'] && $row['pub_id']!='' )
                         $row['pub_id'] = '"'.$this->_escapeSql( $row['pub_id'] ).'"';
                     else
