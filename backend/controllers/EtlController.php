@@ -1866,9 +1866,7 @@ class EtlController extends \yii\web\Controller
                     )
                     VALUES '.$values.' 
 
-                    ON CONFLICT (session_hash) DO UPDATE SET 
-                        cost=EXCLUDED.cost, 
-                        imps=EXCLUDED.imps;
+                    ON CONFLICT (session_hash) DO NOTHING;
                 ';
 
                 $statement = $db->prepare( $insert );
