@@ -1263,7 +1263,7 @@ class EtlController extends \yii\web\Controller
                 '\Z',
                 '\%',                
                 "\\'",
-                '\\"',
+                'U&"',
                 '\\_'
             ],
             $sql
