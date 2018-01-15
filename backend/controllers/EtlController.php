@@ -1909,7 +1909,7 @@ class EtlController extends \yii\web\Controller
                         '.$row['cluster_id'].',
                         "'.$row['cluster_name'].'",
                         '.$row['imps'].',
-                        '.$row['imp_time'].',
+                        "'.$row['imp_time'].'",
                         '.$clicks.',
                         '.$row['country'].',
                         '.$row['connection_type'].',
