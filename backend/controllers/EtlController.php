@@ -1788,7 +1788,7 @@ class EtlController extends \yii\web\Controller
                 device_id,
                 imp_status
 
-            FROM F_ClusterLogs
+            FROM F_ClusterLogs_'.$tableName.'
 
             WHERE DATE(imp_time) BETWEEN '.$date_start.' AND '.$date_end.' 
         ';
