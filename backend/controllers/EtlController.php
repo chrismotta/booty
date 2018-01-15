@@ -1840,7 +1840,7 @@ class EtlController extends \yii\web\Controller
                 }
 
                 $insert = '
-                    INSERT INTO F_ClusterLogs_'.$tableName.' (
+                    INSERT INTO f_clusterlogs_'.$tableName.' (
                         session_hash,
                         D_Placement_id,
                         D_Campaign_id,
@@ -1873,7 +1873,10 @@ class EtlController extends \yii\web\Controller
 
                 $statement = $db->prepare( $insert );
 
-                $statement->execute();
+                if ( !$statement->execute() )
+                {
+                    var_dump($statement->errorInfo());die();
+                }
 
                 $rows += $statement->rowCount();
 
