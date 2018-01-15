@@ -1764,29 +1764,7 @@ class EtlController extends \yii\web\Controller
         }
 
         $select = '
-            SELECT
-                session_hash,
-                D_Placement_id,
-                D_Campaign_id,
-                cluster_id,
-                cluster_name,
-                imps,
-                imp_time,
-                clicks,
-                country,
-                connection_type,
-                carrier,
-                device,
-                device_model,
-                device_brand,
-                os,
-                os_version,
-                browser,
-                browser_version,
-                cost,
-                exchange_id,
-                device_id,
-                imp_status
+            SELECT *   
 
             FROM F_ClusterLogs_'.$tableName.'
 
@@ -1808,6 +1786,115 @@ class EtlController extends \yii\web\Controller
             {
                 foreach ( $clusterLogs as $row )
                 {
+                    if ( !$row['D_Placement_id'] || $row['D_Placement_id']=='' || !preg_match( '/^[0-9]+$/',$row['D_Placement_id'] ) )
+                        $row['D_Placement_id'] = 'NULL';
+
+                    if ( $row['pub_id'] && $row['pub_id']!='' )
+                        $row['pub_id'] = '"'.$this->_escapeSql( $row['pub_id'] ).'"';
+                    else
+                        $row['pub_id'] = 'NULL';
+
+
+                    if ( $row['subpub_id'] && $row['subpub_id']!='' )
+                        $row['subpub_id'] = '"'.$this->_escapeSql( $row['subpub_id'] ).'"';
+                    else
+                        $row['subpub_id'] = 'NULL';
+
+
+                    if ( $row['exchange_id'] && $row['exchange_id']!='' )
+                        $row['exchange_id'] = '"'.$this->_escapeSql( $row['exchange_id'] ).'"';
+                    else
+                        $row['exchange_id'] = 'NULL';
+
+
+                    if ( $row['country'] && $row['country']!='' )
+                        $row['country'] = '"'.strtoupper($row['country']).'"';
+                    else
+                        $row['country'] = 'NULL';
+
+
+                    if ( $row['carrier'] && $row['carrier']!='' )
+                        $row['carrier'] = '"'.$this->_escapeSql( $row['carrier'] ).'"';
+                    else
+                        $row['carrier'] = 'NULL';
+
+
+                    if ( $row['connection_type'] && $row['connection_type']!='' )
+                    {
+                        if ( $row['connection_type']== '3g' || $row['connection_type']== '3G' )
+                            $row['connection_type']= 'MOBILE';
+
+                        $row['connection_type'] = '"'.strtoupper($row['connection_type']).'"';
+                    }
+                    else
+                        $row['connection_type'] = 'NULL';
+
+
+                    if ( isset($row['idfa']) && $row['idfa'] && $row['idfa']!='' )
+                        $deviceId = '"'.$this->_escapeSql( $row['idfa'] ).'"';
+                    else if ( isset($row['gaid']) && $row['gaid'] && $row['gaid']!='' )
+                        $deviceId = '"'.$this->_escapeSql( $row['gaid'] ).'"';
+                    else if ( $row['device_id'] && $row['device_id']!='' )
+                        $deviceId = '"'.$this->_escapeSql( $row['device_id'] ).'"';                    
+                    else
+                        $deviceId = 'NULL';
+
+
+                    if ( !isset($row['device']) || !$row['device'] || $row['device']=='' )
+                        $row['device'] = 'NULL';
+                    else
+                        $row['device'] = '"'.ucwords(strtolower($row['device'])).'"';
+
+
+                    if ( isset($row['device_brand']) && $row['device_brand'] && $row['device_brand']!='' )
+                        $row['device_brand'] = '"'.$this->_escapeSql( $row['device_brand'] ).'"';
+                    else
+                        $row['device_brand'] = 'NULL';
+
+
+                    if ( isset($row['device_model']) && $row['device_model'] && $row['device_model']!='' )
+                        $row['device_model'] = '"'.$this->_escapeSql( $row['device_model'] ).'"';
+                    else
+                        $row['device_model'] = 'NULL';
+
+
+                    if ( isset($row['os']) && $row['os'] && $row['os']!='' )
+                        $row['os'] = '"'.$this->_escapeSql( $row['os'] ).'"';
+                    else
+                        $row['os'] = 'NULL';
+
+
+                    if ( isset($row['os_version']) && $row['os_version'] && $row['os_version']!='' )
+                        $row['os_version'] = '"'.$this->_escapeSql( $row['os_version'] ).'"';
+                    else
+                        $row['os_version'] = 'NULL';   
+
+
+                    if ( isset($row['browser']) && $row['browser'] && $row['browser']!='' )
+                        $row['browser'] = '"'.$this->_escapeSql( $row['browser'] ).'"';
+                    else
+                        $row['browser'] = 'NULL';  
+
+                    if ( isset($row['browser_version']) && $row['browser_version'] && $row['browser_version']!='' )
+                        $row['browser_version'] = '"'.$this->_escapeSql( $row['browser_version'] ).'"';
+                    else
+                        $row['browser_version'] = 'NULL';
+
+
+                    if ( $row['device']=='Phablet' || $row['device']=='Smartphone' )
+                        $row['device'] = '"mobile"';
+
+                    if ( isset( $row['imp_status'] ) && $row['imp_status'] && $row['imp_status']!='' )
+                        $impStatus = '"'.$row['imp_status'].'"';
+                    else
+                        $impStatus = 'NULL';               
+
+                    if ( isset($row['clicks']) && $row['clicks'] )
+                        $clicks = $row['clicks'];
+                    else
+                        $clicks = 0; 
+
+
                     if ( $values != '' )
                         $values .= ',';
 
@@ -1819,22 +1906,24 @@ class EtlController extends \yii\web\Controller
                         '.$row['cluster_id'].',
                         "'.$row['cluster_name'].'",
                         '.$row['imps'].',
-                        "'.$row['imp_time'].'",
-                        '.$row['clicks'].',
-                        "'.$row['country'].'",
-                        "'.$row['connection_type'].'",
-                        "'.$row['carrier'].'",
-                        "'.$row['device'].'",
-                        "'.$row['device_model'].'",
-                        "'.$row['device_brand'].'",
-                        "'.$row['os'].'",
-                        "'.$row['os_version'].'",
-                        "'.$row['browser'].'",
-                        "'.$row['browser_version'].'",
+                        '.$row['imp_time'].',
+                        '.$clicks.',
+                        '.$row['country'].',
+                        '.$row['connection_type'].',
+                        '.$row['carrier'].',
+                        '.$row['device'].',
+                        '.$row['device_model'].',
+                        '.$row['device_brand'].',
+                        '.$row['os'].',
+                        '.$row['os_version'].',
+                        '.$row['browser'].',
+                        '.$row['browser_version'].',
                         '.$row['cost'].',
-                        "'.$row['exchange_id'].'",
-                        "'.$row['device_id'].'",
-                        "'.$row['imp_status'].'"
+                        '.$row['exchange_id'].',
+                        '.$deviceId.',
+                        '.$impStatus.',
+                        '.$row['pub_id'].',                            
+                        '.$row['subpub_id'].'
                         )                    
                     ';
                 }
@@ -1862,7 +1951,9 @@ class EtlController extends \yii\web\Controller
                         cost,
                         exchange_id,
                         device_id,
-                        imp_status
+                        imp_status,
+                        pub_id,
+                        subpub_id
                     )
                     VALUES '.$values.' 
 
