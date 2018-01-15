@@ -1992,7 +1992,7 @@ class EtlController extends \yii\web\Controller
                         pub_id,
                         subpub_id
                     )
-                    VALUES '.$values.' 
+                    VALUES '.$values.';
                 ';
 
                 $statement = $db->prepare( $insert );
