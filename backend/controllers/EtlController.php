@@ -1799,10 +1799,10 @@ class EtlController extends \yii\web\Controller
 
         while ( $results )
         {
-            $select = ' LIMIT ' . $start_at . ',' . $limit;
+            $q = $select . ' LIMIT ' . $start_at . ',' . $limit;
             $values = '';
 
-            $clusterLogs = \Yii::$app->db->createCommand( $select )->queryAll();
+            $clusterLogs = \Yii::$app->db->createCommand( $q )->queryAll();
 
             var_dump($clusterLogs);die();
 
@@ -1883,6 +1883,8 @@ class EtlController extends \yii\web\Controller
                 $start_at += $this->_objectLimit;    
 
                 unset ( $statement );            
+                unset ( $clusterLogs );
+                unset ( $insert );
             }
             else
             {
