@@ -1893,7 +1893,7 @@ class EtlController extends \yii\web\Controller
 
         }
 
-        $campaignLogsElapsed = time() - $start;
+        $clusterLogsElapsed = time() - $start;
 
         echo 'Cluster Logs Stored: '.count($rows).' - Elapsed time: '.$clusterLogsElapsed.' seg.<hr/>';        
         echo 'Campaign Logs Stored: 0 - Elapsed time: 0 seg.<hr/>';                
