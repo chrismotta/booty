@@ -1846,7 +1846,7 @@ class EtlController extends \yii\web\Controller
                     if ( !isset($row['device']) || !$row['device'] || $row['device']=='' )
                         $row['device'] = 'NULL';
                     else
-                        $row['device'] = '"'.$row['device']).'"';
+                        $row['device'] = '"'.$row['device'].'"';
 
 
                     if ( isset($row['device_brand']) && $row['device_brand'] && $row['device_brand']!='' )
