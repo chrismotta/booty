@@ -1994,7 +1994,7 @@ class EtlController extends \yii\web\Controller
                     )
                     VALUES '.$values.' 
 
-                    ON CONFLICT (session_hash) DO NOTHING;
+                    ON CONFLICT ON CONSTRAINT f_campaignlogs_17_11_session_hash_key DO NOTHING;
                 ';
 
                 $statement = $db->prepare( $insert );
