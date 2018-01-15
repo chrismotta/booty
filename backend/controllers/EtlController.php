@@ -1569,12 +1569,12 @@ class EtlController extends \yii\web\Controller
     public function actionRedshift ( )
     {
         $db = new \PDO( 
-            'pgsql:host=dinky.cspssu6efoeo.us-east-1.redshift.amazonaws.com;port=5439;dbname=dinky',
+            'pgsql:dbname=dinky;host=dinky.cspssu6efoeo.us-east-1.redshift.amazonaws.com;port=5439',
             'root',
             'spl4dPr0j3ct'
         );
 
-        var_dump($db);
+
     }
 
     public function actionStorelogs ( $date_start = null, $date_end = null, $move = false )
@@ -1720,6 +1720,182 @@ class EtlController extends \yii\web\Controller
         echo 'Cluster Logs Stored: '.count($clusterLogs).' - Elapsed time: '.$clusterLogsElapsed.' seg.<hr/>';        
         echo 'Campaign Logs Stored: '.count($campaignLogs).' - Elapsed time: '.$campaignLogsElapsed.' seg.<hr/>';                
     }
+
+
+    public function actionToredshift ( $date_start = null, $date_end = null, $move = false )
+    {
+        $db = new \PDO( 
+            'pgsql:dbname=dinky;host=dinky.cspssu6efoeo.us-east-1.redshift.amazonaws.com;port=5439',
+            'root',
+            'spl4dPr0j3ct'
+        );
+
+        $start          = time();
+        $rows           = 0;
+
+        ini_set('memory_limit','3000M');
+        set_time_limit(0);        
+
+
+        if ( $date_start )
+        {
+            $tableName  = date('y_m', strtotime($date_start));
+            $date_start = '"'.$date_start.'"';
+
+            if ( $date_end )
+            {
+                $tableName2 = date('y_m', strtotime($date_end));
+                $date_end   = '"'.$date_end.'"';
+            }
+            else
+            {
+                $tableName2 = date('y_m');
+                $date_end = 'CURDATE() - INTERVAL 1 DAY';
+            }
+
+            if ( $tableName != $tableName2 )
+                die('Date range must be within the same month');
+        }
+        else
+        {
+            $tableName  = date('y_m');
+            $date_start = 'CURDATE() - INTERVAL 1 DAY';
+            $date_end   = 'CURDATE() - INTERVAL 1 DAY';
+        }
+
+        $select = '
+            SELECT
+                session_hash,
+                D_Placement_id,
+                D_Campaign_id,
+                cluster_id,
+                cluster_name,
+                imps,
+                imp_time,
+                clicks,
+                country,
+                connection_type,
+                carrier,
+                device,
+                device_model,
+                device_brand,
+                os,
+                os_version,
+                browser,
+                browser_version,
+                cost,
+                exchange_id,
+                device_id,
+                imp_status
+
+            FROM F_ClusterLogs
+
+            WHERE DATE(imp_time) BETWEEN '.$date_start.' AND '.$date_end.' 
+        ';
+
+        $results  = true;
+        $limit    = $this->_objectLimit;
+        $start_at = 0;
+
+        while ( $results )
+        {
+            $select = ' LIMIT ' . $start_at . ',' . $limit;
+            $values = '';
+
+            $clusterLogs = \Yii::$app->db->createCommand( $select )->queryAll();
+
+            var_dump($clusterLogs);die();
+
+            if ( $clusterLogs )
+            {
+                foreach ( $clusterLogs as $row )
+                {
+                    if ( $values != '' )
+                        $values .= ',';
+
+                    $values .= '
+                        (
+                        "'.$row['session_hash'].'",
+                        '.$row['D_Placement_id'].',
+                        '.$row['D_Campaign_id'].',
+                        '.$row['cluster_id'].',
+                        "'.$row['cluster_name'].'",
+                        '.$row['imps'].',
+                        '.$row['imp_time'].',
+                        '.$row['clicks'].',
+                        "'.$row['country'].'",
+                        "'.$row['connection_type'].'",
+                        "'.$row['carrier'].'",
+                        "'.$row['device'].'",
+                        "'.$row['device_model'].'",
+                        "'.$row['device_brand'].'",
+                        "'.$row['os'].'",
+                        "'.$row['os_version'].'",
+                        "'.$row['browser'].'",
+                        "'.$row['browser_version'].'",
+                        '.$row['cost'].',
+                        "'.$row['exchange_id'].'",
+                        "'.$row['device_id'].'",
+                        "'.$row['imp_status'].'"
+                        )                    
+                    ';
+                }
+
+                $insert = '
+                    INSERT INTO F_ClusterLogs_'.$tableName.' (
+                        session_hash,
+                        D_Placement_id,
+                        D_Campaign_id,
+                        cluster_id,
+                        cluster_name,
+                        imps,
+                        imp_time,
+                        clicks,
+                        country,
+                        connection_type,
+                        carrier,
+                        device,
+                        device_model,
+                        device_brand,
+                        os,
+                        os_version,
+                        browser,
+                        browser_version,
+                        cost,
+                        exchange_id,
+                        device_id,
+                        imp_status
+                    )
+                    VALUES '.$values.' 
+
+                    ON CONFLICT (session_hash) DO UPDATE SET 
+                        cost=EXCLUDED.cost, 
+                        imps=EXCLUDED.imps;
+                ';
+
+                $statement = $db->prepare( $insert );
+
+                $statement->execute();
+
+                $rows += $statement->rowCount();
+
+                $limit    += $this->_objectLimit;
+                $start_at += $this->_objectLimit;    
+
+                unset ( $statement );            
+            }
+            else
+            {
+                $results = false;
+            }
+
+        }
+
+        $campaignLogsElapsed = time() - $start;
+
+        echo 'Cluster Logs Stored: '.count($rows).' - Elapsed time: '.$clusterLogsElapsed.' seg.<hr/>';        
+        echo 'Campaign Logs Stored: 0 - Elapsed time: 0 seg.<hr/>';                
+    }    
 
 
     public function actionClickcount ( $campaign_id, $date = null, $loaded = true )
