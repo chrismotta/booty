@@ -1237,6 +1237,40 @@ class EtlController extends \yii\web\Controller
     }
 
 
+    private function _escapePostgreSql( $sql )
+    {
+        return preg_replace(
+            [
+                '/(\\\\)/',
+                '/(NUL)/',
+                '/(BS)/',
+                '/(TAB)/',
+                '/(LF)/',
+                '/(CR)/',
+                '/(SUB)/',
+                '/(%)/',                
+                "/(')/",
+                '/(")/',
+                '/(_)/'
+            ],
+            [
+                '\\\\\\',
+                '\0',
+                '\b',
+                '\t',
+                '\n',
+                '\r',
+                '\Z',
+                '\%',                
+                "\\'",
+                '\\"',
+                '\\_'
+            ],
+            $sql
+        );
+    }    
+
+
     public function actionStats ( )
     {
         $date = isset($_GET['date']) && $_GET['date'] ? $_GET['date'] : date( 'Y-m-d' );
@@ -1793,19 +1827,19 @@ class EtlController extends \yii\web\Controller
                         $row['D_Campaign_id'] = 'NULL';                    
 
                     if ( $row['pub_id'] && $row['pub_id']!='' )
-                        $row['pub_id'] = '"'.$this->_escapeSql( $row['pub_id'] ).'"';
+                        $row['pub_id'] = '"'.$this->_escapePostgreSql( $row['pub_id'] ).'"';
                     else
                         $row['pub_id'] = 'NULL';
 
 
                     if ( $row['subpub_id'] && $row['subpub_id']!='' )
-                        $row['subpub_id'] = '"'.$this->_escapeSql( $row['subpub_id'] ).'"';
+                        $row['subpub_id'] = '"'.$this->_escapePostgreSql( $row['subpub_id'] ).'"';
                     else
                         $row['subpub_id'] = 'NULL';
 
 
                     if ( $row['exchange_id'] && $row['exchange_id']!='' )
-                        $row['exchange_id'] = '"'.$this->_escapeSql( $row['exchange_id'] ).'"';
+                        $row['exchange_id'] = '"'.$this->_escapePostgreSql( $row['exchange_id'] ).'"';
                     else
                         $row['exchange_id'] = 'NULL';
 
@@ -1817,7 +1851,7 @@ class EtlController extends \yii\web\Controller
 
 
                     if ( $row['carrier'] && $row['carrier']!='' )
-                        $row['carrier'] = '"'.$this->_escapeSql( $row['carrier'] ).'"';
+                        $row['carrier'] = '"'.$this->_escapePostgreSql( $row['carrier'] ).'"';
                     else
                         $row['carrier'] = 'NULL';
 
@@ -1834,11 +1868,11 @@ class EtlController extends \yii\web\Controller
 
 
                     if ( isset($row['idfa']) && $row['idfa'] && $row['idfa']!='' )
-                        $deviceId = '"'.$this->_escapeSql( $row['idfa'] ).'"';
+                        $deviceId = '"'.$this->_escapePostgreSql( $row['idfa'] ).'"';
                     else if ( isset($row['gaid']) && $row['gaid'] && $row['gaid']!='' )
-                        $deviceId = '"'.$this->_escapeSql( $row['gaid'] ).'"';
+                        $deviceId = '"'.$this->_escapePostgreSql( $row['gaid'] ).'"';
                     else if ( $row['device_id'] && $row['device_id']!='' )
-                        $deviceId = '"'.$this->_escapeSql( $row['device_id'] ).'"';                    
+                        $deviceId = '"'.$this->_escapePostgreSql( $row['device_id'] ).'"';                    
                     else
                         $deviceId = 'NULL';
 
@@ -1850,36 +1884,36 @@ class EtlController extends \yii\web\Controller
 
 
                     if ( isset($row['device_brand']) && $row['device_brand'] && $row['device_brand']!='' )
-                        $row['device_brand'] = '"'.$this->_escapeSql( $row['device_brand'] ).'"';
+                        $row['device_brand'] = '"'.$this->_escapePostgreSql( $row['device_brand'] ).'"';
                     else
                         $row['device_brand'] = 'NULL';
 
 
                     if ( isset($row['device_model']) && $row['device_model'] && $row['device_model']!='' )
-                        $row['device_model'] = '"'.$this->_escapeSql( $row['device_model'] ).'"';
+                        $row['device_model'] = '"'.$this->_escapePostgreSql( $row['device_model'] ).'"';
                     else
                         $row['device_model'] = 'NULL';
 
 
                     if ( isset($row['os']) && $row['os'] && $row['os']!='' )
-                        $row['os'] = '"'.$this->_escapeSql( $row['os'] ).'"';
+                        $row['os'] = '"'.$this->_escapePostgreSql( $row['os'] ).'"';
                     else
                         $row['os'] = 'NULL';
 
 
                     if ( isset($row['os_version']) && $row['os_version'] && $row['os_version']!='' )
-                        $row['os_version'] = '"'.$this->_escapeSql( $row['os_version'] ).'"';
+                        $row['os_version'] = '"'.$this->_escapePostgreSql( $row['os_version'] ).'"';
                     else
                         $row['os_version'] = 'NULL';   
 
 
                     if ( isset($row['browser']) && $row['browser'] && $row['browser']!='' )
-                        $row['browser'] = '"'.$this->_escapeSql( $row['browser'] ).'"';
+                        $row['browser'] = '"'.$this->_escapePostgreSql( $row['browser'] ).'"';
                     else
                         $row['browser'] = 'NULL';  
 
                     if ( isset($row['browser_version']) && $row['browser_version'] && $row['browser_version']!='' )
-                        $row['browser_version'] = '"'.$this->_escapeSql( $row['browser_version'] ).'"';
+                        $row['browser_version'] = '"'.$this->_escapePostgreSql( $row['browser_version'] ).'"';
                     else
                         $row['browser_version'] = 'NULL';
 
