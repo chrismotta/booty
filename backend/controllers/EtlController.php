@@ -1263,7 +1263,7 @@ class EtlController extends \yii\web\Controller
                 '\Z',
                 '\%',                
                 "\\'",
-                '\\\"',
+                '\\\\"',
                 '\\_'
             ],
             $sql
@@ -1756,7 +1756,7 @@ class EtlController extends \yii\web\Controller
     }
 
 
-    public function actionToredshift ( $date_start = null, $date_end = null, $move = false )
+    public function actionToredshift ( $date_start = null, $date_end = null )
     {
         $db = new \PDO( 
             'pgsql:dbname=prod;host=dinky.cspssu6efoeo.us-east-1.redshift.amazonaws.com;port=5439',
