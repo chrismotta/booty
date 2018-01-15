@@ -1786,38 +1786,38 @@ class EtlController extends \yii\web\Controller
             {
                 foreach ( $clusterLogs as $row )
                 {
-                    if ( !$row['D_Placement_id'] || $row['D_Placement_id']=='' || !preg_match( '/^[0-9]+$/',$row['D_Placement_id'] ) )
+                    if ( !$row['D_Placement_id'] || $row['D_Placement_id']=='' )
                         $row['D_Placement_id'] = 'NULL';
 
-                    if ( !$row['D_Campaign_id'] || $row['D_Campaign_id']=='' || !preg_match( '/^[0-9]+$/',$row['D_Campaign_id'] ) )
+                    if ( !$row['D_Campaign_id'] || $row['D_Campaign_id']=='' )
                         $row['D_Campaign_id'] = 'NULL';                    
 
                     if ( $row['pub_id'] && $row['pub_id']!='' )
-                        $row['pub_id'] = '"'.$this->_escapeSql( $row['pub_id'] ).'"';
+                        $row['pub_id'] = '"'. $row['pub_id'] .'"';
                     else
                         $row['pub_id'] = 'NULL';
 
 
                     if ( $row['subpub_id'] && $row['subpub_id']!='' )
-                        $row['subpub_id'] = '"'.$this->_escapeSql( $row['subpub_id'] ).'"';
+                        $row['subpub_id'] = '"'. $row['subpub_id'] .'"';
                     else
                         $row['subpub_id'] = 'NULL';
 
 
                     if ( $row['exchange_id'] && $row['exchange_id']!='' )
-                        $row['exchange_id'] = '"'.$this->_escapeSql( $row['exchange_id'] ).'"';
+                        $row['exchange_id'] = '"'.$row['exchange_id'].'"';
                     else
                         $row['exchange_id'] = 'NULL';
 
 
                     if ( $row['country'] && $row['country']!='' )
-                        $row['country'] = '"'.strtoupper($row['country']).'"';
+                        $row['country'] = '"'.$row['country'].'"';
                     else
                         $row['country'] = 'NULL';
 
 
                     if ( $row['carrier'] && $row['carrier']!='' )
-                        $row['carrier'] = '"'.$this->_escapeSql( $row['carrier'] ).'"';
+                        $row['carrier'] = '"'. $row['carrier'] .'"';
                     else
                         $row['carrier'] = 'NULL';
 
@@ -1827,18 +1827,18 @@ class EtlController extends \yii\web\Controller
                         if ( $row['connection_type']== '3g' || $row['connection_type']== '3G' )
                             $row['connection_type']= 'MOBILE';
 
-                        $row['connection_type'] = '"'.strtoupper($row['connection_type']).'"';
+                        $row['connection_type'] = '"'.$row['connection_type'].'"';
                     }
                     else
                         $row['connection_type'] = 'NULL';
 
 
                     if ( isset($row['idfa']) && $row['idfa'] && $row['idfa']!='' )
-                        $deviceId = '"'.$this->_escapeSql( $row['idfa'] ).'"';
+                        $deviceId = '"'. $row['idfa'] .'"';
                     else if ( isset($row['gaid']) && $row['gaid'] && $row['gaid']!='' )
-                        $deviceId = '"'.$this->_escapeSql( $row['gaid'] ).'"';
+                        $deviceId = '"'. $row['gaid'] .'"';
                     else if ( $row['device_id'] && $row['device_id']!='' )
-                        $deviceId = '"'.$this->_escapeSql( $row['device_id'] ).'"';                    
+                        $deviceId = '"'. $row['device_id'] .'"';                    
                     else
                         $deviceId = 'NULL';
 
@@ -1846,40 +1846,40 @@ class EtlController extends \yii\web\Controller
                     if ( !isset($row['device']) || !$row['device'] || $row['device']=='' )
                         $row['device'] = 'NULL';
                     else
-                        $row['device'] = '"'.ucwords(strtolower($row['device'])).'"';
+                        $row['device'] = '"'.$row['device']).'"';
 
 
                     if ( isset($row['device_brand']) && $row['device_brand'] && $row['device_brand']!='' )
-                        $row['device_brand'] = '"'.$this->_escapeSql( $row['device_brand'] ).'"';
+                        $row['device_brand'] = '"'. $row['device_brand'] .'"';
                     else
                         $row['device_brand'] = 'NULL';
 
 
                     if ( isset($row['device_model']) && $row['device_model'] && $row['device_model']!='' )
-                        $row['device_model'] = '"'.$this->_escapeSql( $row['device_model'] ).'"';
+                        $row['device_model'] = '"'. $row['device_model'] .'"';
                     else
                         $row['device_model'] = 'NULL';
 
 
                     if ( isset($row['os']) && $row['os'] && $row['os']!='' )
-                        $row['os'] = '"'.$this->_escapeSql( $row['os'] ).'"';
+                        $row['os'] = '"'. $row['os'] .'"';
                     else
                         $row['os'] = 'NULL';
 
 
                     if ( isset($row['os_version']) && $row['os_version'] && $row['os_version']!='' )
-                        $row['os_version'] = '"'.$this->_escapeSql( $row['os_version'] ).'"';
+                        $row['os_version'] = '"'.$row['os_version'].'"';
                     else
                         $row['os_version'] = 'NULL';   
 
 
                     if ( isset($row['browser']) && $row['browser'] && $row['browser']!='' )
-                        $row['browser'] = '"'.$this->_escapeSql( $row['browser'] ).'"';
+                        $row['browser'] = '"'.$row['browser'] .'"';
                     else
                         $row['browser'] = 'NULL';  
 
                     if ( isset($row['browser_version']) && $row['browser_version'] && $row['browser_version']!='' )
-                        $row['browser_version'] = '"'.$this->_escapeSql( $row['browser_version'] ).'"';
+                        $row['browser_version'] = '"'.$row['browser_version'].'"';
                     else
                         $row['browser_version'] = 'NULL';
 
