@@ -1840,7 +1840,7 @@ class EtlController extends \yii\web\Controller
         ';
 
         $q = $select . ' LIMIT ' . $start_at . ',' . $this->_objectLimit . ';';
-        var_dump($q);die();        
+
         $values = '';
 
         $clusterLogs = \Yii::$app->db->createCommand( $q )->queryAll();
