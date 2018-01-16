@@ -2103,9 +2103,9 @@ class EtlController extends \yii\web\Controller
 
                 $values .= "
                     (
-                    '".$row['click_id']."',                            
+                    '".$row['click_id']."',    
+                    ".$row['D_Campaign_id'].",                        
                     '".$row['session_hash']."',
-                    ".$row['D_Campaign_id'].",
                     '".$clickTime."'
                     )                    
                 ";
