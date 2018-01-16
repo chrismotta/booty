@@ -1802,7 +1802,7 @@ class EtlController extends \yii\web\Controller
 
             FROM F_ClusterLogs_'.$tableName.'
 
-            WHERE DATE(imp_time) BETWEEN '.$date_start.' AND '.$date_end.' 
+            WHERE DATE(imp_time) BETWEEN '.$date_start.' AND '.$date_end.'; 
         ';
 
         $results  = true;
@@ -2025,7 +2025,7 @@ class EtlController extends \yii\web\Controller
         }
 
         $clusterLogsElapsed = time() - $start;
-        
+
         $start = time();
 
         $select = '
@@ -2033,7 +2033,7 @@ class EtlController extends \yii\web\Controller
 
             FROM F_CampaignLogs_'.$tableName.'
 
-            WHERE DATE(imp_time) BETWEEN '.$date_start.' AND '.$date_end.' 
+            WHERE DATE(IF(conv_time is not null, conv_time, click_time)) BETWEEN '.$date_start.' AND '.$date_end.';
         ';
 
         $results  = true;
