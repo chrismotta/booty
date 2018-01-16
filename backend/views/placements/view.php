@@ -74,7 +74,7 @@ $this->params['breadcrumbs'][] = $this->title;
         '
         $(".change-domain-iframe").change(function(){
             
-            var content = \'<iframe src="\' + this.value + \'?'.$qs_macros.'" frameborder="0" scrolling="no" width="'.$width.'" height="'.$height.'"></iframe>\';
+            var content = \'<iframe src="\' + this.value + \''. '/' . $model->id . '/?'.$qs_macros.'" frameborder="0" scrolling="no" width="'.$width.'" height="'.$height.'"></iframe>\';
 
             $("#domain-iframe").val(content);
 
@@ -83,7 +83,7 @@ $this->params['breadcrumbs'][] = $this->title;
 
         $(".change-domain-script").change(function(){
             
-            var content = \'<script type="text\/javascript" src="\' + this.value + \'?'.$qs_macros.'" ><\/script >\';
+            var content = \'<script type="text\/javascript" src="\' + this.value + \''. '/js/' . $model->id . '/?'.$qs_macros.'" ><\/script >\';
 
             $("#domain-script").val(content);
 
