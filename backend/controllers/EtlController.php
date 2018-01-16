@@ -2043,7 +2043,7 @@ class EtlController extends \yii\web\Controller
     }
 
 
-    private function _campaignsLogsToRedshift ( $db, $date_start, $date_end, $tableName )
+    private function _campaignLogsToRedshift ( $db, $date_start, $date_end, $tableName )
     {
         $start = time();
 
