@@ -1794,8 +1794,8 @@ class EtlController extends \yii\web\Controller
             $date_end   = 'CURDATE() - INTERVAL 1 DAY';
         }
 
-        $this->_clusterLogsToRedshift ( $db, $date_start, $date_end, $tableName );
-        //$this->_campaignLogsToRedshift ( $db, $date_start, $date_end, $tableName );
+        //$this->_clusterLogsToRedshift ( $db, $date_start, $date_end, $tableName );
+        $this->_campaignLogsToRedshift ( $db, $date_start, $date_end, $tableName );
         
     }   
 
