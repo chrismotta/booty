@@ -65,6 +65,8 @@ $this->params['breadcrumbs'][] = $this->title;
         '//ad.spdx.co' => 'spdx.co (Default)',
         // 'https://ad.spdx.co' => 'spdx.co (Secure)',
         'http://ad.spdx.co' => 'spdx.co (Non Secure)',
+        'http://ad.bigwo.co' => 'bigwo.co (Non Secure)',
+        'http://ad.wigbo.co' => 'wigbo.co (Non Secure)',
     ];
     $defaultDomain = ['//ad.spdx.co'];
 
