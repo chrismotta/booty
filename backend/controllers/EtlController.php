@@ -1805,21 +1805,18 @@ class EtlController extends \yii\web\Controller
         $start    = time();
         $results  = 1;
         $rows     = 0;
-        $limit    = $this->_objectLimit;
         $start_at = 0;
 
         while ( $results>0 )
         {
             $results = $this->_clusterLogsToRedshiftQuery(
                 $start_at,
-                $limit,
                 $db,
                 $date_start,
                 $date_end,
                 $tableName
             );
 
-            $limit    += $this->_objectLimit;
             $start_at += $this->_objectLimit;              
             $rows     += $results;
 
@@ -1832,7 +1829,7 @@ class EtlController extends \yii\web\Controller
     }
 
 
-    private function _clusterLogsToRedshiftQuery ( $start_at, $limit, $db, $date_start, $date_end, $tableName )
+    private function _clusterLogsToRedshiftQuery ( $start_at, $db, $date_start, $date_end, $tableName )
     {
         $select = '
             SELECT *   
@@ -1842,7 +1839,7 @@ class EtlController extends \yii\web\Controller
             WHERE DATE(imp_time) BETWEEN '.$date_start.' AND '.$date_end.'; 
         ';
 
-        $q = $select . ' LIMIT ' . $start_at . ',' . $limit;
+        $q = $select . ' LIMIT ' . $start_at . ',' . $this->_objectLimit;
         $values = '';
 
         $clusterLogs = \Yii::$app->db->createCommand( $q )->queryAll();
@@ -2051,7 +2048,6 @@ class EtlController extends \yii\web\Controller
         $start = time();
 
         $results  = 1;
-        $limit    = $this->_objectLimit;
         $start_at = 0;
         $rows     = 0;
 
@@ -2059,14 +2055,12 @@ class EtlController extends \yii\web\Controller
         {
             $results = $this->_campaignLogsToRedshiftQuery(
                 $start_at,
-                $limit,
                 $db,
                 $date_start,
                 $date_end,
                 $tableName
             );
 
-            $limit    += $this->_objectLimit;
             $start_at += $this->_objectLimit;              
             $rows     += $results;
 
@@ -2080,7 +2074,7 @@ class EtlController extends \yii\web\Controller
     } 
 
 
-    private function  _campaignLogsToRedshiftQuery ( $start_at,  $limit, $db, $date_start, $date_end, $tableName  )
+    private function  _campaignLogsToRedshiftQuery ( $start_at, $db, $date_start, $date_end, $tableName  )
     {
         $select = '
             SELECT *   
@@ -2090,7 +2084,7 @@ class EtlController extends \yii\web\Controller
             WHERE DATE(IF(conv_time is not null, conv_time, click_time)) BETWEEN '.$date_start.' AND '.$date_end.';
         ';
                     
-        $q = $select . ' LIMIT ' . $start_at . ',' . $limit;
+        $q = $select . ' LIMIT ' . $start_at . ',' . $this->_objectLimit;
         $values = '';
 
         $campaignLogs = \Yii::$app->db->createCommand( $q )->queryAll();
