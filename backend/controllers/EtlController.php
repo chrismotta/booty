@@ -1795,7 +1795,7 @@ class EtlController extends \yii\web\Controller
         }
 
         $this->_clusterLogsToRedshift ( $db, $date_start, $date_end, $tableName );
-        //$this->_campaignLogsToRedshift ( $db, $date_start, $date_end, $tableName );
+        $this->_campaignLogsToRedshift ( $db, $date_start, $date_end, $tableName );
         
     }   
 
