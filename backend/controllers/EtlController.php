@@ -1821,110 +1821,110 @@ class EtlController extends \yii\web\Controller
                 foreach ( $clusterLogs as $row )
                 {
                     if ( !$row['D_Placement_id'] || $row['D_Placement_id']=='' || !preg_match( '/^[0-9]+$/',$row['D_Placement_id'] ) )
-                        $row['D_Placement_id'] = 'NULL';
+                        $row['D_Placement_id'] = "NULL";
 
                     if ( !$row['D_Campaign_id'] || $row['D_Campaign_id']=='' || !preg_match( '/^[0-9]+$/',$row['D_Campaign_id'] ) )
-                        $row['D_Campaign_id'] = 'NULL';                    
+                        $row['D_Campaign_id'] = "NULL";                    
 
                     if ( $row['pub_id'] && $row['pub_id']!='' )
-                        $row['pub_id'] = '"'.$this->_escapePostgreSql( $row['pub_id'] ).'"';
+                        $row['pub_id'] = "'".$this->_escapePostgreSql( $row['pub_id'] )."'";
                     else
-                        $row['pub_id'] = 'NULL';
+                        $row['pub_id'] = "NULL";
 
 
                     if ( $row['subpub_id'] && $row['subpub_id']!='' )
-                        $row['subpub_id'] = '"'.$this->_escapePostgreSql( $row['subpub_id'] ).'"';
+                        $row['subpub_id'] = "'".$this->_escapePostgreSql( $row['subpub_id'] )."'";
                     else
                         $row['subpub_id'] = 'NULL';
 
 
                     if ( $row['exchange_id'] && $row['exchange_id']!='' )
-                        $row['exchange_id'] = '"'.$this->_escapePostgreSql( $row['exchange_id'] ).'"';
+                        $row['exchange_id'] = "'".$this->_escapePostgreSql( $row['exchange_id'] )."'";
                     else
-                        $row['exchange_id'] = 'NULL';
+                        $row['exchange_id'] = "NULL";
 
 
                     if ( $row['country'] && $row['country']!='' )
-                        $row['country'] = '"'.strtoupper($row['country']).'"';
+                        $row['country'] = "'".strtoupper($row['country'])."'";
                     else
-                        $row['country'] = 'NULL';
+                        $row['country'] = "NULL";
 
 
                     if ( $row['carrier'] && $row['carrier']!='' )
-                        $row['carrier'] = '"'.$this->_escapePostgreSql( $row['carrier'] ).'"';
+                        $row['carrier'] = "'".$this->_escapePostgreSql( $row['carrier'] )."'";
                     else
-                        $row['carrier'] = 'NULL';
+                        $row['carrier'] = "NULL";
 
 
                     if ( $row['connection_type'] && $row['connection_type']!='' )
                     {
                         if ( $row['connection_type']== '3g' || $row['connection_type']== '3G' )
-                            $row['connection_type']= 'MOBILE';
+                            $row['connection_type']= "'MOBILE'";
 
-                        $row['connection_type'] = '"'.strtoupper($row['connection_type']).'"';
+                        $row['connection_type'] = "'".strtoupper($row['connection_type'])."'";
                     }
                     else
-                        $row['connection_type'] = 'NULL';
+                        $row['connection_type'] = "NULL";
 
 
                     if ( isset($row['idfa']) && $row['idfa'] && $row['idfa']!='' )
-                        $deviceId = '"'.$this->_escapePostgreSql( $row['idfa'] ).'"';
+                        $deviceId = "'".$this->_escapePostgreSql( $row['idfa'] )."'";
                     else if ( isset($row['gaid']) && $row['gaid'] && $row['gaid']!='' )
-                        $deviceId = '"'.$this->_escapePostgreSql( $row['gaid'] ).'"';
+                        $deviceId = "'".$this->_escapePostgreSql( $row['gaid'] )."'";
                     else if ( $row['device_id'] && $row['device_id']!='' )
-                        $deviceId = '"'.$this->_escapePostgreSql( $row['device_id'] ).'"';                    
+                        $deviceId = "'".$this->_escapePostgreSql( $row['device_id'] )."'";                    
                     else
-                        $deviceId = 'NULL';
+                        $deviceId = "NULL";
 
 
                     if ( !isset($row['device']) || !$row['device'] || $row['device']=='' )
                         $row['device'] = 'NULL';
                     else
-                        $row['device'] = '"'.ucwords(strtolower($row['device'])).'"';
+                        $row['device'] = "'".ucwords(strtolower($row['device']))."'";
 
 
                     if ( isset($row['device_brand']) && $row['device_brand'] && $row['device_brand']!='' )
-                        $row['device_brand'] = '"'.$this->_escapePostgreSql( $row['device_brand'] ).'"';
+                        $row['device_brand'] = "'".$this->_escapePostgreSql( $row['device_brand'] )."'";
                     else
-                        $row['device_brand'] = 'NULL';
+                        $row['device_brand'] = "NULL";
 
 
                     if ( isset($row['device_model']) && $row['device_model'] && $row['device_model']!='' )
-                        $row['device_model'] = '"'.$this->_escapePostgreSql( $row['device_model'] ).'"';
+                        $row['device_model'] = "'".$this->_escapePostgreSql( $row['device_model'] )."'";
                     else
-                        $row['device_model'] = 'NULL';
+                        $row['device_model'] = "NULL";
 
 
                     if ( isset($row['os']) && $row['os'] && $row['os']!='' )
-                        $row['os'] = '"'.$this->_escapePostgreSql( $row['os'] ).'"';
+                        $row['os'] = "'".$this->_escapePostgreSql( $row['os'] )."'";
                     else
-                        $row['os'] = 'NULL';
+                        $row['os'] = "NULL";
 
 
                     if ( isset($row['os_version']) && $row['os_version'] && $row['os_version']!='' )
-                        $row['os_version'] = '"'.$this->_escapePostgreSql( $row['os_version'] ).'"';
+                        $row['os_version'] = "'".$this->_escapePostgreSql( $row['os_version'] )."'";
                     else
-                        $row['os_version'] = 'NULL';   
+                        $row['os_version'] = "NULL";   
 
 
                     if ( isset($row['browser']) && $row['browser'] && $row['browser']!='' )
-                        $row['browser'] = '"'.$this->_escapePostgreSql( $row['browser'] ).'"';
+                        $row['browser'] = "'".$this->_escapePostgreSql( $row['browser'] )."'";
                     else
-                        $row['browser'] = 'NULL';  
+                        $row['browser'] = "NULL";  
 
                     if ( isset($row['browser_version']) && $row['browser_version'] && $row['browser_version']!='' )
-                        $row['browser_version'] = '"'.$this->_escapePostgreSql( $row['browser_version'] ).'"';
+                        $row['browser_version'] = "'".$this->_escapePostgreSql( $row['browser_version'] )."'";
                     else
-                        $row['browser_version'] = 'NULL';
+                        $row['browser_version'] = "NULL";
 
 
                     if ( $row['device']=='Phablet' || $row['device']=='Smartphone' )
-                        $row['device'] = '"mobile"';
+                        $row['device'] = "'mobile'";
 
                     if ( isset( $row['imp_status'] ) && $row['imp_status'] && $row['imp_status']!='' )
-                        $impStatus = '"'.$row['imp_status'].'"';
+                        $impStatus = "'".$row['imp_status']."'";
                     else
-                        $impStatus = 'NULL';               
+                        $impStatus = "NULL";               
 
                     if ( isset($row['clicks']) && $row['clicks'] )
                         $clicks = $row['clicks'];
@@ -1935,34 +1935,34 @@ class EtlController extends \yii\web\Controller
                     if ( $values != '' )
                         $values .= ',';
 
-                    $values .= '
+                    $values .= "
                         (
-                        "'.$row['session_hash'].'",
-                        '.$row['D_Placement_id'].',
-                        '.$row['D_Campaign_id'].',
-                        '.$row['cluster_id'].',
-                        "'.$row['cluster_name'].'",
-                        '.$row['imps'].',
-                        "'.$row['imp_time'].'",
-                        '.$clicks.',
-                        '.$row['country'].',
-                        '.$row['connection_type'].',
-                        '.$row['carrier'].',
-                        '.$row['device'].',
-                        '.$row['device_model'].',
-                        '.$row['device_brand'].',
-                        '.$row['os'].',
-                        '.$row['os_version'].',
-                        '.$row['browser'].',
-                        '.$row['browser_version'].',
-                        '.$row['cost'].',
-                        '.$row['exchange_id'].',
-                        '.$deviceId.',
-                        '.$impStatus.',
-                        '.$row['pub_id'].',                            
-                        '.$row['subpub_id'].'
+                        '".$row['session_hash']."',
+                        ".$row['D_Placement_id'].",
+                        ".$row['D_Campaign_id'].",
+                        ".$row['cluster_id'].",
+                        '".$row['cluster_name']."',
+                        ".$row['imps'].",
+                        '".$row['imp_time']."',
+                        ".$clicks.",
+                        ".$row['country'].",
+                        ".$row['connection_type'].",
+                        ".$row['carrier'].",
+                        ".$row['device'].",
+                        ".$row['device_model'].",
+                        ".$row['device_brand'].",
+                        ".$row['os'].",
+                        ".$row['os_version'].",
+                        ".$row['browser'].",
+                        ".$row['browser_version'].",
+                        ".$row['cost'].",
+                        ".$row['exchange_id'].",
+                        ".$deviceId.",
+                        ".$impStatus.",
+                        ".$row['pub_id'].",                            
+                        ".$row['subpub_id']."
                         )                    
-                    ';
+                    ";
                 }
 
                 $insert = '
