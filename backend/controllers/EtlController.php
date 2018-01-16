@@ -1838,13 +1838,13 @@ class EtlController extends \yii\web\Controller
 
             WHERE DATE(imp_time) BETWEEN '.$date_start.' AND '.$date_end.'; 
         ';
-
+        var_dump($clusterLogs);die();
         $q = $select . ' LIMIT ' . $start_at . ',' . $this->_objectLimit;
         $values = '';
 
         $clusterLogs = \Yii::$app->db->createCommand( $q )->queryAll();
 
-        var_dump($clusterLogs);die();
+
         if ( $clusterLogs )
         {
             foreach ( $clusterLogs as $row )
