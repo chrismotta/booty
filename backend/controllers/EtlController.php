@@ -2112,7 +2112,7 @@ class EtlController extends \yii\web\Controller
             }
 
             $insert = '
-                INSERT INTO f_campaignlogs'.$tableName.' (
+                INSERT INTO f_campaignlogs_'.$tableName.' (
                     click_id,
                     D_Campaign_id,
                     session_hash,
