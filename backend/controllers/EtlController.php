@@ -1767,7 +1767,6 @@ class EtlController extends \yii\web\Controller
         ini_set('memory_limit','3000M');
         set_time_limit(0);        
 
-
         if ( $date_start )
         {
             $tableName  = date('y_m', strtotime($date_start));
@@ -1796,7 +1795,6 @@ class EtlController extends \yii\web\Controller
 
         $this->_clusterLogsToRedshift ( $db, $date_start, $date_end, $tableName );
         $this->_campaignLogsToRedshift ( $db, $date_start, $date_end, $tableName );
-        
     }   
 
 
@@ -2098,7 +2096,7 @@ class EtlController extends \yii\web\Controller
                 if ( $values != '' )
                     $values .= ',';
 
-                if ( !$row['imp_time'] || $row['imp_time']=='' )
+                if ( !$row['click_time'] || $row['click_time']=='' )
                     $clickTime = "NULL";
                 else
                     $clickTime = $row['imp_time'];
