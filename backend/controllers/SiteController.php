@@ -87,20 +87,20 @@ class SiteController extends Controller
             [['>=', 'date(date)', new \yii\db\Expression('date(NOW() - INTERVAL 7 DAY)')]],
             [ 'date(date) AS date', 'sum(imps) AS imps', 'sum(unique_users) AS unique_users', 'sum(cost) AS cost', 'sum(revenue) AS revenue']
         );
-
+/*
         $byCountryProvider = $model->loadData( 
             ['country'],
             null, 
             [[ '=', 'date(date)',new \yii\db\Expression( 'CURDATE()' ) ]],
             ['country AS country', 'sum(imps) AS imps']
         );
-
+*/
         return $this->render('index', [
             'model'             => $model,
             'totalsProvider'    => $totalsProvider,
             'yesterdayProvider' => $yesterdayProvider,
             'byDateProvider'    => $byDateProvider,
-            'byCountryProvider' => $byCountryProvider
+//            'byCountryProvider' => $byCountryProvider
         ]);
     }
 

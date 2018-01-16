@@ -9,7 +9,7 @@ $this->title    = 'Splad Dashboard';
 $totals         = $totalsProvider->getModels();
 $yesterday      = $yesterdayProvider->getModels();
 $byDate         = $byDateProvider->getModels();
-$byCountry      = $byCountryProvider->getModels();
+//$byCountry      = $byCountryProvider->getModels();
 
 $totalImps      = isset($totals[0]) ? $totals[0]['imps'] : 0; 
 $totalUsers     = isset($totals[0]) ? $totals[0]['unique_users'] : 0;
@@ -30,7 +30,7 @@ $revByDate      = [];
 $spendByDate    = [];
 $profitByDate   = [];
 $dates          = [];
-$impsByCountry  = [];
+//$impsByCountry  = [];
 
 $currentDate    = date("Y-m-d");
 $from           = new DateTime(date("Y-m-d", strtotime("-6 days")));
@@ -78,12 +78,13 @@ $revByDate[]    = $todayRev;
 $spendByDate[]  = $todayCost;
 $profitByDate[] = $todayProfit;
 
-
+/*
 foreach ( $byCountry as $data )
 {
     $code = strtoupper($data['country']);
     $impsByCountry[$code] = $data['imps'];
 }
+*/
 
 if ( $yesterdayImps > 0 && $totalImps > 0 )
   $todayYesterdayImps = number_format(floor($totalImps*100/$yesterdayImps),0);

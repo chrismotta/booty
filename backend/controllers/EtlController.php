@@ -1237,15 +1237,47 @@ class EtlController extends \yii\web\Controller
     }
 
 
+    private function _escapePostgreSql( $sql )
+    {
+        return preg_replace(
+            [
+                '/(\\\\)/',
+                '/(NUL)/',
+                '/(BS)/',
+                '/(TAB)/',
+                '/(LF)/',
+                '/(CR)/',
+                '/(SUB)/',
+                '/(%)/',                
+                "/(')/",
+                '/(")/',
+                '/(_)/'
+            ],
+            [
+                '\\\\\\',
+                '\0',
+                '\b',
+                '\t',
+                '\n',
+                '\r',
+                '\Z',
+                '\%',                
+                "\\'",
+                '',
+                '\\_'
+            ],
+            $sql
+        );
+    }    
+
+
     public function actionStats ( )
     {
         $date = isset($_GET['date']) && $_GET['date'] ? $_GET['date'] : date( 'Y-m-d' );
 
         $sql = '
-            INSERT IGNORE INTO Dashboard (                
-                country,
-                Affiliates_id,
-                Publishers_id,
+            INSERT IGNORE INTO Dashboard ( 
+                country,               
                 date,
                 imps,
                 unique_users,
@@ -1255,9 +1287,7 @@ class EtlController extends \yii\web\Controller
             ) 
             SELECT * FROM (
                 SELECT 
-                    cl.country               AS country, 
-                    c.Affiliates_id          AS Affiliates_id,
-                    p.Publishers_id          AS Publishers_id,
+                    00 as country,
                     date(if(cp.conv_time is not null, cp.conv_time, cl.imp_time)) AS date, 
                     ceil(sum(if(cl.clicks>0,cl.imps/cl.clicks,cl.imps))) AS imps,
                     ceil(sum(if(cl.clicks>0, 1/cl.clicks, 1))) AS unique_users,
@@ -1267,14 +1297,11 @@ class EtlController extends \yii\web\Controller
 
                 FROM F_CampaignLogs cp 
 
-                LEFT JOIN D_Campaign c       ON ( cp.D_Campaign_id= c.id ) 
                 RIGHT JOIN F_ClusterLogs cl  ON ( cp.session_hash = cl.session_hash ) 
-                LEFT JOIN D_Placement p      ON ( cl.D_Placement_id = p.id )
+                WHERE date(if(cp.conv_time is not null, cp.conv_time, cl.imp_time))="'.$date.'"
 
-                WHERE date(if(cp.conv_time is not null, cp.conv_time, cl.imp_time))="'.$date.'" 
                 GROUP BY
-                    date(if(cp.conv_time is not null, cp.conv_time, cl.imp_time)),
-                    cl.country 
+                    date(if(cp.conv_time is not null, cp.conv_time, cl.imp_time)) 
             ) AS r
 
             ON DUPLICATE KEY UPDATE 
@@ -1282,7 +1309,6 @@ class EtlController extends \yii\web\Controller
                 unique_users = r.unique_users, 
                 installs = r.installs, 
                 cost = r.cost, 
-                country = r.country,
                 revenue = r.revenue;
         ';
 
@@ -1574,21 +1600,54 @@ class EtlController extends \yii\web\Controller
     }
 
 
-    public function actionStorelogs ( $date = null )
+    public function actionRedshift ( )
+    {
+        $db = new \PDO( 
+            'pgsql:dbname=dinky;host=dinky.cspssu6efoeo.us-east-1.redshift.amazonaws.com;port=5439',
+            'root',
+            'spl4dPr0j3ct'
+        );
+
+
+    }
+
+    public function actionStorelogs ( $date_start = null, $date_end = null, $move = false )
     {
         $start = time();
 
         ini_set('memory_limit','3000M');
         set_time_limit(0);        
 
-        if ( $date )
-            $date = '"'.$date.'"';
+
+        if ( $date_start )
+        {
+            $tableName  = date('y_m', strtotime($date_start));
+            $date_start = '"'.$date_start.'"';
+
+            if ( $date_end )
+            {
+                $tableName2 = date('y_m', strtotime($date_end));
+                $date_end   = '"'.$date_end.'"';
+            }
+            else
+            {
+                $tableName2 = date('y_m');
+                $date_end = 'CURDATE() - INTERVAL 1 DAY';
+            }
+
+            if ( $tableName != $tableName2 )
+                die('Date range must be within the same month');
+        }
         else
-            $date = 'CURDATE() - INTERVAL 1 DAY';
+        {
+            $tableName  = date('y_m');
+            $date_start = 'CURDATE() - INTERVAL 1 DAY';
+            $date_end   = 'CURDATE() - INTERVAL 1 DAY';
+        }
 
 
         $sql = '
-            INSERT INTO F_ClusterLogs_Store (
+            INSERT INTO F_ClusterLogs_'.$tableName.' (
                 session_hash,
                 D_Placement_id,
                 D_Campaign_id,
@@ -1638,22 +1697,26 @@ class EtlController extends \yii\web\Controller
 
             FROM F_ClusterLogs
 
-            WHERE DATE(imp_time) = '.$date.';      
+            WHERE DATE(imp_time) BETWEEN '.$date_start.' AND '.$date_end.' 
+            
+            ON DUPLICATE KEY UPDATE cost=VALUES(cost), imps=VALUES(imps);
         ';
 
         $clusterLogs = \Yii::$app->db->createCommand( $sql )->execute();
 
-        if ( $clusterLogs )
+        if ( $move && $clusterLogs )
         {
-            $sql = 'DELETE FROM F_ClusterLogs WHERE DATE(imp_time) = '.$date.';';
+            $sql = 'DELETE FROM F_ClusterLogs WHERE DATE(imp_time) BETWEEN '.$date_start.' AND '.$date_end.';';
             
             \Yii::$app->db->createCommand( $sql )->execute();
         }
 
         $clusterLogsElapsed = time() - $start;
 
+        $start = time();
+
         $sql = '
-            INSERT INTO F_CampaignLogs_Store(
+            INSERT INTO F_CampaignLogs_'.$tableName.' (
                 click_id,
                 D_Campaign_id,
                 D_Placement_id,
@@ -1673,14 +1736,15 @@ class EtlController extends \yii\web\Controller
 
             FROM F_CampaignLogs
 
-            WHERE DATE(IF(conv_time is not null, conv_time, click_time)) = '.$date.';      
+            WHERE DATE(IF(conv_time is not null, conv_time, click_time)) BETWEEN '.$date_start.' AND '.$date_end.' 
+            ON DUPLICATE KEY UPDATE click_time=VALUES(click_time);
         ';
 
         $campaignLogs = \Yii::$app->db->createCommand( $sql )->execute();
 
-        if ( $campaignLogs )
+        if ( $move && $campaignLogs )
         {
-            $sql = 'DELETE FROM F_CampaignLogs WHERE DATE(IF(conv_time is not null, conv_time, click_time)) = '.$date.';';
+            $sql = 'DELETE FROM F_CampaignLogs WHERE DATE(IF(conv_time is not null, conv_time, click_time)) BETWEEN '.$date_start.' AND '.$date_end.';';
 
             \Yii::$app->db->createCommand( $sql )->execute();
         }
@@ -1689,6 +1753,455 @@ class EtlController extends \yii\web\Controller
 
         echo 'Cluster Logs Stored: '.count($clusterLogs).' - Elapsed time: '.$clusterLogsElapsed.' seg.<hr/>';        
         echo 'Campaign Logs Stored: '.count($campaignLogs).' - Elapsed time: '.$campaignLogsElapsed.' seg.<hr/>';                
+    }
+
+
+    public function actionToredshift ( $date_start = null, $date_end = null )
+    {
+        $db = new \PDO( 
+            'pgsql:dbname=prod;host=dinky.cspssu6efoeo.us-east-1.redshift.amazonaws.com;port=5439',
+            'root',
+            'spl4dPr0j3ct'
+        );
+
+        ini_set('memory_limit','3000M');
+        set_time_limit(0);        
+
+
+        if ( $date_start )
+        {
+            $tableName  = date('y_m', strtotime($date_start));
+            $date_start = '"'.$date_start.'"';
+
+            if ( $date_end )
+            {
+                $tableName2 = date('y_m', strtotime($date_end));
+                $date_end   = '"'.$date_end.'"';
+            }
+            else
+            {
+                $tableName2 = date('y_m');
+                $date_end = 'CURDATE() - INTERVAL 1 DAY';
+            }
+
+            if ( $tableName != $tableName2 )
+                die('Date range must be within the same month');
+        }
+        else
+        {
+            $tableName  = date('y_m');
+            $date_start = 'CURDATE() - INTERVAL 1 DAY';
+            $date_end   = 'CURDATE() - INTERVAL 1 DAY';
+        }
+
+        //$this->_clusterLogsToRedshift ( $db, $date_start, $date_end, $tableName );
+        $this->_campaignLogsToRedshift ( $db, $date_start, $date_end, $tableName );
+        
+    }   
+
+
+    private function _clusterLogsToRedshift ( $db, $date_start, $date_end, $tableName )
+    {
+        $start    = time();
+        $results  = 1;
+        $rows     = 0;
+        $start_at = 0;
+
+        while ( $results>0 )
+        {
+            $results = $this->_clusterLogsToRedshiftQuery(
+                $start_at,
+                $db,
+                $date_start,
+                $date_end,
+                $tableName
+            );
+
+            $start_at += $this->_objectLimit;              
+            $rows     += $results;
+
+            $results  = 0;
+        }
+
+        $clusterLogsElapsed = time() - $start;
+
+        echo 'Cluster Logs Stored: '.count($rows).' - Elapsed time: '.$clusterLogsElapsed.' seg.<hr/>';        
+    }
+
+
+    private function _clusterLogsToRedshiftQuery ( $start_at, $db, $date_start, $date_end, $tableName )
+    {
+        $select = '
+            SELECT *   
+
+            FROM F_ClusterLogs_'.$tableName.'
+
+            WHERE DATE(imp_time) BETWEEN '.$date_start.' AND '.$date_end.'; 
+        ';
+
+        $q = $select . ' LIMIT ' . $start_at . ',' . $this->_objectLimit;
+        $values = '';
+
+        $clusterLogs = \Yii::$app->db->createCommand( $q )->queryAll();
+
+        if ( $clusterLogs )
+        {
+            foreach ( $clusterLogs as $row )
+            {
+                if ( !$row['D_Placement_id'] || $row['D_Placement_id']=='' || !preg_match( '/^[0-9]+$/',$row['D_Placement_id'] ) )
+                    $row['D_Placement_id'] = "NULL";
+
+                if ( !$row['D_Campaign_id'] || $row['D_Campaign_id']=='' || !preg_match( '/^[0-9]+$/',$row['D_Campaign_id'] ) )
+                    $row['D_Campaign_id'] = "NULL";                    
+
+                if ( $row['pub_id'] && $row['pub_id']!='' )
+                    $row['pub_id'] = "'".$this->_escapePostgreSql( $row['pub_id'] )."'";
+                else
+                    $row['pub_id'] = "NULL";
+
+
+                if ( $row['subpub_id'] && $row['subpub_id']!='' )
+                    $row['subpub_id'] = "'".$this->_escapePostgreSql( $row['subpub_id'] )."'";
+                else
+                    $row['subpub_id'] = "NULL";
+
+
+                if ( $row['exchange_id'] && $row['exchange_id']!='' )
+                    $row['exchange_id'] = "'".$this->_escapePostgreSql( $row['exchange_id'] )."'";
+                else
+                    $row['exchange_id'] = "NULL";
+
+
+                if ( $row['country'] && $row['country']!='' )
+                    $row['country'] = "'".strtoupper($row['country'])."'";
+                else
+                    $row['country'] = "NULL";
+
+
+                if ( $row['carrier'] && $row['carrier']!='' )
+                    $row['carrier'] = "'".$this->_escapePostgreSql( $row['carrier'] )."'";
+                else
+                    $row['carrier'] = "NULL";
+
+
+                if ( $row['connection_type'] && $row['connection_type']!='' )
+                {
+                    if ( $row['connection_type']== '3g' || $row['connection_type']== '3G' )
+                        $row['connection_type']= "'MOBILE'";
+
+                    $row['connection_type'] = "'".strtoupper($row['connection_type'])."'";
+                }
+                else
+                    $row['connection_type'] = "NULL";
+
+
+                if ( isset($row['idfa']) && $row['idfa'] && $row['idfa']!='' )
+                    $deviceId = "'".$this->_escapePostgreSql( $row['idfa'] )."'";
+                else if ( isset($row['gaid']) && $row['gaid'] && $row['gaid']!='' )
+                    $deviceId = "'".$this->_escapePostgreSql( $row['gaid'] )."'";
+                else if ( $row['device_id'] && $row['device_id']!='' )
+                    $deviceId = "'".$this->_escapePostgreSql( $row['device_id'] )."'";                    
+                else
+                    $deviceId = "NULL";
+
+
+                if ( !isset($row['device']) || !$row['device'] || $row['device']=='' )
+                    $row['device'] = 'NULL';
+                else
+                    $row['device'] = "'".ucwords(strtolower($row['device']))."'";
+
+
+                if ( isset($row['device_brand']) && $row['device_brand'] && $row['device_brand']!='' )
+                    $row['device_brand'] = "'".$this->_escapePostgreSql( $row['device_brand'] )."'";
+                else
+                    $row['device_brand'] = "NULL";
+
+
+                if ( isset($row['device_model']) && $row['device_model'] && $row['device_model']!='' )
+                    $row['device_model'] = "'".$this->_escapePostgreSql( $row['device_model'] )."'";
+                else
+                    $row['device_model'] = "NULL";
+
+
+                if ( isset($row['os']) && $row['os'] && $row['os']!='' )
+                    $row['os'] = "'".$this->_escapePostgreSql( $row['os'] )."'";
+                else
+                    $row['os'] = "NULL";
+
+
+                if ( isset($row['os_version']) && $row['os_version'] && $row['os_version']!='' )
+                    $row['os_version'] = "'".$this->_escapePostgreSql( $row['os_version'] )."'";
+                else
+                    $row['os_version'] = "NULL";   
+
+
+                if ( isset($row['browser']) && $row['browser'] && $row['browser']!='' )
+                    $row['browser'] = "'".$this->_escapePostgreSql( $row['browser'] )."'";
+                else
+                    $row['browser'] = "NULL";  
+
+                if ( isset($row['browser_version']) && $row['browser_version'] && $row['browser_version']!='' )
+                    $row['browser_version'] = "'".$this->_escapePostgreSql( $row['browser_version'] )."'";
+                else
+                    $row['browser_version'] = "NULL";
+
+
+                if ( $row['device']=='Phablet' || $row['device']=='Smartphone' )
+                    $row['device'] = "'mobile'";
+
+                if ( isset( $row['imp_status'] ) && $row['imp_status'] && $row['imp_status']!='' )
+                    $impStatus = "'".$row['imp_status']."'";
+                else
+                    $impStatus = "NULL";               
+
+                if ( isset($row['clicks']) && $row['clicks'] )
+                    $clicks = $row['clicks'];
+                else
+                    $clicks = 0; 
+
+
+                if ( $values != '' )
+                    $values .= ',';
+
+                $values .= "
+                    (
+                    '".$row['session_hash']."',
+                    ".$row['D_Placement_id'].",
+                    ".$row['D_Campaign_id'].",
+                    ".$row['cluster_id'].",
+                    '".$row['cluster_name']."',
+                    ".$row['imps'].",
+                    '".$row['imp_time']."',
+                    ".$clicks.",
+                    ".$row['country'].",
+                    ".$row['connection_type'].",
+                    ".$row['carrier'].",
+                    ".$row['device'].",
+                    ".$row['device_model'].",
+                    ".$row['device_brand'].",
+                    ".$row['os'].",
+                    ".$row['os_version'].",
+                    ".$row['browser'].",
+                    ".$row['browser_version'].",
+                    ".$row['cost'].",
+                    ".$row['exchange_id'].",
+                    ".$deviceId.",
+                    ".$impStatus.",
+                    ".$row['pub_id'].",                            
+                    ".$row['subpub_id']."
+                    )                    
+                ";
+            }
+
+            $insert = '
+                INSERT IGNORE INTO f_clusterlogs_'.$tableName.' (
+                    session_hash,
+                    D_Placement_id,
+                    D_Campaign_id,
+                    cluster_id,
+                    cluster_name,
+                    imps,
+                    imp_time,
+                    clicks,
+                    country,
+                    connection_type,
+                    carrier,
+                    device,
+                    device_model,
+                    device_brand,
+                    os,
+                    os_version,
+                    browser,
+                    browser_version,
+                    cost,
+                    exchange_id,
+                    device_id,
+                    imp_status,
+                    pub_id,
+                    subpub_id
+                )
+                VALUES '.$values.';
+            ';
+
+            $statement = $db->prepare( $insert );
+
+            if ( !$statement->execute() )
+            {
+                var_dump($statement->errorInfo());
+
+                echo '<hr>'. $insert;
+
+                die();
+            }
+
+            return $statement->rowCount(); 
+        }
+        else
+        {
+            return 0;
+        }        
+    }
+
+
+    private function _campaignsLogsToRedshift ( $db, $date_start, $date_end, $tableName )
+    {
+        $start = time();
+
+        $results  = 1;
+        $start_at = 0;
+        $rows     = 0;
+
+        while ( $results>0 )
+        {
+            $results = $this->_campaignLogsToRedshiftQuery(
+                $start_at,
+                $db,
+                $date_start,
+                $date_end,
+                $tableName
+            );
+
+            $start_at += $this->_objectLimit;              
+            $rows     += $results;
+
+            $results = 0;
+        }
+
+
+        $campaignLogsElapsed = time() - $start;  
+
+        echo 'Campaign Logs Stored:'.count($rows).' - Elapsed time: '.$campaignLogsElapsed.' seg.<hr/>';              
+    } 
+
+
+    private function  _campaignLogsToRedshiftQuery ( $start_at, $db, $date_start, $date_end, $tableName  )
+    {
+        $select = '
+            SELECT *   
+
+            FROM F_CampaignLogs_'.$tableName.'
+
+            WHERE DATE(IF(conv_time is not null, conv_time, click_time)) BETWEEN '.$date_start.' AND '.$date_end.';
+        ';
+                    
+        $q = $select . ' LIMIT ' . $start_at . ',' . $this->_objectLimit;
+        $values = '';
+
+        $campaignLogs = \Yii::$app->db->createCommand( $q )->queryAll();
+
+        if ( $campaignLogs )
+        {
+            foreach ( $campaignLogs as $row )
+            {
+                if ( $values != '' )
+                    $values .= ',';
+
+                if ( !$row['imp_time'] || $row['imp_time']=='' )
+                    $clickTime = "NULL";
+                else
+                    $clickTime = $row['imp_time'];
+
+                $values .= "
+                    (
+                    '".$row['click_id']."',                            
+                    '".$row['session_hash']."',
+                    ".$row['D_Campaign_id'].",
+                    '".$clickTime."'
+                    )                    
+                ";
+            }
+
+            $insert = '
+                INSERT IGNORE INTO f_campaignlogs'.$tableName.' (
+                    click_id,
+                    D_Campaign_id,
+                    session_hash,
+                    click_time
+                )
+                VALUES '.$values.'
+            ';
+
+            $statement = $db->prepare( $insert );
+
+            if ( !$statement->execute() )
+            {
+                var_dump($statement->errorInfo());
+
+                echo '<hr>'. $insert;
+
+                die();
+            }
+
+            return $statement->rowCount();
+        }
+        else
+        {
+            return 0;
+        }        
+    }
+
+
+    public function actionClickcount ( $campaign_id, $date = null, $loaded = true )
+    {
+        if ( !$campaign_id )
+            die('Please enter a valid Campaign ID');
+
+        $start           = time();
+
+        switch ( $this->_db )
+        {
+            case 'yesterday':
+                $this->_redis->select( $this->_getYesterdayDatabase() );
+            break;
+            case 'current':
+                $this->_redis->select( $this->_getCurrentDatabase() );
+            break;
+        }    
+
+        if ( $date )
+            $tstamp = strtotime( $date );
+        else
+            $tstamp = strtotime( date('Y-m-d') );
+
+        if ( $loaded )
+            $index = 'loadedclicks';
+        else
+            $index = 'clickids';
+
+        $clusterLogCount = $this->_redis->zcard( $index );
+        $queries         = ceil( $clusterLogCount/$this->_objectLimit );
+        $clicks          = 0;
+
+
+        // build separate sql queries based on $_objectLimit in order to control memory usage
+        for ( $i=0; $i<$queries; $i++ )
+        {
+            $clickIDs = $this->_redis->zrangebyscore( 'clickids', 0, $this->_objectLimit, $tstamp, $tstamp+86400 );
+
+            if ( $clickIDs )
+            {
+                // add each campaign log to sql query
+                foreach ( $clickIDs as $clickID )
+                {
+                    $campaignLog = $this->_redis->hgetall( 'campaignlog:'.$clickID );
+
+                    if ( 
+                        $campaign_id == $campaignLog['campaign_id'] 
+                        && $campaignLog['click_time'] >= $tstamp 
+                        && $campaignLog['click_time'] <= $tstamp+86400 
+                    )
+                    {
+                        $clicks++;
+                    }
+
+                    unset($campaignLog);
+                }
+            }
+        }
+
+        $elapsed = time() - $start;
+
+        echo 'Clicks: '.$clicks.' - elapsed time: '.$elapsed.' seg.<hr/>';
     }
 
 }
