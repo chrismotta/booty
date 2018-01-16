@@ -1996,7 +1996,7 @@ class EtlController extends \yii\web\Controller
             }
 
             $insert = '
-                INSERT IGNORE INTO f_clusterlogs_'.$tableName.' (
+                INSERT INTO f_clusterlogs_'.$tableName.' (
                     session_hash,
                     D_Placement_id,
                     D_Campaign_id,
@@ -2114,7 +2114,7 @@ class EtlController extends \yii\web\Controller
             }
 
             $insert = '
-                INSERT IGNORE INTO f_campaignlogs'.$tableName.' (
+                INSERT INTO f_campaignlogs'.$tableName.' (
                     click_id,
                     D_Campaign_id,
                     session_hash,
