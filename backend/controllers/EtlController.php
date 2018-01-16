@@ -1794,8 +1794,8 @@ class EtlController extends \yii\web\Controller
             $date_end   = 'CURDATE() - INTERVAL 1 DAY';
         }
 
-        //$this->_clusterLogsToRedshift ( $db, $date_start, $date_end, $tableName );
-        $this->_campaignLogsToRedshift ( $db, $date_start, $date_end, $tableName );
+        $this->_clusterLogsToRedshift ( $db, $date_start, $date_end, $tableName );
+        //$this->_campaignLogsToRedshift ( $db, $date_start, $date_end, $tableName );
         
     }   
 
@@ -1844,6 +1844,7 @@ class EtlController extends \yii\web\Controller
 
         $clusterLogs = \Yii::$app->db->createCommand( $q )->queryAll();
 
+        var_dump($clusterLogs);die();
         if ( $clusterLogs )
         {
             foreach ( $clusterLogs as $row )
