@@ -2099,7 +2099,7 @@ class EtlController extends \yii\web\Controller
                 if ( !$row['click_time'] || $row['click_time']=='' )
                     $clickTime = "NULL";
                 else
-                    $clickTime = $row['imp_time'];
+                    $clickTime = $row['click_time'];
 
                 $values .= "
                     (
