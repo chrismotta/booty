@@ -1836,10 +1836,10 @@ class EtlController extends \yii\web\Controller
 
             FROM F_ClusterLogs_'.$tableName.'
 
-            WHERE DATE(imp_time) BETWEEN '.$date_start.' AND '.$date_end.'; 
+            WHERE DATE(imp_time) BETWEEN '.$date_start.' AND '.$date_end.'  
         ';
 
-        $q = $select . ' LIMIT ' . $start_at . ',' . $this->_objectLimit;
+        $q = $select . ' LIMIT ' . $start_at . ',' . $this->_objectLimit . ';';
         var_dump($q);die();        
         $values = '';
 
@@ -2022,7 +2022,7 @@ class EtlController extends \yii\web\Controller
                     pub_id,
                     subpub_id
                 )
-                VALUES '.$values.';
+                VALUES '.$values.'
             ';
 
             $statement = $db->prepare( $insert );
@@ -2083,10 +2083,10 @@ class EtlController extends \yii\web\Controller
 
             FROM F_CampaignLogs_'.$tableName.'
 
-            WHERE DATE(IF(conv_time is not null, conv_time, click_time)) BETWEEN '.$date_start.' AND '.$date_end.';
+            WHERE DATE(IF(conv_time is not null, conv_time, click_time)) BETWEEN '.$date_start.' AND '.$date_end.'
         ';
                     
-        $q = $select . ' LIMIT ' . $start_at . ',' . $this->_objectLimit;
+        $q = $select . ' LIMIT ' . $start_at . ',' . $this->_objectLimit . ';';
         $values = '';
 
         $campaignLogs = \Yii::$app->db->createCommand( $q )->queryAll();
