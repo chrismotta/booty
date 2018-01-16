@@ -1764,9 +1764,6 @@ class EtlController extends \yii\web\Controller
             'spl4dPr0j3ct'
         );
 
-        $start          = time();
-        $rows           = 0;
-
         ini_set('memory_limit','3000M');
         set_time_limit(0);        
 
@@ -1797,6 +1794,46 @@ class EtlController extends \yii\web\Controller
             $date_end   = 'CURDATE() - INTERVAL 1 DAY';
         }
 
+        $this->_clusterLogsToRedshift ( $db, $date_start, $date_end, $tableName );
+        $this->_campaignLogsToRedshift ( $db, $date_start, $date_end, $tableName );
+        
+    }   
+
+
+    private function _clusterLogsToRedshift ( $db, $dates_start, $date_end, $tableName )
+    {
+        $start    = time();
+        $results  = 1;
+        $rows     = 0;
+        $limit    = $this->_objectLimit;
+        $start_at = 0;
+
+        while ( $results>0 )
+        {
+            $results = $this->_clusterLogsToRedshiftQuery(
+                $start_at,
+                $limit,
+                $db,
+                $date_start,
+                $date_end,
+                $tableName
+            );
+
+            $limit    += $this->_objectLimit;
+            $start_at += $this->_objectLimit;              
+            $rows     += $results;
+
+            $results  = 0;
+        }
+
+        $clusterLogsElapsed = time() - $start;
+
+        echo 'Cluster Logs Stored: '.count($rows).' - Elapsed time: '.$clusterLogsElapsed.' seg.<hr/>';        
+    }
+
+
+    private function _clusterLogsToRedshiftQuery ( $start_at, $limit, $db, $dates_start, $date_end, $tableName )
+    {
         $select = '
             SELECT *   
 
@@ -1805,230 +1842,246 @@ class EtlController extends \yii\web\Controller
             WHERE DATE(imp_time) BETWEEN '.$date_start.' AND '.$date_end.'; 
         ';
 
-        $results  = true;
-        $limit    = $this->_objectLimit;
-        $start_at = 0;
+        $q = $select . ' LIMIT ' . $start_at . ',' . $limit;
+        $values = '';
 
-        while ( $results )
+        $clusterLogs = \Yii::$app->db->createCommand( $q )->queryAll();
+
+        if ( $clusterLogs )
         {
-            $q = $select . ' LIMIT ' . $start_at . ',' . $limit;
-            $values = '';
-
-            $clusterLogs = \Yii::$app->db->createCommand( $q )->queryAll();
-
-            if ( $clusterLogs )
+            foreach ( $clusterLogs as $row )
             {
-                foreach ( $clusterLogs as $row )
+                if ( !$row['D_Placement_id'] || $row['D_Placement_id']=='' || !preg_match( '/^[0-9]+$/',$row['D_Placement_id'] ) )
+                    $row['D_Placement_id'] = "NULL";
+
+                if ( !$row['D_Campaign_id'] || $row['D_Campaign_id']=='' || !preg_match( '/^[0-9]+$/',$row['D_Campaign_id'] ) )
+                    $row['D_Campaign_id'] = "NULL";                    
+
+                if ( $row['pub_id'] && $row['pub_id']!='' )
+                    $row['pub_id'] = "'".$this->_escapePostgreSql( $row['pub_id'] )."'";
+                else
+                    $row['pub_id'] = "NULL";
+
+
+                if ( $row['subpub_id'] && $row['subpub_id']!='' )
+                    $row['subpub_id'] = "'".$this->_escapePostgreSql( $row['subpub_id'] )."'";
+                else
+                    $row['subpub_id'] = "NULL";
+
+
+                if ( $row['exchange_id'] && $row['exchange_id']!='' )
+                    $row['exchange_id'] = "'".$this->_escapePostgreSql( $row['exchange_id'] )."'";
+                else
+                    $row['exchange_id'] = "NULL";
+
+
+                if ( $row['country'] && $row['country']!='' )
+                    $row['country'] = "'".strtoupper($row['country'])."'";
+                else
+                    $row['country'] = "NULL";
+
+
+                if ( $row['carrier'] && $row['carrier']!='' )
+                    $row['carrier'] = "'".$this->_escapePostgreSql( $row['carrier'] )."'";
+                else
+                    $row['carrier'] = "NULL";
+
+
+                if ( $row['connection_type'] && $row['connection_type']!='' )
                 {
-                    if ( !$row['D_Placement_id'] || $row['D_Placement_id']=='' || !preg_match( '/^[0-9]+$/',$row['D_Placement_id'] ) )
-                        $row['D_Placement_id'] = "NULL";
+                    if ( $row['connection_type']== '3g' || $row['connection_type']== '3G' )
+                        $row['connection_type']= "'MOBILE'";
 
-                    if ( !$row['D_Campaign_id'] || $row['D_Campaign_id']=='' || !preg_match( '/^[0-9]+$/',$row['D_Campaign_id'] ) )
-                        $row['D_Campaign_id'] = "NULL";                    
-
-                    if ( $row['pub_id'] && $row['pub_id']!='' )
-                        $row['pub_id'] = "'".$this->_escapePostgreSql( $row['pub_id'] )."'";
-                    else
-                        $row['pub_id'] = "NULL";
-
-
-                    if ( $row['subpub_id'] && $row['subpub_id']!='' )
-                        $row['subpub_id'] = "'".$this->_escapePostgreSql( $row['subpub_id'] )."'";
-                    else
-                        $row['subpub_id'] = "NULL";
-
-
-                    if ( $row['exchange_id'] && $row['exchange_id']!='' )
-                        $row['exchange_id'] = "'".$this->_escapePostgreSql( $row['exchange_id'] )."'";
-                    else
-                        $row['exchange_id'] = "NULL";
-
-
-                    if ( $row['country'] && $row['country']!='' )
-                        $row['country'] = "'".strtoupper($row['country'])."'";
-                    else
-                        $row['country'] = "NULL";
-
-
-                    if ( $row['carrier'] && $row['carrier']!='' )
-                        $row['carrier'] = "'".$this->_escapePostgreSql( $row['carrier'] )."'";
-                    else
-                        $row['carrier'] = "NULL";
-
-
-                    if ( $row['connection_type'] && $row['connection_type']!='' )
-                    {
-                        if ( $row['connection_type']== '3g' || $row['connection_type']== '3G' )
-                            $row['connection_type']= "'MOBILE'";
-
-                        $row['connection_type'] = "'".strtoupper($row['connection_type'])."'";
-                    }
-                    else
-                        $row['connection_type'] = "NULL";
-
-
-                    if ( isset($row['idfa']) && $row['idfa'] && $row['idfa']!='' )
-                        $deviceId = "'".$this->_escapePostgreSql( $row['idfa'] )."'";
-                    else if ( isset($row['gaid']) && $row['gaid'] && $row['gaid']!='' )
-                        $deviceId = "'".$this->_escapePostgreSql( $row['gaid'] )."'";
-                    else if ( $row['device_id'] && $row['device_id']!='' )
-                        $deviceId = "'".$this->_escapePostgreSql( $row['device_id'] )."'";                    
-                    else
-                        $deviceId = "NULL";
-
-
-                    if ( !isset($row['device']) || !$row['device'] || $row['device']=='' )
-                        $row['device'] = 'NULL';
-                    else
-                        $row['device'] = "'".ucwords(strtolower($row['device']))."'";
-
-
-                    if ( isset($row['device_brand']) && $row['device_brand'] && $row['device_brand']!='' )
-                        $row['device_brand'] = "'".$this->_escapePostgreSql( $row['device_brand'] )."'";
-                    else
-                        $row['device_brand'] = "NULL";
-
-
-                    if ( isset($row['device_model']) && $row['device_model'] && $row['device_model']!='' )
-                        $row['device_model'] = "'".$this->_escapePostgreSql( $row['device_model'] )."'";
-                    else
-                        $row['device_model'] = "NULL";
-
-
-                    if ( isset($row['os']) && $row['os'] && $row['os']!='' )
-                        $row['os'] = "'".$this->_escapePostgreSql( $row['os'] )."'";
-                    else
-                        $row['os'] = "NULL";
-
-
-                    if ( isset($row['os_version']) && $row['os_version'] && $row['os_version']!='' )
-                        $row['os_version'] = "'".$this->_escapePostgreSql( $row['os_version'] )."'";
-                    else
-                        $row['os_version'] = "NULL";   
-
-
-                    if ( isset($row['browser']) && $row['browser'] && $row['browser']!='' )
-                        $row['browser'] = "'".$this->_escapePostgreSql( $row['browser'] )."'";
-                    else
-                        $row['browser'] = "NULL";  
-
-                    if ( isset($row['browser_version']) && $row['browser_version'] && $row['browser_version']!='' )
-                        $row['browser_version'] = "'".$this->_escapePostgreSql( $row['browser_version'] )."'";
-                    else
-                        $row['browser_version'] = "NULL";
-
-
-                    if ( $row['device']=='Phablet' || $row['device']=='Smartphone' )
-                        $row['device'] = "'mobile'";
-
-                    if ( isset( $row['imp_status'] ) && $row['imp_status'] && $row['imp_status']!='' )
-                        $impStatus = "'".$row['imp_status']."'";
-                    else
-                        $impStatus = "NULL";               
-
-                    if ( isset($row['clicks']) && $row['clicks'] )
-                        $clicks = $row['clicks'];
-                    else
-                        $clicks = 0; 
-
-
-                    if ( $values != '' )
-                        $values .= ',';
-
-                    $values .= "
-                        (
-                        '".$row['session_hash']."',
-                        ".$row['D_Placement_id'].",
-                        ".$row['D_Campaign_id'].",
-                        ".$row['cluster_id'].",
-                        '".$row['cluster_name']."',
-                        ".$row['imps'].",
-                        '".$row['imp_time']."',
-                        ".$clicks.",
-                        ".$row['country'].",
-                        ".$row['connection_type'].",
-                        ".$row['carrier'].",
-                        ".$row['device'].",
-                        ".$row['device_model'].",
-                        ".$row['device_brand'].",
-                        ".$row['os'].",
-                        ".$row['os_version'].",
-                        ".$row['browser'].",
-                        ".$row['browser_version'].",
-                        ".$row['cost'].",
-                        ".$row['exchange_id'].",
-                        ".$deviceId.",
-                        ".$impStatus.",
-                        ".$row['pub_id'].",                            
-                        ".$row['subpub_id']."
-                        )                    
-                    ";
+                    $row['connection_type'] = "'".strtoupper($row['connection_type'])."'";
                 }
+                else
+                    $row['connection_type'] = "NULL";
 
-                $insert = '
-                    INSERT IGNORE INTO f_clusterlogs_'.$tableName.' (
-                        session_hash,
-                        D_Placement_id,
-                        D_Campaign_id,
-                        cluster_id,
-                        cluster_name,
-                        imps,
-                        imp_time,
-                        clicks,
-                        country,
-                        connection_type,
-                        carrier,
-                        device,
-                        device_model,
-                        device_brand,
-                        os,
-                        os_version,
-                        browser,
-                        browser_version,
-                        cost,
-                        exchange_id,
-                        device_id,
-                        imp_status,
-                        pub_id,
-                        subpub_id
-                    )
-                    VALUES '.$values.';
-                ';
 
-                $statement = $db->prepare( $insert );
+                if ( isset($row['idfa']) && $row['idfa'] && $row['idfa']!='' )
+                    $deviceId = "'".$this->_escapePostgreSql( $row['idfa'] )."'";
+                else if ( isset($row['gaid']) && $row['gaid'] && $row['gaid']!='' )
+                    $deviceId = "'".$this->_escapePostgreSql( $row['gaid'] )."'";
+                else if ( $row['device_id'] && $row['device_id']!='' )
+                    $deviceId = "'".$this->_escapePostgreSql( $row['device_id'] )."'";                    
+                else
+                    $deviceId = "NULL";
 
-                if ( !$statement->execute() )
-                {
-                    var_dump($statement->errorInfo());
 
-                    echo '<hr>'. $insert;
+                if ( !isset($row['device']) || !$row['device'] || $row['device']=='' )
+                    $row['device'] = 'NULL';
+                else
+                    $row['device'] = "'".ucwords(strtolower($row['device']))."'";
 
-                    die();
-                }
 
-                $rows += $statement->rowCount();
+                if ( isset($row['device_brand']) && $row['device_brand'] && $row['device_brand']!='' )
+                    $row['device_brand'] = "'".$this->_escapePostgreSql( $row['device_brand'] )."'";
+                else
+                    $row['device_brand'] = "NULL";
 
-                $limit    += $this->_objectLimit;
-                $start_at += $this->_objectLimit;    
 
-                unset ( $statement );            
-                unset ( $clusterLogs );
-                unset ( $insert );
-                unset ( $values );
-            }
-            else
-            {
-                $results = false;
+                if ( isset($row['device_model']) && $row['device_model'] && $row['device_model']!='' )
+                    $row['device_model'] = "'".$this->_escapePostgreSql( $row['device_model'] )."'";
+                else
+                    $row['device_model'] = "NULL";
+
+
+                if ( isset($row['os']) && $row['os'] && $row['os']!='' )
+                    $row['os'] = "'".$this->_escapePostgreSql( $row['os'] )."'";
+                else
+                    $row['os'] = "NULL";
+
+
+                if ( isset($row['os_version']) && $row['os_version'] && $row['os_version']!='' )
+                    $row['os_version'] = "'".$this->_escapePostgreSql( $row['os_version'] )."'";
+                else
+                    $row['os_version'] = "NULL";   
+
+
+                if ( isset($row['browser']) && $row['browser'] && $row['browser']!='' )
+                    $row['browser'] = "'".$this->_escapePostgreSql( $row['browser'] )."'";
+                else
+                    $row['browser'] = "NULL";  
+
+                if ( isset($row['browser_version']) && $row['browser_version'] && $row['browser_version']!='' )
+                    $row['browser_version'] = "'".$this->_escapePostgreSql( $row['browser_version'] )."'";
+                else
+                    $row['browser_version'] = "NULL";
+
+
+                if ( $row['device']=='Phablet' || $row['device']=='Smartphone' )
+                    $row['device'] = "'mobile'";
+
+                if ( isset( $row['imp_status'] ) && $row['imp_status'] && $row['imp_status']!='' )
+                    $impStatus = "'".$row['imp_status']."'";
+                else
+                    $impStatus = "NULL";               
+
+                if ( isset($row['clicks']) && $row['clicks'] )
+                    $clicks = $row['clicks'];
+                else
+                    $clicks = 0; 
+
+
+                if ( $values != '' )
+                    $values .= ',';
+
+                $values .= "
+                    (
+                    '".$row['session_hash']."',
+                    ".$row['D_Placement_id'].",
+                    ".$row['D_Campaign_id'].",
+                    ".$row['cluster_id'].",
+                    '".$row['cluster_name']."',
+                    ".$row['imps'].",
+                    '".$row['imp_time']."',
+                    ".$clicks.",
+                    ".$row['country'].",
+                    ".$row['connection_type'].",
+                    ".$row['carrier'].",
+                    ".$row['device'].",
+                    ".$row['device_model'].",
+                    ".$row['device_brand'].",
+                    ".$row['os'].",
+                    ".$row['os_version'].",
+                    ".$row['browser'].",
+                    ".$row['browser_version'].",
+                    ".$row['cost'].",
+                    ".$row['exchange_id'].",
+                    ".$deviceId.",
+                    ".$impStatus.",
+                    ".$row['pub_id'].",                            
+                    ".$row['subpub_id']."
+                    )                    
+                ";
             }
 
-            $results = false;
+            $insert = '
+                INSERT IGNORE INTO f_clusterlogs_'.$tableName.' (
+                    session_hash,
+                    D_Placement_id,
+                    D_Campaign_id,
+                    cluster_id,
+                    cluster_name,
+                    imps,
+                    imp_time,
+                    clicks,
+                    country,
+                    connection_type,
+                    carrier,
+                    device,
+                    device_model,
+                    device_brand,
+                    os,
+                    os_version,
+                    browser,
+                    browser_version,
+                    cost,
+                    exchange_id,
+                    device_id,
+                    imp_status,
+                    pub_id,
+                    subpub_id
+                )
+                VALUES '.$values.';
+            ';
 
+            $statement = $db->prepare( $insert );
+
+            if ( !$statement->execute() )
+            {
+                var_dump($statement->errorInfo());
+
+                echo '<hr>'. $insert;
+
+                die();
+            }
+
+            return $statement->rowCount(); 
         }
+        else
+        {
+            return 0;
+        }        
+    }
 
-        $clusterLogsElapsed = time() - $start;
 
+    private function _campaignsLogsToRedshift ( $db, $date_start, $date_end, $tableName )
+    {
         $start = time();
 
+        $results  = 1;
+        $limit    = $this->_objectLimit;
+        $start_at = 0;
+        $rows     = 0;
+
+        while ( $results>0 )
+        {
+            $results = $this->_campaignLogsToRedshiftQuery(
+                $start_at,
+                $limit,
+                $db,
+                $date_start,
+                $date_end,
+                $tableName
+            );
+
+            $limit    += $this->_objectLimit;
+            $start_at += $this->_objectLimit;              
+            $rows     += $results;
+
+            $results = 0;
+        }
+
+
+        $campaignLogsElapsed = time() - $start;  
+
+        echo 'Campaign Logs Stored:'.count($rows).' - Elapsed time: '.$campaignLogsElapsed.' seg.<hr/>';              
+    } 
+
+
+    private function  _campaignLogsToRedshiftQuery ( $start_at,  $limit, $db, $date_start, $date_end, $tableName  )
+    {
         $select = '
             SELECT *   
 
@@ -2036,86 +2089,62 @@ class EtlController extends \yii\web\Controller
 
             WHERE DATE(IF(conv_time is not null, conv_time, click_time)) BETWEEN '.$date_start.' AND '.$date_end.';
         ';
+                    
+        $q = $select . ' LIMIT ' . $start_at . ',' . $limit;
+        $values = '';
 
-        $results  = true;
-        $limit    = $this->_objectLimit;
-        $start_at = 0;
-        $rows2    = 0;
+        $campaignLogs = \Yii::$app->db->createCommand( $q )->queryAll();
 
-        while ( $results )
+        if ( $campaignLogs )
         {
-            $q = $select . ' LIMIT ' . $start_at . ',' . $limit;
-            $values = '';
-
-            $campaignLogs = \Yii::$app->db->createCommand( $q )->queryAll();
-
-            if ( $campaignLogs )
+            foreach ( $campaignLogs as $row )
             {
-                foreach ( $campaignLogs as $row )
-                {
-                    if ( $values != '' )
-                        $values .= ',';
+                if ( $values != '' )
+                    $values .= ',';
 
-                    if ( !$row['imp_time'] || $row['imp_time']=='' )
-                        $clickTime = "NULL";
-                    else
-                        $clickTime = $row['imp_time'];
+                if ( !$row['imp_time'] || $row['imp_time']=='' )
+                    $clickTime = "NULL";
+                else
+                    $clickTime = $row['imp_time'];
 
-                    $values .= "
-                        (
-                        '".$row['click_id']."',                            
-                        '".$row['session_hash']."',
-                        ".$row['D_Campaign_id'].",
-                        '".$clickTime."'
-                        )                    
-                    ";
-                }
-
-                $insert = '
-                    INSERT IGNORE INTO f_campaignlogs'.$tableName.' (
-                        click_id,
-                        D_Campaign_id,
-                        session_hash,
-                        click_time
-                    )
-                    VALUES '.$values.'
-                ';
-
-                $statement = $db->prepare( $insert );
-
-                if ( !$statement->execute() )
-                {
-                    var_dump($statement->errorInfo());
-
-                    echo '<hr>'. $insert;
-
-                    die();
-                }
-
-                $rows2 += $statement->rowCount();
-
-                $limit    += $this->_objectLimit;
-                $start_at += $this->_objectLimit;    
-
-                unset ( $statement );            
-                unset ( $campaignLogs );
-                unset ( $insert );
-                unset ( $values );
-            }
-            else
-            {
-                $results = false;
+                $values .= "
+                    (
+                    '".$row['click_id']."',                            
+                    '".$row['session_hash']."',
+                    ".$row['D_Campaign_id'].",
+                    '".$clickTime."'
+                    )                    
+                ";
             }
 
-            $results = false;
+            $insert = '
+                INSERT IGNORE INTO f_campaignlogs'.$tableName.' (
+                    click_id,
+                    D_Campaign_id,
+                    session_hash,
+                    click_time
+                )
+                VALUES '.$values.'
+            ';
+
+            $statement = $db->prepare( $insert );
+
+            if ( !$statement->execute() )
+            {
+                var_dump($statement->errorInfo());
+
+                echo '<hr>'. $insert;
+
+                die();
+            }
+
+            return $statement->rowCount();
         }
-
-
-        $campaignLogsElapsed = time() - $start;
-
-        echo 'Cluster Logs Stored: '.count($rows).' - Elapsed time: '.$clusterLogsElapsed.' seg.<hr/>';        
-        echo 'Campaign Logs Stored:'.count($rows2).' - Elapsed time: '.$campaignLogsElapsed.' seg.<hr/>';
-    }    
+        else
+        {
+            return 0;
+        }        
+    }
 
 
     public function actionClickcount ( $campaign_id, $date = null, $loaded = true )
