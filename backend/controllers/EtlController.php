@@ -1835,7 +1835,7 @@ class EtlController extends \yii\web\Controller
                     if ( $row['subpub_id'] && $row['subpub_id']!='' )
                         $row['subpub_id'] = "'".$this->_escapePostgreSql( $row['subpub_id'] )."'";
                     else
-                        $row['subpub_id'] = 'NULL';
+                        $row['subpub_id'] = "NULL";
 
 
                     if ( $row['exchange_id'] && $row['exchange_id']!='' )
@@ -2025,9 +2025,94 @@ class EtlController extends \yii\web\Controller
         }
 
         $clusterLogsElapsed = time() - $start;
+        
+        $start = time();
+
+        $select = '
+            SELECT *   
+
+            FROM F_CampaignLogs_'.$tableName.'
+
+            WHERE DATE(imp_time) BETWEEN '.$date_start.' AND '.$date_end.' 
+        ';
+
+        $results  = true;
+        $limit    = $this->_objectLimit;
+        $start_at = 0;
+        $rows2    = 0;
+
+        while ( $results )
+        {
+            $q = $select . ' LIMIT ' . $start_at . ',' . $limit;
+            $values = '';
+
+            $campaignLogs = \Yii::$app->db->createCommand( $q )->queryAll();
+
+            if ( $campaignLogs )
+            {
+                foreach ( $campaignLogs as $row )
+                {
+                    if ( $values != '' )
+                        $values .= ',';
+
+                    if ( !$row['imp_time'] || $row['imp_time']=='' )
+                        $clickTime = "NULL";
+                    else
+                        $clickTime = $row['imp_time'];
+
+                    $values .= "
+                        (
+                        '".$row['click_id']."',                            
+                        '".$row['session_hash']."',
+                        ".$row['D_Campaign_id'].",
+                        '".$clickTime."'
+                        )                    
+                    ";
+                }
+
+                $insert = '
+                    INSERT INTO f_campaignlogs'.$tableName.' (
+                        click_id,
+                        D_Campaign_id,
+                        session_hash,
+                        click_time
+                    )
+                    VALUES '.$values.'
+                ';
+
+                $statement = $db->prepare( $insert );
+
+                if ( !$statement->execute() )
+                {
+                    var_dump($statement->errorInfo());
+
+                    echo '<hr>'. $insert;
+
+                    die();
+                }
+
+                $rows2 += $statement->rowCount();
+
+                $limit    += $this->_objectLimit;
+                $start_at += $this->_objectLimit;    
+
+                unset ( $statement );            
+                unset ( $campaignLogs );
+                unset ( $insert );
+            }
+            else
+            {
+                $results = false;
+            }
+
+            $results = false;
+        }
+
+
+        $campaignLogsElapsed = time() - $start;
 
         echo 'Cluster Logs Stored: '.count($rows).' - Elapsed time: '.$clusterLogsElapsed.' seg.<hr/>';        
-        echo 'Campaign Logs Stored: 0 - Elapsed time: 0 seg.<hr/>';                
+        echo 'Campaign Logs Stored:'.count($rows2).' - Elapsed time: '.$campaignLogsElapsed.' seg.<hr/>';
     }    
 
 
