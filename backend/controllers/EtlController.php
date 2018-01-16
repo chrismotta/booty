@@ -1800,7 +1800,7 @@ class EtlController extends \yii\web\Controller
     }   
 
 
-    private function _clusterLogsToRedshift ( $db, $dates_start, $date_end, $tableName )
+    private function _clusterLogsToRedshift ( $db, $date_start, $date_end, $tableName )
     {
         $start    = time();
         $results  = 1;
@@ -1832,7 +1832,7 @@ class EtlController extends \yii\web\Controller
     }
 
 
-    private function _clusterLogsToRedshiftQuery ( $start_at, $limit, $db, $dates_start, $date_end, $tableName )
+    private function _clusterLogsToRedshiftQuery ( $start_at, $limit, $db, $date_start, $date_end, $tableName )
     {
         $select = '
             SELECT *   
