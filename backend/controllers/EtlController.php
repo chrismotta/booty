@@ -1818,7 +1818,7 @@ class EtlController extends \yii\web\Controller
             $start_at += $this->_objectLimit;              
             $rows     += $results;
 
-            $results  = 0;
+            //$results  = 0;
         }
 
         $clusterLogsElapsed = time() - $start;
@@ -2064,7 +2064,7 @@ class EtlController extends \yii\web\Controller
             $start_at += $this->_objectLimit;              
             $rows     += $results;
 
-            $results = 0;
+            //$results = 0;
         }
 
 
