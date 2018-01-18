@@ -1669,7 +1669,9 @@ class EtlController extends \yii\web\Controller
                 cost,
                 exchange_id,
                 device_id,
-                imp_status
+                imp_status,
+                pub_id,
+                subpub_id
             )
             SELECT
                 session_hash,
@@ -1693,7 +1695,9 @@ class EtlController extends \yii\web\Controller
                 cost,
                 exchange_id,
                 device_id,
-                imp_status
+                imp_status,
+                pub_id,
+                subpub_id
 
             FROM F_ClusterLogs
 
@@ -1756,7 +1760,7 @@ class EtlController extends \yii\web\Controller
     }
 
 
-    public function actionToredshift ( $date_start = null, $date_end = null )
+    public function actionToredshift ( $date_start = null, $date_end = null, $queries = 1500 )
     {
         $db = new \PDO( 
             'pgsql:dbname=prod;host=dinky.cspssu6efoeo.us-east-1.redshift.amazonaws.com;port=5439',
@@ -1793,19 +1797,20 @@ class EtlController extends \yii\web\Controller
             $date_end   = 'CURDATE() - INTERVAL 1 DAY';
         }
 
-        $this->_clusterLogsToRedshift ( $db, $date_start, $date_end, $tableName );
-        $this->_campaignLogsToRedshift ( $db, $date_start, $date_end, $tableName );
+        $this->_clusterLogsToRedshift ( $db, $date_start, $date_end, $tableName, $queries );
+        $this->_campaignLogsToRedshift ( $db, $date_start, $date_end, $tableName, $queries );
     }   
 
 
-    private function _clusterLogsToRedshift ( $db, $date_start, $date_end, $tableName )
+    private function _clusterLogsToRedshift ( $db, $date_start, $date_end, $tableName, $queries )
     {
-        $start    = time();
-        $results  = 1;
-        $rows     = 0;
-        $start_at = 0;
+        $start      = time();
+        $results    = 1;
+        $rows       = 0;
+        $start_at   = 0;
+        $queryCount = 0;
 
-        while ( $results>0 )
+        while ( $results>0 && $queryCount<$queries )
         {
             $results = $this->_clusterLogsToRedshiftQuery(
                 $start_at,
@@ -1817,8 +1822,8 @@ class EtlController extends \yii\web\Controller
 
             $start_at += $this->_objectLimit;              
             $rows     += $results;
+            $queryCount++;
 
-            //$results  = 0;
         }
 
         $clusterLogsElapsed = time() - $start;
@@ -1834,8 +1839,14 @@ class EtlController extends \yii\web\Controller
 
             FROM F_ClusterLogs_'.$tableName.'
 
-            WHERE DATE(imp_time) BETWEEN '.$date_start.' AND '.$date_end.'  
+            WHERE DATE(imp_time) BETWEEN '.$date_start.' AND '.$date_end.' AND loaded<>1  
         ';
+
+        $update = '
+            UPDATE F_ClusterLogs_'.$tableName.' SET loaded=1 WHERE session_hash IN 
+        ';        
+
+        $hashesForUpdate = '';
 
         $q = $select . ' LIMIT ' . $start_at . ',' . $this->_objectLimit . ';';
 
@@ -1848,6 +1859,11 @@ class EtlController extends \yii\web\Controller
         {
             foreach ( $clusterLogs as $row )
             {
+                if ( $hashesForUpdate != '' )
+                    $hashesForUpdate .= ',';
+
+                $hashesForUpdate .= '"'.$row['session_hash'].'"';
+
                 if ( !$row['D_Placement_id'] || $row['D_Placement_id']=='' || !preg_match( '/^[0-9]+$/',$row['D_Placement_id'] ) )
                     $row['D_Placement_id'] = "NULL";
 
@@ -2034,6 +2050,10 @@ class EtlController extends \yii\web\Controller
                 die();
             }
 
+            $u = $update . '(' . $hashesForUpdate . ');';
+
+            \Yii::$app->db->createCommand( $u )->execute();
+
             return $statement->rowCount(); 
         }
         else
@@ -2043,15 +2063,16 @@ class EtlController extends \yii\web\Controller
     }
 
 
-    private function _campaignLogsToRedshift ( $db, $date_start, $date_end, $tableName )
+    private function _campaignLogsToRedshift ( $db, $date_start, $date_end, $tableName, $queries )
     {
         $start = time();
 
-        $results  = 1;
-        $start_at = 0;
-        $rows     = 0;
+        $results    = 1;
+        $start_at   = 0;
+        $rows       = 0;
+        $queryCount = 0;
 
-        while ( $results>0 )
+        while ( $results>0 && $queryCount<$queries )
         {
             $results = $this->_campaignLogsToRedshiftQuery(
                 $start_at,
@@ -2063,8 +2084,7 @@ class EtlController extends \yii\web\Controller
 
             $start_at += $this->_objectLimit;              
             $rows     += $results;
-
-            //$results = 0;
+            $queryCount++;
         }
 
 
@@ -2081,11 +2101,17 @@ class EtlController extends \yii\web\Controller
 
             FROM F_CampaignLogs_'.$tableName.'
 
-            WHERE DATE(IF(conv_time is not null, conv_time, click_time)) BETWEEN '.$date_start.' AND '.$date_end.'
+            WHERE DATE(IF(conv_time is not null, conv_time, click_time)) BETWEEN '.$date_start.' AND '.$date_end.' AND loaded<>1
         ';
                     
         $q = $select . ' LIMIT ' . $start_at . ',' . $this->_objectLimit . ';';
         $values = '';
+
+        $update = '
+            UPDATE F_CampaignLogs_'.$tableName.' SET loaded=1 WHERE click_id IN 
+        ';        
+
+        $hashesForUpdate = '';        
 
         $campaignLogs = \Yii::$app->db->createCommand( $q )->queryAll();
 
@@ -2095,6 +2121,11 @@ class EtlController extends \yii\web\Controller
             {
                 if ( $values != '' )
                     $values .= ',';
+
+                if ( $clicksForUpdate != '' )
+                    $clicksForUpdate .= ',';
+
+                $clicksForUpdate .= '"'.$row['click_id'].'"';
 
                 if ( !$row['click_time'] || $row['click_time']=='' )
                     $clickTime = "NULL";
@@ -2131,6 +2162,10 @@ class EtlController extends \yii\web\Controller
 
                 die();
             }
+
+            $u = $update . '(' . $clicksForUpdate . ');';
+
+            \Yii::$app->db->createCommand( $u )->execute();
 
             return $statement->rowCount();
         }
