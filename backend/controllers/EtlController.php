@@ -2111,7 +2111,7 @@ class EtlController extends \yii\web\Controller
             UPDATE F_CampaignLogs_'.$tableName.' SET loaded=1 WHERE click_id IN 
         ';        
 
-        $hashesForUpdate = '';        
+        $clicksForUpdate = '';        
 
         $campaignLogs = \Yii::$app->db->createCommand( $q )->queryAll();
 
