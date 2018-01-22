@@ -98,7 +98,7 @@ class ReportingController extends Controller
 
     public function actionCreateautoreport ($daysBefore=4, $test=false) {
 
-        ini_set('memory_limit','3000M');
+        ini_set('memory_limit','4000M');
         set_time_limit(0);
 
         if ( isset($_GET['date']) )
