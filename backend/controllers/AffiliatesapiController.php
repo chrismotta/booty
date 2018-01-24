@@ -618,6 +618,7 @@ class AffiliatesapiController extends \yii\web\Controller
         {
             if ( strtolower($cluster->assignation_method)!='automatic' )
             {
+                var_dump($cluster->assignation_method);die();
                 if ( $debugCampaign && $campaign->id==$debugCampaign )
                     die('Cluster autoassign off');
 
