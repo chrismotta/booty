@@ -609,18 +609,20 @@ class AffiliatesapiController extends \yii\web\Controller
         )
         {
             if ( $debugCampaign && $campaign->id==$debugCampaign )
-                die('Affiliate or Campaign not active or Affiliate autoassign off');  
+                echo 'Affiliate or Campaign not active or Affiliate autoassign off<hr>';  
 
             return false;
         }
 
         foreach  ( $clusters as $cluster )
         {
+            if ( $debugCampaign && $campaign->id==$debugCampaign )
+                echo '<hr>CLUSTER: '.$cluster->id;
+            
             if ( strtolower($cluster->assignation_method)!='automatic' )
-            {
-                var_dump($cluster->assignation_method);die();
+            {                
                 if ( $debugCampaign && $campaign->id==$debugCampaign )
-                    die('Cluster autoassign off');
+                    echo('<br>Cluster autoassign off');
 
                 continue;
             }
@@ -638,7 +640,7 @@ class AffiliatesapiController extends \yii\web\Controller
                 )
                 {
                     if ( $debugCampaign && $campaign->id==$debugCampaign )
-                        die('OS or Country mismatch'); 
+                        echo('<br>OS or Country mismatch'); 
 
                     continue;
                 }
@@ -651,7 +653,7 @@ class AffiliatesapiController extends \yii\web\Controller
                 )
                 {
                     if ( $debugCampaign && $campaign->id==$debugCampaign )
-                        die('Connection Type mismatch'); 
+                        echo('<br>Connection Type mismatch'); 
 
                     continue;
                 }
@@ -664,7 +666,7 @@ class AffiliatesapiController extends \yii\web\Controller
                 )
                 {
                     if ( $debugCampaign && $campaign->id==$debugCampaign )
-                        die('Device Type mismatch');                     
+                        echo('<br>Device Type mismatch');                     
 
                     continue;
                 }                
@@ -687,7 +689,7 @@ class AffiliatesapiController extends \yii\web\Controller
                 )
                 {
                     if ( $debugCampaign && $campaign->id==$debugCampaign )
-                        die('Carrier mismatch');                     
+                        echo('<br>Carrier mismatch');                     
 
                     continue;
                 }
@@ -718,7 +720,7 @@ class AffiliatesapiController extends \yii\web\Controller
                     else
                     {
                         if ( $debugCampaign && $campaign->id==$debugCampaign )
-                            die('Database insert issue');
+                            echo('<br>Database insert issue');
                     }
                 }
 
@@ -728,12 +730,12 @@ class AffiliatesapiController extends \yii\web\Controller
             else
             {
                 if ( $debugCampaign && $campaign->id==$debugCampaign )
-                    die('Cluster Min Payout not reached');  
+                    echo('<br>Cluster Min Payout not reached');  
             }
         }
 
         if ( $debugCampaign && $campaign->id==$debugCampaign )
-            die('No autoassign error for campaign: '.$debugCampaign);  
+            echo('<br>No autoassign error for campaign: '.$debugCampaign);  
 
         return true;
     }
