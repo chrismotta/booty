@@ -603,9 +603,9 @@ class AffiliatesapiController extends \yii\web\Controller
         $debugCampaign = isset($_GET['autoassign_debug']) ? $_GET['autoassign_debug'] : false;
 
         if ( 
-            $affiliate->assignation_method != 'automatic' 
-            || $affiliate->status != 'active' 
-            || $campaign->status != 'active' 
+            strtolower($affiliate->assignation_method) != 'automatic' 
+            || strtolower($affiliate->status) != 'active' 
+            || strtolower($campaign->status) != 'active' 
         )
         {
             if ( $debugCampaign && $campaign->id==$debugCampaign )
@@ -616,7 +616,7 @@ class AffiliatesapiController extends \yii\web\Controller
 
         foreach  ( $clusters as $cluster )
         {
-            if ( $cluster->assignation_method!='automatic' )
+            if ( strtolower($cluster->assignation_method)!='automatic' )
             {
                 if ( $debugCampaign && $campaign->id==$debugCampaign )
                     die('Cluster autoassign off');
