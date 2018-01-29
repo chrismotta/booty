@@ -150,6 +150,7 @@
 					case 'android_phone':
 					case 'android phone':
 					case 'iphone':
+					case 'phone':
 					case 'mobile':
 					case 'smartphone':
 						if ( !in_array( 'Smartphone', $results) )

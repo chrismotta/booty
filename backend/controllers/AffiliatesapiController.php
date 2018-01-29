@@ -600,19 +600,32 @@ class AffiliatesapiController extends \yii\web\Controller
 
     private function _autoassign ( $affiliate, $campaign, $apiData, $clusters )
     {
+        $debugCampaign = isset($_GET['autoassign_debug']) ? $_GET['autoassign_debug'] : false;
+
         if ( 
-            $affiliate->assignation_method != 'automatic' 
-            || $affiliate->status != 'active' 
-            || $campaign->status != 'active' 
+            strtolower($affiliate->assignation_method) != 'automatic' 
+            || strtolower($affiliate->status) != 'active' 
+            || strtolower($campaign->status) != 'active' 
         )
         {
+            if ( $debugCampaign && $campaign->id==$debugCampaign )
+                echo 'Affiliate or Campaign not active or Affiliate autoassign off<hr>';  
+
             return false;
         }
 
         foreach  ( $clusters as $cluster )
         {
-            if ( $cluster->assignation_method!='automatic' )
+            if ( $debugCampaign && $campaign->id==$debugCampaign )
+                echo '<hr>CLUSTER: '.$cluster->id;
+            
+            if ( strtolower($cluster->assignation_method)!='automatic' )
+            {                
+                if ( $debugCampaign && $campaign->id==$debugCampaign )
+                    echo('<br>Cluster autoassign off');
+
                 continue;
+            }
 
             if ( $campaign->payout>=$cluster['min_payout'] )
             {
@@ -626,16 +639,22 @@ class AffiliatesapiController extends \yii\web\Controller
                     || !in_array( strtolower($cluster->country), array_map('strtolower',$apiData['country'] ) ) 
                 )
                 {
+                    if ( $debugCampaign && $campaign->id==$debugCampaign )
+                        echo('<br>OS or Country mismatch'); 
+
                     continue;
                 }
 
-                // if connection type is not open in cluster or campaign and cluster's is not included between campaign's then skip autoasign
+                // if connection type is not open in cluster and campaign and cluster's is not included between campaign's then skip autoasign
                 if ( 
                     $apiData['connection_type'] 
-                    && $cluster->connection_type
+                    && $cluster->connection_type 
                     && !in_array( strtolower($cluster->connection_type), array_map('strtolower',$apiData['connection_type'] ) ) 
                 )
                 {
+                    if ( $debugCampaign && $campaign->id==$debugCampaign )
+                        echo('<br>Connection Type mismatch'); 
+
                     continue;
                 }
 
@@ -646,10 +665,13 @@ class AffiliatesapiController extends \yii\web\Controller
                     && !in_array( strtolower($cluster->device_type), array_map('strtolower',$apiData['device_type'] ) ) 
                 )
                 {
+                    if ( $debugCampaign && $campaign->id==$debugCampaign )
+                        echo('<br>Device Type mismatch');                     
+
                     continue;
                 }                
 
-                // if os_version is not open in cluster or campaign and cluster's is not included between campaign's then skip autoasign
+                // if os_version is not open in cluster and campaign and cluster's is not included between campaign's then skip autoasign
                 if ( 
                     $apiData['os_version'] 
                     && $cluster->os_version 
@@ -659,13 +681,16 @@ class AffiliatesapiController extends \yii\web\Controller
                     //continue;
                 }
 
-                // if carrier is not open in cluster or campaign and cluster's is not included between campaign's then skip autoasign
+                // if carrier is not open in cluster and campaign and cluster's is not included between campaign's then skip autoasign
                 if ( 
                     $apiData['carrier'] 
                     && $cluster->carriers
                     && !in_array( strtolower($cluster->carriers->carrier_name), array_map('strtolower',$apiData['carrier'] ) )
                 )
                 {
+                    if ( $debugCampaign && $campaign->id==$debugCampaign )
+                        echo('<br>Carrier mismatch');                     
+
                     continue;
                 }
 
@@ -692,12 +717,25 @@ class AffiliatesapiController extends \yii\web\Controller
 
                         models\CampaignsChangelog::log( $campaign->id, 'autoassigned', null, $cluster->id );
                     }
+                    else
+                    {
+                        if ( $debugCampaign && $campaign->id==$debugCampaign )
+                            echo('<br>Database insert issue');
+                    }
                 }
 
                 // free ram
                 unset ( $chc );                
             }
+            else
+            {
+                if ( $debugCampaign && $campaign->id==$debugCampaign )
+                    echo('<br>Cluster Min Payout not reached');  
+            }
         }
+
+        if ( $debugCampaign && $campaign->id==$debugCampaign )
+            echo('<br>No autoassign error for campaign: '.$debugCampaign);  
 
         return true;
     }
