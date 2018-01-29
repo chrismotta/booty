@@ -57,6 +57,11 @@
                                     ['label' => 'Assigned by Cluster', 'icon' => 'circle-thin', 'url' => ['/campaigns/bycluster'],],
                                 ],
                             ],
+                            [
+                                'label' => 'API Management',
+                                'icon' => 'circle-o',
+                                'url' => ['affiliatesapi/management'],
+                            ],  
                         ],
                     ],
                     [
@@ -143,11 +148,6 @@
                                     ['label' => 'Admin', 'icon' => 'circle-thin', 'url' => ['/static'],],
                                 ],
                             ],
-                            [
-                                'label' => 'API Management',
-                                'icon' => 'circle-o',
-                                'url' => ['affiliatesapi/management'],
-                            ],  
                             [
                                 'label' => 'Test Traffic Report',
                                 'icon' => 'circle-o',
