@@ -144,6 +144,11 @@
                                 ],
                             ],
                             [
+                                'label' => 'API Management',
+                                'icon' => 'circle-o',
+                                'url' => ['affiliatesapi/management'],
+                            ],  
+                            [
                                 'label' => 'Test Traffic Report',
                                 'icon' => 'circle-o',
                                 'url' => '/testtrafficreport'

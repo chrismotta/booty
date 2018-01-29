@@ -3,8 +3,8 @@
 namespace backend\controllers;
 
 use Yii;
-use app\models;
 use Predis;
+use app\models;
 use backend\components;
 
 class AffiliatesapiController extends \yii\web\Controller
@@ -1543,7 +1543,14 @@ class AffiliatesapiController extends \yii\web\Controller
         {
             return false;
         }
-    }    
+    }
+
+    public function actionManagement () {
+        $model = models\Affiliates::find()->where(['status'=>'active'])->andWhere(['!=','id', '1'])->all();
+        return $this->render('index', [
+                'model' => $model,
+            ]);
+    }
 
 
 
