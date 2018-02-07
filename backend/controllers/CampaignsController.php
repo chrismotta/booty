@@ -306,7 +306,7 @@ class CampaignsController extends Controller
                 if($test){
                     echo '======> TO BE RESTORED';
                 }else{
-                    // $campaign->status = 'active';
+                    $campaign->status = 'active';
                     echo '======> RESTORED';
                 }
                 $restored++;
