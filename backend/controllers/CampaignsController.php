@@ -16,6 +16,9 @@ use yii\filters\VerbFilter;
  */
 class CampaignsController extends Controller
 {
+    protected $_blacklistAppId;
+    protected $_blacklistKeyword;
+
     /**
      * @inheritdoc
      */
@@ -264,5 +267,97 @@ class CampaignsController extends Controller
         return $this->renderPartial('pubidblacklistiframe', [
                 'id' => $id,
             ]);
+    }
+
+     public function actionRestoreblacklisted($test=0){
+
+        $this->_loadBlacklists();
+        $campaigns = Campaigns::findAll(['status'=>'blacklisted']);
+        $restored = 0;
+
+        foreach ($campaigns as $key => $value) {
+
+            $restore = true;
+            if(isset($value->app_id)){
+
+                $app_ids = json_decode($value->app_id);
+
+                foreach ( $app_ids as $os => $app_id ){
+                        
+                    echo $os . ': ' . $app_id;
+                    if ( $this->appIdIsBlacklisted( $app_id ) ){
+                        echo ' :: Blacklisted by app_id';
+                        $restore = false;
+                    }
+                    echo '<br/>';
+                }
+
+            }
+
+            echo $value->name;
+            if($this->hasBlacklistedKeyword( $value->name )){
+                echo ' :: Blacklisted by keyword';
+                $restore = false;
+            }
+
+            echo '<br/>';
+
+            if($restore){
+                if($test){
+                    echo '======> TO BE RESTORED';
+                }else{
+                    // $campaign->status = 'active';
+                    echo '======> RESTORED';
+                }
+                $restored++;
+            }
+
+            echo '<hr/>';
+        }
+
+        echo '<hr/>';
+        if($test)
+            echo 'Campaigns to be restored: '.$restored;
+        else
+            echo 'Restored campaigns: '.$restored;
+        echo '<hr/>';
+    }
+
+    public function hasBlacklistedKeyword( $string )
+    {
+        foreach ( $this->_blacklistKeyword as $keyword )
+        {   
+            if ( 
+                preg_match ( 
+                    "/(".strtolower($keyword->keyword).")/", strtolower($string) 
+                )                
+            )
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function appIdIsBlacklisted( $app_id )
+    {
+        return in_array( $app_id, $this->_blacklistAppId );
+    }
+
+    private function _loadBlacklists()
+    {
+        $this->_blacklistKeyword = models\KeywordBlacklist::find()->all();
+        $this->_blacklistAppId   = [];
+
+        $appids = models\AppidBlacklist::find()->all();
+
+        if ( $appids )
+        {
+            foreach ( $appids as $appid )
+            {
+                $this->_blacklistAppId[] = $appid->app_id;
+            }                    
+        }
     }
 }
