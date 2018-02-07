@@ -275,12 +275,12 @@ class CampaignsController extends Controller
         $campaigns = Campaigns::findAll(['status'=>'blacklisted']);
         $restored = 0;
 
-        foreach ($campaigns as $key => $value) {
+        foreach ($campaigns as $key => $campaign) {
 
             $restore = true;
-            if(isset($value->app_id)){
+            if(isset($campaign->app_id)){
 
-                $app_ids = json_decode($value->app_id);
+                $app_ids = json_decode($campaign->app_id);
 
                 foreach ( $app_ids as $os => $app_id ){
                         
@@ -294,8 +294,8 @@ class CampaignsController extends Controller
 
             }
 
-            echo $value->name;
-            if($this->hasBlacklistedKeyword( $value->name )){
+            echo $campaign->name;
+            if($this->hasBlacklistedKeyword( $campaign->name )){
                 echo ' :: Blacklisted by keyword';
                 $restore = false;
             }
@@ -307,6 +307,7 @@ class CampaignsController extends Controller
                     echo '======> TO BE RESTORED';
                 }else{
                     $campaign->status = 'active';
+                    $campaign->save();
                     echo '======> RESTORED';
                 }
                 $restored++;
